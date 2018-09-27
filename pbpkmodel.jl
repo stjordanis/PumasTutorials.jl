@@ -6,7 +6,7 @@ pbpkmodel = @model begin
         ρ ∈ ConstDomain(5e-6)
         r ∈ ConstDomain(1)
         T ∈ ConstDomain(3e-5)
-        D ∈ ConstDomain(1e-4)
+        d ∈ ConstDomain(1e-4)
         SST ∈ ConstDomain(5.5)
         kilST ∈ ConstDomain(0.5)
         kaST ∈ ConstDomain(14040.00076)
@@ -81,51 +81,51 @@ pbpkmodel = @model begin
     @dynamics begin
         #Absorption compartments
         #Stomach compartment
-        AUNDST' = -GER * AUNDST - (((3*D)/(ρ*r*T)) * AUNDST* (SST - (ADIST/VST1)))
-        ADIST' = -GER * ADIST + (((3*D)/(ρ*r*T)) *AUNDST*(SST - (ADIST/VST1))) - kilST* ADIST -kaST *ADIST
+        AUNDST' = -GER * AUNDST - (((3*d)/(ρ*r*T)) * AUNDST* (SST - (ADIST/VST1)))
+        ADIST' = -GER * ADIST + (((3*d)/(ρ*r*T)) *AUNDST*(SST - (ADIST/VST1))) - kilST* ADIST -kaST *ADIST
         ADEGST' = -GER * ADEGST + kilST * ADIST
         AABSST' = kaST * ADIST
 
         #GU1 small intestinal compartment
-        AUNDGU1' = GER * AUNDST - kt * AUNDGU1 - ((3*D)/(ρ*r*T)) * AUNDGU1 *(SGU1 - (ADISGU1/VGU))
-        ADISGU1' = GER * ADIST - kt * ADISGU1 + ((3*D)/(ρ*r*T)) * AUNDGU1 *(SGU1 - (ADISGU1/VGU)) - kilGU1*ADISGU1 - kaGU*ADISGU1 + (EHR*kbil*CLI *VLI)/( Kp)
+        AUNDGU1' = GER * AUNDST - kt * AUNDGU1 - ((3*d)/(ρ*r*T)) * AUNDGU1 *(SGU1 - (ADISGU1/VGU))
+        ADISGU1' = GER * ADIST - kt * ADISGU1 + ((3*d)/(ρ*r*T)) * AUNDGU1 *(SGU1 - (ADISGU1/VGU)) - kilGU1*ADISGU1 - kaGU*ADISGU1 + (EHR*kbil*CLI *VLI)/( Kp)
         ADEGGU1' = GER * ADEGST - kt * ADEGGU1 + kilGU1 * ADISGU1
         AABSGU1' = kaGU * ADISGU1
 
         # Other small intestinal compartments (GU2–GU7)
-        AUNDGU2' = kt * AUNDGU1 - kt * AUNDGU2 -((3*D)/(ρ*r*T)) * AUNDGU2 *(SGU2 - (ADISGU2/VGU))
-        ADISGU2' = kt * ADISGU1 - kt * ADISGU2 +((3*D)/(ρ*r*T)) * AUNDGU2 *(SGU2 - (ADISGU2/VGU)) - kilGU2*ADISGU2 - kaGU*ADISGU2
+        AUNDGU2' = kt * AUNDGU1 - kt * AUNDGU2 -((3*d)/(ρ*r*T)) * AUNDGU2 *(SGU2 - (ADISGU2/VGU))
+        ADISGU2' = kt * ADISGU1 - kt * ADISGU2 +((3*d)/(ρ*r*T)) * AUNDGU2 *(SGU2 - (ADISGU2/VGU)) - kilGU2*ADISGU2 - kaGU*ADISGU2
         ADEGGU2' = kt*ADEGGU1 - kt*ADEGGU2 + kilGU2 * ADISGU2
         AABSGU2' = kaGU * ADISGU2
 
-        AUNDGU3' = kt * AUNDGU2 - kt * AUNDGU3 -((3*D)/(ρ*r*T)) * AUNDGU3 *(SGU3 - (ADISGU3/VGU))
-        ADISGU3' = kt * ADISGU2 - kt * ADISGU3 +((3*D)/(ρ*r*T)) * AUNDGU3 *(SGU3 - (ADISGU3/VGU)) - kilGU3*ADISGU3 - kaGU*ADISGU3
+        AUNDGU3' = kt * AUNDGU2 - kt * AUNDGU3 -((3*d)/(ρ*r*T)) * AUNDGU3 *(SGU3 - (ADISGU3/VGU))
+        ADISGU3' = kt * ADISGU2 - kt * ADISGU3 +((3*d)/(ρ*r*T)) * AUNDGU3 *(SGU3 - (ADISGU3/VGU)) - kilGU3*ADISGU3 - kaGU*ADISGU3
         ADEGGU3' = kt*ADEGGU2 - kt*ADEGGU3 + kilGU3 * ADISGU3
         AABSGU3' = kaGU * ADISGU3
 
-        AUNDGU4' = kt * AUNDGU3 - kt * AUNDGU4 -((3*D)/(ρ*r*T)) * AUNDGU4 *(SGU4 - (ADISGU4/VGU))
-        ADISGU4' = kt * ADISGU3 - kt * ADISGU4 +((3*D)/(ρ*r*T)) * AUNDGU4 *(SGU4 - (ADISGU4/VGU)) - kilGU4*ADISGU4 - kaGU*ADISGU4
+        AUNDGU4' = kt * AUNDGU3 - kt * AUNDGU4 -((3*d)/(ρ*r*T)) * AUNDGU4 *(SGU4 - (ADISGU4/VGU))
+        ADISGU4' = kt * ADISGU3 - kt * ADISGU4 +((3*d)/(ρ*r*T)) * AUNDGU4 *(SGU4 - (ADISGU4/VGU)) - kilGU4*ADISGU4 - kaGU*ADISGU4
         ADEGGU4' = kt*ADEGGU3 - kt*ADEGGU4 + kilGU4 * ADISGU4
         AABSGU4' = kaGU * ADISGU4
 
-        AUNDGU5' = kt * AUNDGU4 - kt * AUNDGU5 -((3*D)/(ρ*r*T)) * AUNDGU5 *(SGU5 - (ADISGU5/VGU))
-        ADISGU5' = kt * ADISGU4 - kt * ADISGU5 +((3*D)/(ρ*r*T)) * AUNDGU5 *(SGU5 - (ADISGU5/VGU)) - kilGU5*ADISGU5 - kaGU*ADISGU5
+        AUNDGU5' = kt * AUNDGU4 - kt * AUNDGU5 -((3*d)/(ρ*r*T)) * AUNDGU5 *(SGU5 - (ADISGU5/VGU))
+        ADISGU5' = kt * ADISGU4 - kt * ADISGU5 +((3*d)/(ρ*r*T)) * AUNDGU5 *(SGU5 - (ADISGU5/VGU)) - kilGU5*ADISGU5 - kaGU*ADISGU5
         ADEGGU5' = kt*ADEGGU4 - kt*ADEGGU5 + kilGU5 * ADISGU5
         AABSGU5' = kaGU * ADISGU5
 
-        AUNDGU6' = kt * AUNDGU5 - kt * AUNDGU6 -((3*D)/(ρ*r*T)) * AUNDGU6 *(SGU6 - (ADISGU6/VGU))
-        ADISGU6' = kt * ADISGU5 - kt * ADISGU6 +((3*D)/(ρ*r*T)) * AUNDGU6 *(SGU6 - (ADISGU6/VGU)) - kilGU6*ADISGU6 - kaGU*ADISGU6
+        AUNDGU6' = kt * AUNDGU5 - kt * AUNDGU6 -((3*d)/(ρ*r*T)) * AUNDGU6 *(SGU6 - (ADISGU6/VGU))
+        ADISGU6' = kt * ADISGU5 - kt * ADISGU6 +((3*d)/(ρ*r*T)) * AUNDGU6 *(SGU6 - (ADISGU6/VGU)) - kilGU6*ADISGU6 - kaGU*ADISGU6
         ADEGGU6' = kt*ADEGGU5 - kt*ADEGGU6 + kilGU6 * ADISGU6
         AABSGU6' = kaGU * ADISGU6
 
-        AUNDGU7' = kt * AUNDGU6 - kt * AUNDGU7 -((3*D)/(ρ*r*T)) * AUNDGU7 *(SGU7 - (ADISGU7/VGU))
-        ADISGU7' = kt * ADISGU6 - kt * ADISGU7 +((3*D)/(ρ*r*T)) * AUNDGU7 *(SGU7 - (ADISGU7/VGU)) - kilGU7*ADISGU7 - kaGU*ADISGU7
+        AUNDGU7' = kt * AUNDGU6 - kt * AUNDGU7 -((3*d)/(ρ*r*T)) * AUNDGU7 *(SGU7 - (ADISGU7/VGU))
+        ADISGU7' = kt * ADISGU6 - kt * ADISGU7 +((3*d)/(ρ*r*T)) * AUNDGU7 *(SGU7 - (ADISGU7/VGU)) - kilGU7*ADISGU7 - kaGU*ADISGU7
         ADEGGU7' = kt*ADEGGU6 - kt*ADEGGU7 + kilGU7 * ADISGU7
         AABSGU7' = kaGU * ADISGU7
         
         # Colon compartment
-        AUNDCO' = kt * AUNDGU7 - ktCO * AUNDCO - ((3*D)/(ρ*r*T)) * AUNDCO * (SCO - (ADISCO/VCO))
-        ADISCO' = kt * ADISGU7 - kt * ADISCO + ((3*D)/(ρ*r*T)) * AUNDCO * (SCO - (ADISCO/VCO)) - kilCO*ADISCO -  kaCO*ADISCO + (CP*CLI*VLI*kbil)/( Kp)
+        AUNDCO' = kt * AUNDGU7 - ktCO * AUNDCO - ((3*d)/(ρ*r*T)) * AUNDCO * (SCO - (ADISCO/VCO))
+        ADISCO' = kt * ADISGU7 - kt * ADISCO + ((3*d)/(ρ*r*T)) * AUNDCO * (SCO - (ADISCO/VCO)) - kilCO*ADISCO -  kaCO*ADISCO + (CP*CLI*VLI*kbil)/( Kp)
         ADEGCO' = kt * ADEGGU7 - ktCO * ADEGGU7 + kilCO * ADISCO
         AABSCO' = kaCO * ADISGU7
 
@@ -171,3 +171,4 @@ pbpkmodel = @model begin
         CLI' = (1/VLI)*(QHA*CAR + ((QGU *CGU*R)/( Kp)) + ((QPA *CPA*R)/( Kp)) + ((QSP *CSP*R)/( Kp)) + ((QST *CST*R)/( Kp)) - ((QLI *CLI*R)/( Kp)) - (CLI*CLint)/Kp )
     end
 end
+
