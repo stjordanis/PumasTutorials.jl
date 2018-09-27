@@ -1,4 +1,4 @@
-using PuMaS
+using PuMaS, LinearAlgebra, DiffEqSensitivity
 
 pbpkmodel = @model begin
     @param begin
@@ -75,7 +75,7 @@ pbpkmodel = @model begin
     end
 
     @random begin
-        η ~ MvNormal(eye(2))
+        η ~ MvNormal(Matrix(1.0I,2,2))
     end
 
     @dynamics begin
@@ -171,4 +171,28 @@ pbpkmodel = @model begin
         CLI' = (1/VLI)*(QHA*CAR + ((QGU *CGU*R)/( Kp)) + ((QPA *CPA*R)/( Kp)) + ((QSP *CSP*R)/( Kp)) + ((QST *CST*R)/( Kp)) - ((QLI *CLI*R)/( Kp)) - (CLI*CLint)/Kp )
     end
 end
+
+subject = build_dataset(amt=[250],cmt=[1],time=[0.0])
+param = (GER = 0.066,ρ = 5e-6,r = 1,T = 3e-5,d = 1e-4,SST = 5.5,kilST = 0.5,kaST = 14040.00076,kaGU = 14040.000063,kt = 0.035,SGU1 = 5.5,SGU2 = 5.5,SGU3 = 5.5,SGU4 = 5.5,SGU5 = 5.5,SGU6 = 5.5,SGU7 = 5.5,kilGU1 = 0.0 ,kilGU2 = 0.0,kilGU3 = 0.0,kilGU4 = 0.0,kilGU5 = 0.0,kilGU6 = 0.0,kilGU7 = 0.0,EHR = 0 ,
+        kbil = 0.0,VLI = 1690,Kp = 1.3,ktCO = 0.0007,SCO = 5.5,VCO = 700,kilCO = 0.0007,kaCO = 14040.0000542,CP = 0,QLU = 5233,VLU = 1172,VST1 = 50,VST2 = 154,VGU = 1650,VAR = 1698,AIR = 0.0,VVE = 3396,VIR = 0.0,QBR = 700,VBR = 1450,QLI = 1650,QKI = 1100,QHR = 150,VHR = 310,QMU = 750,VMU = 35000,QAD = 260,
+        VAD = 10000,QSK = 300,VSK = 7800,QBO = 250,VBO = 4579,QTH = 80,VTH = 29,QST = 38,QGU = 1100,Ker = 10.0,QPA = 133,VPA = 77,QSP = 77,VSP = 192,CLint = 0.315,QHA = 302,VKI = 280,R = 1)
+
+y0 = init_random(pbpkmodel, param)
+
+sol_diffeq   = solve(pbpkmodel,subject1,param,y0,parallel_type = PuMaS.SplitThreads)
+
+a = []
+for i in param
+    if i != 0 
+        push!(a,[i-0.05*i,i+ 0.05*i]) 
+    else
+        push!(a,[0.0,1.0])
+    end
+end
+
+function f(p)
+    solve(pbpkmodel,subject1,p,y0,parallel_type = PuMaS.SplitThreads)
+end
+
+m = DiffEqSensitivity.morris_sensitivity(f,a,[10 for i in 1:70],false,len_trajectory=75,total_num_trajectory=1000,num_trajectory=20)
 
