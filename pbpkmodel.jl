@@ -1,4 +1,4 @@
-using PuMaS, LinearAlgebra, DiffEqSensitivity
+using PuMaS, LinearAlgebra, DiffEqSensitivity, Distributions, Optim, QuadGK
 
 pbpkmodel = @model begin
     @param begin
@@ -177,9 +177,18 @@ param = (GER = 0.066,ρ = 5e-6,r = 1,T = 3e-5,d = 1e-4,SST = 5.5,kilST = 0.5,kaS
         kbil = 0.0,VLI = 1690,Kp = 1.3,ktCO = 0.0007,SCO = 5.5,VCO = 700,kilCO = 0.0007,kaCO = 14040.0000542,CP = 0,QLU = 5233,VLU = 1172,VST1 = 50,VST2 = 154,VGU = 1650,VAR = 1698,AIR = 0.0,VVE = 3396,VIR = 0.0,QBR = 700,VBR = 1450,QLI = 1650,QKI = 1100,QHR = 150,VHR = 310,QMU = 750,VMU = 35000,QAD = 260,
         VAD = 10000,QSK = 300,VSK = 7800,QBO = 250,VBO = 4579,QTH = 80,VTH = 29,QST = 38,QGU = 1100,Ker = 10.0,QPA = 133,VPA = 77,QSP = 77,VSP = 192,CLint = 0.315,QHA = 302,VKI = 280,R = 1)
 
-y0 = init_random(pbpkmodel, param)
+y0 = (η = [0.0,0.0])
 
-sol_diffeq   = solve(pbpkmodel,subject1,param,y0,parallel_type = PuMaS.SplitThreads)
+sol_diffeq   = solve(pbpkmodel,subject,param,y0,tspan=(0.0,600.0))
+
+function sensivity_func(pars)
+    y0 = (η = [0.0,0.0])
+    sim = solve(pbpkmodel,subject,pars,y0)
+    f = t -> -sim(t;idxs=3)
+    res = optimize(f,0.0,600.0,Brent())
+    i,e = quadgk(f,0.0,600.0)
+    [-Optim.minimum(res),-250/i]
+end
 
 a = []
 for i in param
@@ -190,9 +199,5 @@ for i in param
     end
 end
 
-function f(p)
-    solve(pbpkmodel,subject1,p,y0,parallel_type = PuMaS.SplitThreads)
-end
-
-m = DiffEqSensitivity.morris_sensitivity(f,a,[10 for i in 1:70],false,len_trajectory=75,total_num_trajectory=1000,num_trajectory=20)
+m = DiffEqSensitivity.morris_sensitivity(sensivity_func,a,[10 for i in 1:70];relative_scale= false,len_trajectory=75,total_num_trajectory=1000,num_trajectory=20)
 
