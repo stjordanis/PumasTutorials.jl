@@ -1,0 +1,262 @@
+---
+title: PuMaS for Multiple Response Pk/Pd
+author: Chris Rackauckas
+date: 22nd October 2018
+---
+
+# Introduction
+
+This is an introduction to PuMaS, a software for pharmacometric modeling and
+simulation. In this tutorial we will show how to simulate from a multiple
+response PK/PD model defined by ordinary differential equations, and how to
+extract information about the solution.
+
+## Installation
+
+Because PuMaS is still unregistered, you will need to give the Git repository
+in order to add the package. To do this, use the command
+`]add https://github.com/UMCTM/PuMaS.jl`. Doing it this way, PuMaS and its
+dependencies will install automatically. If one cannot authenticate for this
+command (since the repository is currently private!), then first clone the
+repository how you please, use `]dev path/to/package`, then then do `]build PuMaS`.
+Using the build command will download and install the dependencies.
+
+## Getting Started
+
+To load the package, use
+
+```julia
+using PuMaS
+```
+
+## Our Example Model
+
+## Using the `@model` Macro
+
+Now let's define a model. A model is defined in an `@model` block. Inside of
+this block we have a few subsections. The first of which is `@param`. In here
+we define what kind of parameters we have. For this model we will define a
+vector parameter `θ` of size 12:
+
+```{julia;eval=false}
+@param begin
+  θ ∈ VectorDomain(12)
+end
+```
+
+Next we define our random effects. The random effects are defined by a distribution
+from Distributions.jl. For more information on defining distributions, please
+see the Distributions.jl documentation. For this tutorial, we wish to have a
+multivariate normal of 11 uncorrelated random effects, so we utilize the syntax:
+
+```{julia;eval=false}
+using LinearAlgebra
+@random begin
+  η ~ MvNormal(Matrix{Float64}(I, 11, 11))
+end
+```
+
+Notice that here we imported `I` from LinearAlgebra and and said that our
+Normal distribution's covariance is said `I`, the identity matrix.
+
+Now we define our pre-processing step in `@pre`. This is where we choose how the
+parameters, random effects, and the covariates collate. We define the values and
+give them a name as follows:
+
+```{julia;eval=false}
+@pre begin
+    Ka1     = θ[1]
+    CL      = θ[2]*exp(η[1])
+    Vc      = θ[3]*exp(η[2])
+    Q       = θ[4]*exp(η[3])
+    Vp      = θ[5]*exp(η[4])
+    Kin     = θ[6]*exp(η[5])
+    Kout    = θ[7]*exp(η[6])
+    IC50    = θ[8]*exp(η[7])
+    IMAX    = θ[9]*exp(η[8])
+    γ       = θ[10]*exp(η[9])
+    Vmax    = θ[11]*exp(η[10])
+    Km      = θ[12]*exp(η[11])
+end
+```
+
+Next we define the `@init` block which gives the inital values for our
+differential equations. Any variable not mentioned in this block is assumed to
+have a zero for its starting value. We wish to only set the starting value for
+`Resp`, and thus we use:
+
+```{julia;eval=false}
+@init begin
+    Resp = θ[6]/θ[7]
+end
+```
+
+Now we define our dynamics. We do this via the `@dynamics` block. Differential
+variables are declared by having a line defining their derivative. For our model,
+we use:
+
+```{julia;eval=false}
+@dynamics begin
+    Ev1'    = -Ka1*Ev1
+    Cent'   =  Ka1*Ev1 - (CL+Vmax/(Km+(Cent/Vc))+Q)*(Cent/Vc)  + Q*(Periph/Vp)
+    Periph' =  Q*(Cent/Vc)  - Q*(Periph/Vp)
+    Resp'   =  Kin*(1-(IMAX*(Cent/Vc)^γ/(IC50^γ+(Cent/Vc)^γ)))  - Kout*Resp
+end
+```
+
+Lastly we utilize the `@derived` macro to define our post-processing. We can
+output values using the following:
+
+```{julia;eval=false}
+@derived begin
+    ev1    = Ev1
+    cp     = Cent / θ[3]
+    periph = Periph
+    resp   = Resp
+end
+```
+
+The `@model` block is all of these together, giving us the following model:
+
+```julia
+using LinearAlgebra
+model = @model begin
+
+    @param begin
+      θ ∈ VectorDomain(12)
+    end
+
+    @random begin
+      η ~ MvNormal(Matrix{Float64}(I, 11, 11))
+    end
+
+    @pre begin
+        Ka1     = θ[1]
+        CL      = θ[2]*exp(η[1])
+        Vc      = θ[3]*exp(η[2])
+        Q       = θ[4]*exp(η[3])
+        Vp      = θ[5]*exp(η[4])
+        Kin     = θ[6]*exp(η[5])
+        Kout    = θ[7]*exp(η[6])
+        IC50    = θ[8]*exp(η[7])
+        IMAX    = θ[9]*exp(η[8])
+        γ       = θ[10]*exp(η[9])
+        Vmax    = θ[11]*exp(η[10])
+        Km      = θ[12]*exp(η[11])
+    end
+
+    @init begin
+        Resp = θ[6]/θ[7]
+    end
+
+    @dynamics begin
+        Ev1'    = -Ka1*Ev1
+        Cent'   =  Ka1*Ev1 - (CL+Vmax/(Km+(Cent/Vc))+Q)*(Cent/Vc)  + Q*(Periph/Vp)
+        Periph' =  Q*(Cent/Vc)  - Q*(Periph/Vp)
+        Resp'   =  Kin*(1-(IMAX*(Cent/Vc)^γ/(IC50^γ+(Cent/Vc)^γ)))  - Kout*Resp
+    end
+
+    @derived begin
+        ev1    = Ev1
+        cp     = Cent / θ[3]
+        periph = Periph
+        resp   = Resp
+    end
+end
+```
+
+## Grabbing Data
+
+In this tutorial we will utilize an example dataset in NMTRAN form. To bring in
+data we utilize the `process_nmtran` function. The first argument is the path
+to the dataset. The path to our example data is
+`example_nmtran_data("event_data/data23")`. Next we give it the name of the
+covariate from the dataset. Our example data has no covariates, so we note this
+as `[]`. Lastly, we declare the names of the columns which correspond to the
+observation variables. In this dataset, we have observations for all of
+`[:ev1,:cp,:periph,:resp]`. Together, this gives us the command:
+
+```julia
+pop = process_nmtran(example_nmtran_data("event_data/data23"),[], [:ev1,:cp,:periph,:resp])
+```
+
+That gives us a whole population. If we wish to grab a subject out of the population,
+we simply index the population. Let's grab the first subject:
+
+```julia
+subject = pop[1]
+```
+
+## Running a Simulation
+
+The main function for running a simulation is `simobs`. `simobs` on a population
+simulates all of the population (in parallel), while `simobs` on a subject
+simulates just that subject. If we wish to change the parameters from the
+initialized values, then we pass them in. Let's simulate subject 1 with a set
+of chosen parameters:
+
+```julia
+x0 = (θ = [
+              1, # Ka1  Absorption rate constant 1 (1/time)
+              1, # CL   Clearance (volume/time)
+              20, # Vc   Central volume (volume)
+              2, # Q    Inter-compartmental clearance (volume/time)
+              10, # Vp   Peripheral volume of distribution (volume)
+              10, # Kin  Response in rate constant (1/time)
+              2, # Kout Response out rate constant (1/time)
+              2, # IC50 Concentration for 50% of max inhibition (mass/volume)
+              1, # IMAX Maximum inhibition
+              1, # γ    Emax model sigmoidicity
+              0, # Vmax Maximum reaction velocity (mass/time)
+              2  # Km   Michaelis constant (mass/volume)
+              ],)
+
+sim = simobs(model, subject, x0)
+```
+
+Notice that in our model we said that there was a single parameter `θ` so our
+input parameter is a named tuple with just the name `θ`. When we only give
+the parameters, the random effects are automatically sampled from their
+distributions. If we wish to prescribe a value for the random effects, we pass
+initial values similarly:
+
+```julia
+y0 = (η = zeros(11),)
+sim = simobs(model, subject, x0, y0)
+```
+
+The points which are saved automatically match the observations from the
+dataset. If you wish to change the saving time points, or did not have observations
+in your dataset, pass the keyword argument `obstimes`. For example, let's save
+at every `0.1` hours and run the simulation for 19 hours:
+
+```julia
+sim = simobs(model, subject, x0, y0, obstimes = 0:0.1:19)
+```
+
+## Handling the SimulatedObservations
+
+The resulting `SimulatedObservations` type has two fields. `sim.times` is an
+array of time points for which the data was saved. `sim.derived` is the result
+of the derived variables. From there, the derived variabes are accessed by name.
+For example,
+
+```julia
+sim.derived.cp
+```
+
+is the array of `cp` values at the associated time points. We can turn this
+into a DataFrame via using the `DataFrame` command:
+
+```julia
+DataFrame(sim.derived)
+```
+
+From there, any Julia tools can be used to analyze these arrays and DataFrames.
+For example, if we wish the plot the result of `ev1` over time, we'd use the
+following:
+
+```julia
+using Plots
+plot(sim.times,sim.derived.ev1)
+```
