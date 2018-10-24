@@ -1,14 +1,16 @@
 module PuMaSTutorials
 
-using Weave
+using Weave: weave
 
-tutorial_directory = joinpath(@__DIR__,"..","tutorials")
-
-function weave_all()
-  tmp = joinpath(tutorial_directory,"multiple_response/multiple_response.jmd")
-  #weave(tmp,doctype="pandoc",out_path=:pwd)
-  weave(tmp,doctype = "md2html",out_path=:pwd)
-  weave(tmp,doctype="md2pdf",out_path=:pwd)
+function weave_all(file)
+    jmd = joinpath("tutorials", file)
+    formats = map(dt -> joinpath(dt, replace(file, ".jmd" => string(".", dt))),
+                  intersect(readdir(), ("html", "pdf", "md", "rst", "tex")))
+    foreach(format -> weave(jmd, out_path = format), formats)
+    return nothing
 end
+
+foreach(weave_all,
+        (file for file in readdir("tutorials") if endswith(file, ".jmd")))
 
 end
