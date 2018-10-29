@@ -827,10 +827,6 @@ pre.hljl > span.hljl-gt { }
 </pre>
 
 
-<pre class="julia-error">
-ERROR: UndefVarError: example_nmtran_data not defined
-</pre>
-
 
 <p>That gives us a whole population. If we wish to grab a subject out of the population, we simply index the population. Let&#39;s grab the first subject:</p>
 
@@ -839,10 +835,6 @@ ERROR: UndefVarError: example_nmtran_data not defined
 <span class='hljl-n'>subject</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>pop</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>]</span>
 </pre>
 
-
-<pre class="julia-error">
-ERROR: UndefVarError: pop not defined
-</pre>
 
 
 <h2>Running a Simulation</h2>
@@ -869,10 +861,6 @@ ERROR: UndefVarError: pop not defined
 </pre>
 
 
-<pre class="julia-error">
-ERROR: UndefVarError: subject not defined
-</pre>
-
 
 <p>Notice that in our model we said that there was a single parameter <code>θ</code> so our input parameter is a named tuple with just the name <code>θ</code>. When we only give the parameters, the random effects are automatically sampled from their distributions. If we wish to prescribe a value for the random effects, we pass initial values similarly:</p>
 
@@ -883,10 +871,6 @@ ERROR: UndefVarError: subject not defined
 </pre>
 
 
-<pre class="julia-error">
-ERROR: UndefVarError: subject not defined
-</pre>
-
 
 <p>The points which are saved automatically match the observations from the dataset. If you wish to change the saving time points, or did not have observations in your dataset, pass the keyword argument <code>obstimes</code>. For example, let&#39;s save at every <code>0.1</code> hours and run the simulation for 19 hours:</p>
 
@@ -895,10 +879,6 @@ ERROR: UndefVarError: subject not defined
 <span class='hljl-n'>sim</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>simobs</span><span class='hljl-p'>(</span><span class='hljl-n'>model</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>subject</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>x0</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>y0</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>obstimes</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>0</span><span class='hljl-oB'>:</span><span class='hljl-nfB'>0.1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>19</span><span class='hljl-p'>)</span>
 </pre>
 
-
-<pre class="julia-error">
-ERROR: UndefVarError: subject not defined
-</pre>
 
 
 <h2>Handling the SimulatedObservations</h2>
@@ -910,8 +890,28 @@ ERROR: UndefVarError: subject not defined
 </pre>
 
 
-<pre class="julia-error">
-ERROR: UndefVarError: sim not defined
+<pre class="hljl">
+191-element Array&#123;Float64,1&#125;:
+ 0.0                
+ 0.47221914014817434
+ 0.892563879689724  
+ 1.2661629995273587 
+ 1.5976533425197088 
+ 1.8912202652117394 
+ 2.1506525123265425 
+ 2.379365921095179  
+ 2.5804446918538138 
+ 2.7566848994999047 
+ ⋮                  
+ 1.7208030796955243 
+ 1.7151514165326058 
+ 1.709525592732175  
+ 1.7039252684684807 
+ 1.698350113429305  
+ 1.6927998068159575 
+ 1.6872740373432795 
+ 1.6817725009423412 
+ 1.6762949074483278
 </pre>
 
 
@@ -923,10 +923,8 @@ ERROR: UndefVarError: sim not defined
 </pre>
 
 
-<pre class="julia-error">
-ERROR: UndefVarError: sim not defined
-</pre>
 
+<table class="data-frame"><thead><tr><th></th><th>ev1</th><th>cp</th><th>periph</th><th>resp</th></tr><tr><th></th><th>Float64</th><th>Float64</th><th>Float64</th><th>Float64</th></tr></thead><tbody><tr><th>1</th><td>0.0</td><td>0.0</td><td>0.0</td><td>5.0</td></tr><tr><th>2</th><td>90.4837</td><td>0.472219</td><td>0.0478097</td><td>4.90282</td></tr><tr><th>3</th><td>81.8731</td><td>0.892564</td><td>0.182936</td><td>4.68846</td></tr><tr><th>4</th><td>74.0818</td><td>1.26616</td><td>0.393897</td><td>4.42606</td></tr><tr><th>5</th><td>67.032</td><td>1.59765</td><td>0.6704</td><td>4.15103</td></tr><tr><th>6</th><td>60.6531</td><td>1.89122</td><td>1.00324</td><td>3.88186</td></tr><tr><th>7</th><td>54.8811</td><td>2.15065</td><td>1.38416</td><td>3.62842</td></tr><tr><th>8</th><td>49.6585</td><td>2.37937</td><td>1.80581</td><td>3.3952</td></tr><tr><th>9</th><td>44.9329</td><td>2.58044</td><td>2.26161</td><td>3.18391</td></tr><tr><th>10</th><td>40.657</td><td>2.75668</td><td>2.74568</td><td>2.99469</td></tr><tr><th>11</th><td>36.7879</td><td>2.91061</td><td>3.2528</td><td>2.82656</td></tr><tr><th>12</th><td>33.287</td><td>3.04448</td><td>3.77834</td><td>2.67809</td></tr><tr><th>13</th><td>30.1194</td><td>3.16035</td><td>4.31818</td><td>2.54768</td></tr><tr><th>14</th><td>27.2532</td><td>3.26008</td><td>4.86862</td><td>2.43359</td></tr><tr><th>15</th><td>24.6596</td><td>3.34535</td><td>5.42643</td><td>2.33411</td></tr><tr><th>16</th><td>22.3129</td><td>3.41765</td><td>5.98878</td><td>2.2477</td></tr><tr><th>17</th><td>20.1896</td><td>3.47835</td><td>6.55316</td><td>2.17288</td></tr><tr><th>18</th><td>18.2684</td><td>3.52868</td><td>7.11734</td><td>2.10831</td></tr><tr><th>19</th><td>16.5299</td><td>3.56976</td><td>7.67934</td><td>2.0527</td></tr><tr><th>20</th><td>14.9567</td><td>3.60258</td><td>8.2375</td><td>2.00499</td></tr><tr><th>21</th><td>13.5333</td><td>3.62802</td><td>8.79038</td><td>1.96429</td></tr><tr><th>22</th><td>12.2456</td><td>3.6469</td><td>9.33671</td><td>1.92974</td></tr><tr><th>23</th><td>11.0804</td><td>3.65996</td><td>9.87538</td><td>1.90057</td></tr><tr><th>24</th><td>10.026</td><td>3.66786</td><td>10.4054</td><td>1.87608</td></tr><tr><th>&vellip;</th><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td></tr></tbody></table>
 
 <p>From there, any Julia tools can be used to analyze these arrays and DataFrames. For example, if we wish the plot the result of <code>ev1</code> over time, we&#39;d use the following:</p>
 
@@ -937,10 +935,7 @@ ERROR: UndefVarError: sim not defined
 </pre>
 
 
-<pre class="julia-error">
-ERROR: UndefVarError: sim not defined
-</pre>
-
+<img src="data:image/png;base64,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"  />
 
 
 
@@ -948,7 +943,7 @@ ERROR: UndefVarError: sim not defined
           <div class="footer"><p>
           Published from <a href="multiple_response.jmd">multiple_response.jmd</a> using
           <a href="http://github.com/mpastell/Weave.jl">Weave.jl</a>
-           on 2018-10-24.
+           on 2018-10-29.
           <p></div>
 
 

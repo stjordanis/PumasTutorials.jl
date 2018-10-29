@@ -1,0 +1,246 @@
+---
+title: Data Generation for PuMaS
+author: José Bayoán Santiago Calderón
+date: 2018-10-24
+---
+
+# Introduction
+
+This introduction to data generation for PuMaS will cover how to specify subjects
+and populations to use with PuMaS. You will learn how to read data, specify dosage
+regimens, covariates, observations, and generate populations to use with the software.
+
+## Installation
+
+Because PuMaS is still unregistered, you will need to give the Git repository
+in order to add the package. To do this, use the command
+`]add https://github.com/UMCTM/PuMaS.jl`. Doing it this way, PuMaS and its
+dependencies will install automatically. If one cannot authenticate for this
+command (since the repository is currently private!), then first clone the
+repository how you please, use `]add path/to/PuMaS.jl`, then then do `]build PuMaS`.
+Using the build command will download and install the dependencies.
+
+## Subjects
+
+PuMaS unit of observation are subjects.
+
+Each `Subject` is an individual composed of:
+
+  - `id`: an unique identifier
+  - `cvs`: covariates
+  - `obs`: observations
+  - `evs`: events
+
+## Population
+
+A Population is a collection of subjects.
+
+## NMTRAN data format
+
+The NMTRAN schema uses a single tabular representation to describe a `Population`
+
+Consider a NMTRAN text file. We can read the data using the CSV package to read it,
+and the DataFrames package to work with the tabular representation.
+
+Load the packages through `using`
+
+```julia
+using CSV, DataFrames, PuMaS
+using DataFrames: head
+```
+
+We'll be working with an example NMTRAN data set in PuMaS
+
+```julia
+nmtran_data = example_nmtran_data("data1")
+show(nmtran_data)
+```
+
+We can read the text file using the `CSV` and `DataFrames` packages
+
+```julia
+data = DataFrame(CSV.File(nmtran_data)) # Make a DataFrame from the text file.
+head(data) # Show the first six rows
+```
+
+One can obtain a `Population` from a NMTRAN table through the `process_nmtran` function.
+
+```julia
+using PuMaS
+@doc process_nmtran
+```
+
+Based on the documentation for `process_nmtran` it takes a `DataFrame`, an
+optional list of covariates, and a list of dependent variables which `[:dv]` as
+the default value. In our case, we want to specify `sex` and `wt` as covariates.
+
+```julia
+population = process_nmtran(data, [:sex, :wt])
+show(population)
+```
+
+Just like that we have read NMTRAN data and ready it for analysis using PuMaS.
+
+## Interactive
+
+PuMaS offers an alternative to the NMTRAN schema is to generate data
+
+Let us simulate the some values for glucose as out observations
+
+```julia
+using Distributions
+distribution = Normal(5.5, 1.5)
+show(distribution)
+```
+
+```julia
+glucose = rand(distribution, 5) # Five draws from the distribution
+```
+
+```julia
+obs = DataFrame(time = 0:8:32, # Makes a sequence starting at 0 by 8 until 32
+                glucose = glucose)
+head(obs)
+```
+
+Next we generate the covariates for our subject
+
+```julia
+cvs = (sex = "male", age = 25)
+show(cvs)
+```
+
+Lastly, we can generate a series of dosage events through a `DosageRegimen`
+
+```julia
+@doc DosageRegimen
+```
+
+The first argument is an amount. `addl` specifies additional dosages and `ii`
+the interdose interval.
+
+```julia
+evs = DosageRegimen(5, addl = 3, ii = 8u"hr")
+head(evs.data)
+```
+
+This regimen specifies 4 dosage events of five milligrams starting at `time = 0` with
+an interdose interval of 8 hours
+
+We can now fully specify a subject bringing the covariates, observations, and regimen
+
+```julia
+subject = Subject(cvs = cvs, obs = obs, evs = evs)
+show(subject)
+```
+
+We can inspect the observations through
+```julia
+for obs in subject.observations
+    println(obs)
+end
+```
+
+Likewise for the dosage events
+```julia
+for evs in subject.events
+    println(evs)
+end
+```
+
+We can build more complex regimens by passing a collection of arguments
+
+```julia
+regimens = DosageRegimen([0.005u"g", 0.0025u"g"], time = [0, 90u"minute"])
+head(regimens.data)
+```
+
+Given that we have specified the amount in grams, these are converted to milligrams
+
+Likewise, for time which was specified in minutes, these are converted to hours.
+
+```julia
+subject2 = Subject(id = 2,
+                   evs = regimens)
+show(subject2)
+```
+
+This `Subject` does not have any observations or covariates.
+
+The dosage regimen can be inspected through
+
+```julia
+for evs in subject2.events
+    println(evs)
+end
+```
+
+One may construct a `Population` by passing a collection of subjects
+
+```julia
+@doc Population
+```
+
+There will be six subjects
+
+```julia
+ids = 1:6 # There will be 6 subject 1, 2, 3, 4, 5, 6
+```
+
+We will simulate the covariates for these six subjects
+
+```julia
+choose_sex_age() = (sex = rand(["male", "female"]),
+                    age = rand(21:25))
+```
+
+`choose_sex_age` will randomly choose a sex and an age between 21-25 years
+
+We can make a list with covariates for six subjects through a list comprehension
+
+```julia
+cvs = [ choose_sex_age() for i in 1:6 ]
+show(cvs)
+```
+
+We can generate a table with the time and observations for the dependent variable
+for each of the six subjects
+
+```julia
+obs = [ DataFrame(time = 0:4:8, dv = rand(3)) for id in 1:6 ]
+head.(obs[1:2])
+```
+
+We will assign one regimen to the first three and another to the last three
+
+```julia
+regimen1 = DosageRegimen(15, addl = 3, ii = 4)
+regimen2 = DosageRegimen(10, addl = 4, ii = 3)
+regimens = vcat(repeat([regimen1], 3),
+                repeat([regimen2], 3))
+```
+
+We can now generate the six subjects using a
+
+```julia
+
+subjects = Subject[]
+for (id, cvs, evs) in zip(ids, cvs, regimens)
+    global subjects
+    push!(subjects, Subject(id = id, cvs = cvs, evs = evs))
+end
+show(subjects)
+```
+
+Lastly, we can make a population with comprised of these subjects
+
+```julia
+population = Population(subjects)
+show(population)
+```
+
+```julia
+for subject in population
+    println(subject)
+end
+```

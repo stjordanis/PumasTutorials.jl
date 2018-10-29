@@ -3,7 +3,7 @@
 <HEAD>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>Data Generation</title>
+  <title>Data Generation for PuMaS</title>
   
 
   <script type="text/x-mathjax-config">
@@ -660,33 +660,63 @@ pre.hljl > span.hljl-gt { }
         <div class = "col-md-12 twelve columns">
 
           <div class="title">
-            <h1 class="title">Data Generation</h1>
-            
-            
+            <h1 class="title">Data Generation for PuMaS</h1>
+            <h5>José Bayoán Santiago Calderón</h5>
+            <h5>2018-10-24</h5>
           </div>
 
-          <h1>Subjects</h1>
+          <h1>Introduction</h1>
+<p>This introduction to data generation for PuMaS will cover how to specify subjects and populations to use with PuMaS. You will learn how to read data, specify dosage regimens, covariates, observations, and generate populations to use with the software.</p>
+<h2>Installation</h2>
+<p>Because PuMaS is still unregistered, you will need to give the Git repository in order to add the package. To do this, use the command <code>&#93;add https://github.com/UMCTM/PuMaS.jl</code>. Doing it this way, PuMaS and its dependencies will install automatically. If one cannot authenticate for this command &#40;since the repository is currently private&#33;&#41;, then first clone the repository how you please, use <code>&#93;add path/to/PuMaS.jl</code>, then then do <code>&#93;build PuMaS</code>. Using the build command will download and install the dependencies.</p>
+<h2>Subjects</h2>
 <p>PuMaS unit of observation are subjects.</p>
 <p>Each <code>Subject</code> is an individual composed of:</p>
 <ul>
-<li><p><code>id</code>: an unique identifier &#40;<code>&lt;:Integer</code>&#41;</p>
+<li><p><code>id</code>: an unique identifier</p>
 </li>
-<li><p><code>cvs</code>: covariates &#40;<code>&lt;:NamedTuple</code>&#41;</p>
+<li><p><code>cvs</code>: covariates</p>
 </li>
-<li><p><code>obs</code>: observations &#40;<code>&lt;:AbstractVector&#123;&lt;:Observation&#125;</code>&#41;</p>
+<li><p><code>obs</code>: observations</p>
 </li>
-<li><p><code>evs</code>: events &#40;<code>&lt;:AbstractVector&#123;&lt;:Event&#125;</code>&#41;</p>
+<li><p><code>evs</code>: events</p>
 </li>
 </ul>
-<h1>NMTRAN data format</h1>
+<h2>Population</h2>
+<p>A Population is a collection of subjects.</p>
+<h2>NMTRAN data format</h2>
 <p>The NMTRAN schema uses a single tabular representation to describe a <code>Population</code></p>
-<p>A <code>Population</code> is a collection of subjects</p>
+<p>Consider a NMTRAN text file. We can read the data using the CSV package to read it, and the DataFrames package to work with the tabular representation.</p>
+<p>Load the packages through <code>using</code></p>
 
 
 <pre class='hljl'>
-<span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>DataFrames</span><span class='hljl-t'>
-</span><span class='hljl-n'>data</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span><span class='hljl-oB'>.</span><span class='hljl-nf'>File</span><span class='hljl-p'>(</span><span class='hljl-s'>&quot;data/nmtran.csv&quot;</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-oB'>|&gt;</span><span class='hljl-t'> </span><span class='hljl-n'>DataFrame</span><span class='hljl-t'>
-</span><span class='hljl-nf'>head</span><span class='hljl-p'>(</span><span class='hljl-n'>data</span><span class='hljl-p'>)</span>
+<span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>DataFrames</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>PuMaS</span><span class='hljl-t'>
+</span><span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>DataFrames</span><span class='hljl-oB'>:</span><span class='hljl-t'> </span><span class='hljl-n'>head</span>
+</pre>
+
+
+
+<p>We&#39;ll be working with an example NMTRAN data set in PuMaS</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>nmtran_data</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>example_nmtran_data</span><span class='hljl-p'>(</span><span class='hljl-s'>&quot;data1&quot;</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-nf'>show</span><span class='hljl-p'>(</span><span class='hljl-n'>nmtran_data</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="hljl">
+&quot;/Users/jbsc/.julia/packages/PuMaS/Zktty/src/../examples/data1.csv&quot;
+</pre>
+
+
+<p>We can read the text file using the <code>CSV</code> and <code>DataFrames</code> packages</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>data</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>DataFrame</span><span class='hljl-p'>(</span><span class='hljl-n'>CSV</span><span class='hljl-oB'>.</span><span class='hljl-nf'>File</span><span class='hljl-p'>(</span><span class='hljl-n'>nmtran_data</span><span class='hljl-p'>))</span><span class='hljl-t'> </span><span class='hljl-cs'># Make a DataFrame from the text file.</span><span class='hljl-t'>
+</span><span class='hljl-nf'>head</span><span class='hljl-p'>(</span><span class='hljl-n'>data</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-cs'># Show the first six rows</span>
 </pre>
 
 
@@ -703,7 +733,8 @@ pre.hljl > span.hljl-gt { }
 
 
 
-<div class="markdown"><pre><code>process_nmtran&#40;data, cvs&#61;&#91;&#93;, dvs&#61;&#91;:dv&#93;&#41;</code></pre>
+<div class="markdown"><pre><code>process_nmtran&#40;filename, cvs&#61;&#91;&#93;, dvs&#61;&#91;:dv&#93;&#41;
+process_nmtran&#40;data, cvs&#61;&#91;&#93;, dvs&#61;&#91;:dv&#93;&#41;</code></pre>
 <p>Import NMTRAN-formatted data.</p>
 <ul>
 <li><p><code>cvs</code> covariates specified by either names or column numbers</p>
@@ -714,6 +745,8 @@ pre.hljl > span.hljl-gt { }
 
 
 </div>
+
+<p>Based on the documentation for <code>process_nmtran</code> it takes a <code>DataFrame</code>, an optional list of covariates, and a list of dependent variables which <code>&#91;:dv&#93;</code> as the default value. In our case, we want to specify <code>sex</code> and <code>wt</code> as covariates.</p>
 
 
 <pre class='hljl'>
@@ -730,18 +763,89 @@ Population
 </pre>
 
 
-<h1>Interactive</h1>
-<p>PuMaS offers an alternative to the NMTRAN schema is to generate the <code>Subject</code> specification.</p>
+<p>Just like that we have read NMTRAN data and ready it for analysis using PuMaS.</p>
+<h2>Interactive</h2>
+<p>PuMaS offers an alternative to the NMTRAN schema is to generate data</p>
+<p>Let us simulate the some values for glucose as out observations</p>
 
 
 <pre class='hljl'>
-<span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>Random</span><span class='hljl-oB'>:</span><span class='hljl-t'> </span><span class='hljl-n'>seed!</span><span class='hljl-t'>
-</span><span class='hljl-nf'>seed!</span><span class='hljl-p'>(</span><span class='hljl-ni'>0</span><span class='hljl-p'>)</span><span class='hljl-t'>
-</span><span class='hljl-n'>obs</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>DataFrame</span><span class='hljl-p'>(</span><span class='hljl-n'>time</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>0</span><span class='hljl-oB'>:</span><span class='hljl-ni'>8</span><span class='hljl-oB'>:</span><span class='hljl-ni'>32</span><span class='hljl-p'>,</span><span class='hljl-t'>
-                </span><span class='hljl-n'>glucose</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>rand</span><span class='hljl-p'>(</span><span class='hljl-nfB'>3.9</span><span class='hljl-oB'>:</span><span class='hljl-nfB'>0.1</span><span class='hljl-oB'>:</span><span class='hljl-nfB'>7.1</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>5</span><span class='hljl-p'>))</span><span class='hljl-t'>
-</span><span class='hljl-n'>cvs</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-p'>(</span><span class='hljl-n'>sex</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-s'>&quot;male&quot;</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>age</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>25</span><span class='hljl-p'>)</span><span class='hljl-t'>
-</span><span class='hljl-n'>evs</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>DosageRegimen</span><span class='hljl-p'>(</span><span class='hljl-ni'>5</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>addl</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>3</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ii</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>8</span><span class='hljl-so'>u&quot;hr&quot;</span><span class='hljl-p'>)</span><span class='hljl-t'>
-</span><span class='hljl-n'>subject</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>Subject</span><span class='hljl-p'>(</span><span class='hljl-n'>cvs</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>cvs</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>obs</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>obs</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>evs</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>evs</span><span class='hljl-p'>)</span><span class='hljl-t'>
+<span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>Distributions</span><span class='hljl-t'>
+</span><span class='hljl-n'>distribution</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>Normal</span><span class='hljl-p'>(</span><span class='hljl-nfB'>5.5</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nfB'>1.5</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-nf'>show</span><span class='hljl-p'>(</span><span class='hljl-n'>distribution</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="hljl">
+Normal&#123;Float64&#125;&#40;μ&#61;5.5, σ&#61;1.5&#41;
+</pre>
+
+
+
+<pre class='hljl'>
+<span class='hljl-n'>glucose</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>rand</span><span class='hljl-p'>(</span><span class='hljl-n'>distribution</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>5</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-cs'># Five draws from the distribution</span>
+</pre>
+
+
+
+
+<pre class='hljl'>
+<span class='hljl-n'>obs</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>DataFrame</span><span class='hljl-p'>(</span><span class='hljl-n'>time</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>0</span><span class='hljl-oB'>:</span><span class='hljl-ni'>8</span><span class='hljl-oB'>:</span><span class='hljl-ni'>32</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-cs'># Makes a sequence starting at 0 by 8 until 32</span><span class='hljl-t'>
+                </span><span class='hljl-n'>glucose</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>glucose</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-nf'>head</span><span class='hljl-p'>(</span><span class='hljl-n'>obs</span><span class='hljl-p'>)</span>
+</pre>
+
+
+
+<table class="data-frame"><thead><tr><th></th><th>time</th><th>glucose</th></tr><tr><th></th><th>Int64</th><th>Float64</th></tr></thead><tbody><tr><th>1</th><td>0</td><td>5.59314</td></tr><tr><th>2</th><td>8</td><td>3.05107</td></tr><tr><th>3</th><td>16</td><td>5.39095</td></tr><tr><th>4</th><td>24</td><td>6.82169</td></tr><tr><th>5</th><td>32</td><td>4.53052</td></tr></tbody></table>
+
+<p>Next we generate the covariates for our subject</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>cvs</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-p'>(</span><span class='hljl-n'>sex</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-s'>&quot;male&quot;</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>age</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>25</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-nf'>show</span><span class='hljl-p'>(</span><span class='hljl-n'>cvs</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="hljl">
+&#40;sex &#61; &quot;male&quot;, age &#61; 25&#41;
+</pre>
+
+
+<p>Lastly, we can generate a series of dosage events through a <code>DosageRegimen</code></p>
+
+
+<pre class='hljl'>
+<span class='hljl-nd'>@doc</span><span class='hljl-t'> </span><span class='hljl-n'>DosageRegimen</span>
+</pre>
+
+
+
+<div class="markdown"><pre><code>DosageRegimen</code></pre>
+<p>Lazy representation of a series of Events.</p>
+
+
+</div>
+
+<p>The first argument is an amount. <code>addl</code> specifies additional dosages and <code>ii</code> the interdose interval.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>evs</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>DosageRegimen</span><span class='hljl-p'>(</span><span class='hljl-ni'>5</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>addl</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>3</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ii</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>8</span><span class='hljl-so'>u&quot;hr&quot;</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-nf'>head</span><span class='hljl-p'>(</span><span class='hljl-n'>evs</span><span class='hljl-oB'>.</span><span class='hljl-n'>data</span><span class='hljl-p'>)</span>
+</pre>
+
+
+
+<table class="data-frame"><thead><tr><th></th><th>time</th><th>cmt</th><th>amt</th><th>evid</th><th>ii</th><th>addl</th><th>rate</th><th>ss</th></tr><tr><th></th><th>Float64</th><th>Int64</th><th>Float64</th><th>Int8</th><th>Float64</th><th>Int64</th><th>Float64</th><th>Int8</th></tr></thead><tbody><tr><th>1</th><td>0.0</td><td>1</td><td>5.0</td><td>1</td><td>8.0</td><td>3</td><td>0.0</td><td>0</td></tr></tbody></table>
+
+<p>This regimen specifies 4 dosage events of five milligrams starting at <code>time &#61; 0</code> with an interdose interval of 8 hours</p>
+<p>We can now fully specify a subject bringing the covariates, observations, and regimen</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>subject</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>Subject</span><span class='hljl-p'>(</span><span class='hljl-n'>cvs</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>cvs</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>obs</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>obs</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>evs</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>evs</span><span class='hljl-p'>)</span><span class='hljl-t'>
 </span><span class='hljl-nf'>show</span><span class='hljl-p'>(</span><span class='hljl-n'>subject</span><span class='hljl-p'>)</span>
 </pre>
 
@@ -772,31 +876,31 @@ Observation
   time of measurement &#61; 0.0
   compartment &#61; 1
   measurements
-    glucose &#61; 3.9
+    glucose &#61; 5.593144498239771
 
 Observation
   time of measurement &#61; 8.0
   compartment &#61; 1
   measurements
-    glucose &#61; 5.7
+    glucose &#61; 3.0510689198445204
 
 Observation
   time of measurement &#61; 16.0
   compartment &#61; 1
   measurements
-    glucose &#61; 6.4
+    glucose &#61; 5.390945490373256
 
 Observation
   time of measurement &#61; 24.0
   compartment &#61; 1
   measurements
-    glucose &#61; 5.5
+    glucose &#61; 6.821688733569298
 
 Observation
   time of measurement &#61; 32.0
   compartment &#61; 1
   measurements
-    glucose &#61; 3.9
+    glucose &#61; 4.530522844271624
 </pre>
 
 
@@ -845,17 +949,20 @@ Dose event
 </pre>
 
 
-<p>We can generate more complex dosage regimens by combining regimens.</p>
+<p>We can build more complex regimens by passing a collection of arguments</p>
 
 
 <pre class='hljl'>
-<span class='hljl-n'>regimens</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>DosageRegimen</span><span class='hljl-p'>([</span><span class='hljl-nfB'>0.5</span><span class='hljl-so'>u&quot;g&quot;</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nfB'>0.25</span><span class='hljl-so'>u&quot;g&quot;</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>time</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-p'>[</span><span class='hljl-ni'>0</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>90</span><span class='hljl-so'>u&quot;minute&quot;</span><span class='hljl-p'>])</span><span class='hljl-t'>
+<span class='hljl-n'>regimens</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>DosageRegimen</span><span class='hljl-p'>([</span><span class='hljl-nfB'>0.005</span><span class='hljl-so'>u&quot;g&quot;</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nfB'>0.0025</span><span class='hljl-so'>u&quot;g&quot;</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>time</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-p'>[</span><span class='hljl-ni'>0</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>90</span><span class='hljl-so'>u&quot;minute&quot;</span><span class='hljl-p'>])</span><span class='hljl-t'>
 </span><span class='hljl-nf'>head</span><span class='hljl-p'>(</span><span class='hljl-n'>regimens</span><span class='hljl-oB'>.</span><span class='hljl-n'>data</span><span class='hljl-p'>)</span>
 </pre>
 
 
 
-<table class="data-frame"><thead><tr><th></th><th>time</th><th>cmt</th><th>amt</th><th>evid</th><th>ii</th><th>addl</th><th>rate</th><th>ss</th></tr><tr><th></th><th>Float64</th><th>Int64</th><th>Float64</th><th>Int8</th><th>Float64</th><th>Int64</th><th>Float64</th><th>Int8</th></tr></thead><tbody><tr><th>1</th><td>0.0</td><td>1</td><td>500.0</td><td>1</td><td>0.0</td><td>0</td><td>0.0</td><td>0</td></tr><tr><th>2</th><td>1.5</td><td>1</td><td>250.0</td><td>1</td><td>0.0</td><td>0</td><td>0.0</td><td>0</td></tr></tbody></table>
+<table class="data-frame"><thead><tr><th></th><th>time</th><th>cmt</th><th>amt</th><th>evid</th><th>ii</th><th>addl</th><th>rate</th><th>ss</th></tr><tr><th></th><th>Float64</th><th>Int64</th><th>Float64</th><th>Int8</th><th>Float64</th><th>Int64</th><th>Float64</th><th>Int8</th></tr></thead><tbody><tr><th>1</th><td>0.0</td><td>1</td><td>5.0</td><td>1</td><td>0.0</td><td>0</td><td>0.0</td><td>0</td></tr><tr><th>2</th><td>1.5</td><td>1</td><td>2.5</td><td>1</td><td>0.0</td><td>0</td><td>0.0</td><td>0</td></tr></tbody></table>
+
+<p>Given that we have specified the amount in grams, these are converted to milligrams</p>
+<p>Likewise, for time which was specified in minutes, these are converted to hours.</p>
 
 
 <pre class='hljl'>
@@ -874,7 +981,7 @@ Subject
 
 
 <p>This <code>Subject</code> does not have any observations or covariates.</p>
-<p>The dosage regimen can be inspected through.</p>
+<p>The dosage regimen can be inspected through</p>
 
 
 <pre class='hljl'>
@@ -886,7 +993,7 @@ Subject
 
 <pre class="hljl">
 Dose event
-  dose amount &#61; 500.0
+  dose amount &#61; 5.0
   dose time &#61; 0.0
   compartment &#61; 1
   instantaneous
@@ -894,7 +1001,7 @@ Dose event
   infusion start time &#61; 0.0
 
 Dose event
-  dose amount &#61; 250.0
+  dose amount &#61; 2.5
   dose time &#61; 1.5
   compartment &#61; 1
   instantaneous
@@ -903,9 +1010,7 @@ Dose event
 </pre>
 
 
-<p>Since we have specified the amount values as grams, these are automatically converted to milligrams.</p>
-<p>In a similar manner, the time specified in minutes has been automatically converted to hours.</p>
-<p>One may construct a <code>Population</code> throught the constructor.</p>
+<p>One may construct a <code>Population</code> by passing a collection of subjects</p>
 
 
 <pre class='hljl'>
@@ -920,17 +1025,141 @@ Dose event
 
 </div>
 
+<p>There will be six subjects</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>ids</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>6</span><span class='hljl-t'> </span><span class='hljl-cs'># There will be 6 subject 1, 2, 3, 4, 5, 6</span>
+</pre>
+
+
+
+<p>We will simulate the covariates for these six subjects</p>
+
+
+<pre class='hljl'>
+<span class='hljl-nf'>choose_sex_age</span><span class='hljl-p'>()</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-p'>(</span><span class='hljl-n'>sex</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>rand</span><span class='hljl-p'>([</span><span class='hljl-s'>&quot;male&quot;</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-s'>&quot;female&quot;</span><span class='hljl-p'>]),</span><span class='hljl-t'>
+                    </span><span class='hljl-n'>age</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>rand</span><span class='hljl-p'>(</span><span class='hljl-ni'>21</span><span class='hljl-oB'>:</span><span class='hljl-ni'>25</span><span class='hljl-p'>))</span>
+</pre>
+
+
+
+<p><code>choose_sex_age</code> will randomly choose a sex and an age between 21-25 years</p>
+<p>We can make a list with covariates for six subjects through a list comprehension</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>cvs</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-p'>[</span><span class='hljl-t'> </span><span class='hljl-nf'>choose_sex_age</span><span class='hljl-p'>()</span><span class='hljl-t'> </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>6</span><span class='hljl-t'> </span><span class='hljl-p'>]</span><span class='hljl-t'>
+</span><span class='hljl-nf'>show</span><span class='hljl-p'>(</span><span class='hljl-n'>cvs</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="hljl">
+NamedTuple&#123;&#40;:sex, :age&#41;,Tuple&#123;String,Int64&#125;&#125;&#91;&#40;sex &#61; &quot;male&quot;, age &#61; 22&#41;, &#40;sex
+ &#61; &quot;female&quot;, age &#61; 25&#41;, &#40;sex &#61; &quot;female&quot;, age &#61; 25&#41;, &#40;sex &#61; &quot;female&quot;, age &#61; 
+23&#41;, &#40;sex &#61; &quot;female&quot;, age &#61; 23&#41;, &#40;sex &#61; &quot;male&quot;, age &#61; 23&#41;&#93;
+</pre>
+
+
+<p>We can generate a table with the time and observations for the dependent variable for each of the six subjects</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>obs</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-p'>[</span><span class='hljl-t'> </span><span class='hljl-nf'>DataFrame</span><span class='hljl-p'>(</span><span class='hljl-n'>time</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>0</span><span class='hljl-oB'>:</span><span class='hljl-ni'>4</span><span class='hljl-oB'>:</span><span class='hljl-ni'>8</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>dv</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>rand</span><span class='hljl-p'>(</span><span class='hljl-ni'>3</span><span class='hljl-p'>))</span><span class='hljl-t'> </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>id</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>6</span><span class='hljl-t'> </span><span class='hljl-p'>]</span><span class='hljl-t'>
+</span><span class='hljl-n'>head</span><span class='hljl-oB'>.</span><span class='hljl-p'>(</span><span class='hljl-n'>obs</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>2</span><span class='hljl-p'>])</span>
+</pre>
+
+
+<pre class="hljl">
+2-element Array&#123;DataFrame,1&#125;:
+ 3×2 DataFrame
+│ Row │ time  │ dv       │
+│     │ Int64 │ Float64  │
+├─────┼───────┼──────────┤
+│ 1   │ 0     │ 0.981508 │
+│ 2   │ 4     │ 0.341392 │
+│ 3   │ 8     │ 0.157666 │
+ 3×2 DataFrame
+│ Row │ time  │ dv       │
+│     │ Int64 │ Float64  │
+├─────┼───────┼──────────┤
+│ 1   │ 0     │ 0.96399  │
+│ 2   │ 4     │ 0.792867 │
+│ 3   │ 8     │ 0.163357 │
+</pre>
+
+
+<p>We will assign one regimen to the first three and another to the last three</p>
+
 
 <pre class='hljl'>
 <span class='hljl-n'>regimen1</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>DosageRegimen</span><span class='hljl-p'>(</span><span class='hljl-ni'>15</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>addl</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>3</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ii</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>4</span><span class='hljl-p'>)</span><span class='hljl-t'>
 </span><span class='hljl-n'>regimen2</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>DosageRegimen</span><span class='hljl-p'>(</span><span class='hljl-ni'>10</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>addl</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>4</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ii</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>3</span><span class='hljl-p'>)</span><span class='hljl-t'>
-</span><span class='hljl-nf'>seed!</span><span class='hljl-p'>(</span><span class='hljl-ni'>0</span><span class='hljl-p'>)</span><span class='hljl-t'>
-</span><span class='hljl-n'>population</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>Population</span><span class='hljl-p'>(</span><span class='hljl-nf'>map</span><span class='hljl-p'>((</span><span class='hljl-n'>id</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>cvs</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>obs</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>evs</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-oB'>-&gt;</span><span class='hljl-t'>
-                                </span><span class='hljl-nf'>Subject</span><span class='hljl-p'>(</span><span class='hljl-n'>id</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>id</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>cvs</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>cvs</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>obs</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>obs</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>evs</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>evs</span><span class='hljl-p'>),</span><span class='hljl-t'>
-                            </span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>6</span><span class='hljl-p'>,</span><span class='hljl-t'>
-                            </span><span class='hljl-p'>((</span><span class='hljl-n'>sex</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>rand</span><span class='hljl-p'>([</span><span class='hljl-s'>&quot;male&quot;</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-s'>&quot;female&quot;</span><span class='hljl-p'>]),</span><span class='hljl-t'> </span><span class='hljl-n'>age</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>rand</span><span class='hljl-p'>(</span><span class='hljl-ni'>21</span><span class='hljl-oB'>:</span><span class='hljl-ni'>25</span><span class='hljl-p'>))</span><span class='hljl-t'> </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>6</span><span class='hljl-p'>),</span><span class='hljl-t'>
-                            </span><span class='hljl-p'>(</span><span class='hljl-nf'>DataFrame</span><span class='hljl-p'>(</span><span class='hljl-n'>time</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>0</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>dv</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>rand</span><span class='hljl-p'>(),</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>rand</span><span class='hljl-p'>())</span><span class='hljl-t'> </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>6</span><span class='hljl-p'>),</span><span class='hljl-t'>
-                            </span><span class='hljl-nf'>repeat</span><span class='hljl-p'>([</span><span class='hljl-n'>regimen1</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>regimen2</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-ni'>3</span><span class='hljl-p'>)))</span><span class='hljl-t'>
+</span><span class='hljl-n'>regimens</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>vcat</span><span class='hljl-p'>(</span><span class='hljl-nf'>repeat</span><span class='hljl-p'>([</span><span class='hljl-n'>regimen1</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-ni'>3</span><span class='hljl-p'>),</span><span class='hljl-t'>
+                </span><span class='hljl-nf'>repeat</span><span class='hljl-p'>([</span><span class='hljl-n'>regimen2</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-ni'>3</span><span class='hljl-p'>))</span>
+</pre>
+
+
+
+<p>We can now generate the six subjects using a</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>subjects</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>Subject</span><span class='hljl-p'>[]</span><span class='hljl-t'>
+</span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-p'>(</span><span class='hljl-n'>id</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>cvs</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>evs</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-nf'>zip</span><span class='hljl-p'>(</span><span class='hljl-n'>ids</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>cvs</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>regimens</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-kd'>global</span><span class='hljl-t'> </span><span class='hljl-n'>subjects</span><span class='hljl-t'>
+    </span><span class='hljl-nf'>push!</span><span class='hljl-p'>(</span><span class='hljl-n'>subjects</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nf'>Subject</span><span class='hljl-p'>(</span><span class='hljl-n'>id</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>id</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>cvs</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>cvs</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>evs</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>evs</span><span class='hljl-p'>))</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+</span><span class='hljl-nf'>show</span><span class='hljl-p'>(</span><span class='hljl-n'>subjects</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="hljl">
+Subject&#91;Subject
+  Events: 4
+  Observations: 0
+  Covariates: 
+    sex: male
+    age: 22
+, Subject
+  Events: 4
+  Observations: 0
+  Covariates: 
+    sex: female
+    age: 25
+, Subject
+  Events: 4
+  Observations: 0
+  Covariates: 
+    sex: female
+    age: 25
+, Subject
+  Events: 5
+  Observations: 0
+  Covariates: 
+    sex: female
+    age: 23
+, Subject
+  Events: 5
+  Observations: 0
+  Covariates: 
+    sex: female
+    age: 23
+, Subject
+  Events: 5
+  Observations: 0
+  Covariates: 
+    sex: male
+    age: 23
+&#93;
+</pre>
+
+
+<p>Lastly, we can make a population with comprised of these subjects</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>population</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>Population</span><span class='hljl-p'>(</span><span class='hljl-n'>subjects</span><span class='hljl-p'>)</span><span class='hljl-t'>
 </span><span class='hljl-nf'>show</span><span class='hljl-p'>(</span><span class='hljl-n'>population</span><span class='hljl-p'>)</span>
 </pre>
 
@@ -939,7 +1168,6 @@ Dose event
 Population
   Subjects: 6
   Covariates: sex, age
-  Observables: dv, x
 </pre>
 
 
@@ -954,51 +1182,45 @@ Population
 <pre class="hljl">
 Subject
   Events: 4
-  Observations: 1
+  Observations: 0
   Covariates: 
     sex: male
-    age: 23
-  Observables: dv, x
-
-Subject
-  Events: 5
-  Observations: 1
-  Covariates: 
-    sex: male
-    age: 23
-  Observables: dv, x
-
-Subject
-  Events: 4
-  Observations: 1
-  Covariates: 
-    sex: female
-    age: 21
-  Observables: dv, x
-
-Subject
-  Events: 5
-  Observations: 1
-  Covariates: 
-    sex: male
-    age: 24
-  Observables: dv, x
-
-Subject
-  Events: 4
-  Observations: 1
-  Covariates: 
-    sex: female
-    age: 23
-  Observables: dv, x
-
-Subject
-  Events: 5
-  Observations: 1
-  Covariates: 
-    sex: female
     age: 22
-  Observables: dv, x
+
+Subject
+  Events: 4
+  Observations: 0
+  Covariates: 
+    sex: female
+    age: 25
+
+Subject
+  Events: 4
+  Observations: 0
+  Covariates: 
+    sex: female
+    age: 25
+
+Subject
+  Events: 5
+  Observations: 0
+  Covariates: 
+    sex: female
+    age: 23
+
+Subject
+  Events: 5
+  Observations: 0
+  Covariates: 
+    sex: female
+    age: 23
+
+Subject
+  Events: 5
+  Observations: 0
+  Covariates: 
+    sex: male
+    age: 23
 </pre>
 
 
@@ -1006,9 +1228,9 @@ Subject
 
           <HR/>
           <div class="footer"><p>
-          Published from <a href="data-generation.jmd">data-generation.jmd</a> using
+          Published from <a href="data_generation.jmd">data_generation.jmd</a> using
           <a href="http://github.com/mpastell/Weave.jl">Weave.jl</a>
-           on 2018-10-24.
+           on 2018-10-29.
           <p></div>
 
 
