@@ -18,7 +18,7 @@ in order to add the package. To do this, use the command
 `]add https://github.com/UMCTM/PuMaS.jl`. Doing it this way, PuMaS and its
 dependencies will install automatically. If one cannot authenticate for this
 command (since the repository is currently private!), then first clone the
-repository how you please, use `]add path/to/package`, then then do `]build PuMaS`.
+repository how you please, use `]dev path/to/package`, then then do `]build PuMaS`.
 Using the build command will download and install the dependencies.
 
 ## Getting Started

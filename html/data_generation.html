@@ -668,7 +668,7 @@ pre.hljl > span.hljl-gt { }
           <h1>Introduction</h1>
 <p>This introduction to data generation for PuMaS will cover how to specify subjects and populations to use with PuMaS. You will learn how to read data, specify dosage regimens, covariates, observations, and generate populations to use with the software.</p>
 <h2>Installation</h2>
-<p>Because PuMaS is still unregistered, you will need to give the Git repository in order to add the package. To do this, use the command <code>&#93;add https://github.com/UMCTM/PuMaS.jl</code>. Doing it this way, PuMaS and its dependencies will install automatically. If one cannot authenticate for this command &#40;since the repository is currently private&#33;&#41;, then first clone the repository how you please, use <code>&#93;add path/to/PuMaS.jl</code>, then then do <code>&#93;build PuMaS</code>. Using the build command will download and install the dependencies.</p>
+<p>Because PuMaS is still unregistered, you will need to give the Git repository in order to add the package. To do this, use the command <code>&#93;dev https://github.com/UMCTM/PuMaS.jl</code>. Doing it this way, PuMaS and its dependencies will install automatically. If one cannot authenticate for this command &#40;since the repository is currently private&#33;&#41;, then first clone the repository how you please, use <code>&#93;add path/to/PuMaS.jl</code>, then then do <code>&#93;build PuMaS</code>. Using the build command will download and install the dependencies.</p>
 <h2>Subjects</h2>
 <p>PuMaS unit of observation are subjects.</p>
 <p>Each <code>Subject</code> is an individual composed of:</p>
@@ -797,7 +797,7 @@ Normal&#123;Float64&#125;&#40;μ&#61;5.5, σ&#61;1.5&#41;
 
 
 
-<table class="data-frame"><thead><tr><th></th><th>time</th><th>glucose</th></tr><tr><th></th><th>Int64</th><th>Float64</th></tr></thead><tbody><tr><th>1</th><td>0</td><td>5.59314</td></tr><tr><th>2</th><td>8</td><td>3.05107</td></tr><tr><th>3</th><td>16</td><td>5.39095</td></tr><tr><th>4</th><td>24</td><td>6.82169</td></tr><tr><th>5</th><td>32</td><td>4.53052</td></tr></tbody></table>
+<table class="data-frame"><thead><tr><th></th><th>time</th><th>glucose</th></tr><tr><th></th><th>Int64</th><th>Float64</th></tr></thead><tbody><tr><th>1</th><td>0</td><td>5.24179</td></tr><tr><th>2</th><td>8</td><td>7.0584</td></tr><tr><th>3</th><td>16</td><td>8.15619</td></tr><tr><th>4</th><td>24</td><td>3.89517</td></tr><tr><th>5</th><td>32</td><td>6.8977</td></tr></tbody></table>
 
 <p>Next we generate the covariates for our subject</p>
 
@@ -876,31 +876,31 @@ Observation
   time of measurement &#61; 0.0
   compartment &#61; 1
   measurements
-    glucose &#61; 5.593144498239771
+    glucose &#61; 5.241790438338953
 
 Observation
   time of measurement &#61; 8.0
   compartment &#61; 1
   measurements
-    glucose &#61; 3.0510689198445204
+    glucose &#61; 7.058395837290684
 
 Observation
   time of measurement &#61; 16.0
   compartment &#61; 1
   measurements
-    glucose &#61; 5.390945490373256
+    glucose &#61; 8.156189766631991
 
 Observation
   time of measurement &#61; 24.0
   compartment &#61; 1
   measurements
-    glucose &#61; 6.821688733569298
+    glucose &#61; 3.895170403292281
 
 Observation
   time of measurement &#61; 32.0
   compartment &#61; 1
   measurements
-    glucose &#61; 4.530522844271624
+    glucose &#61; 6.897698124364287
 </pre>
 
 
@@ -1055,9 +1055,9 @@ Dose event
 
 
 <pre class="hljl">
-NamedTuple&#123;&#40;:sex, :age&#41;,Tuple&#123;String,Int64&#125;&#125;&#91;&#40;sex &#61; &quot;male&quot;, age &#61; 22&#41;, &#40;sex
- &#61; &quot;female&quot;, age &#61; 25&#41;, &#40;sex &#61; &quot;female&quot;, age &#61; 25&#41;, &#40;sex &#61; &quot;female&quot;, age &#61; 
-23&#41;, &#40;sex &#61; &quot;female&quot;, age &#61; 23&#41;, &#40;sex &#61; &quot;male&quot;, age &#61; 23&#41;&#93;
+NamedTuple&#123;&#40;:sex, :age&#41;,Tuple&#123;String,Int64&#125;&#125;&#91;&#40;sex &#61; &quot;male&quot;, age &#61; 23&#41;, &#40;sex
+ &#61; &quot;female&quot;, age &#61; 22&#41;, &#40;sex &#61; &quot;male&quot;, age &#61; 25&#41;, &#40;sex &#61; &quot;female&quot;, age &#61; 21
+&#41;, &#40;sex &#61; &quot;male&quot;, age &#61; 24&#41;, &#40;sex &#61; &quot;male&quot;, age &#61; 25&#41;&#93;
 </pre>
 
 
@@ -1076,16 +1076,16 @@ NamedTuple&#123;&#40;:sex, :age&#41;,Tuple&#123;String,Int64&#125;&#125;&#91;&#4
 │ Row │ time  │ dv       │
 │     │ Int64 │ Float64  │
 ├─────┼───────┼──────────┤
-│ 1   │ 0     │ 0.981508 │
-│ 2   │ 4     │ 0.341392 │
-│ 3   │ 8     │ 0.157666 │
+│ 1   │ 0     │ 0.485393 │
+│ 2   │ 4     │ 0.246343 │
+│ 3   │ 8     │ 0.652416 │      
  3×2 DataFrame
-│ Row │ time  │ dv       │
-│     │ Int64 │ Float64  │
-├─────┼───────┼──────────┤
-│ 1   │ 0     │ 0.96399  │
-│ 2   │ 4     │ 0.792867 │
-│ 3   │ 8     │ 0.163357 │
+│ Row │ time  │ dv        │
+│     │ Int64 │ Float64   │
+├─────┼───────┼───────────┤
+│ 1   │ 0     │ 0.272063  │
+│ 2   │ 4     │ 0.593373  │
+│ 3   │ 8     │ 0.0459571 │
 </pre>
 
 
@@ -1107,7 +1107,6 @@ NamedTuple&#123;&#40;:sex, :age&#41;,Tuple&#123;String,Int64&#125;&#125;&#91;&#4
 <pre class='hljl'>
 <span class='hljl-n'>subjects</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>Subject</span><span class='hljl-p'>[]</span><span class='hljl-t'>
 </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-p'>(</span><span class='hljl-n'>id</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>cvs</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>evs</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-nf'>zip</span><span class='hljl-p'>(</span><span class='hljl-n'>ids</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>cvs</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>regimens</span><span class='hljl-p'>)</span><span class='hljl-t'>
-    </span><span class='hljl-kd'>global</span><span class='hljl-t'> </span><span class='hljl-n'>subjects</span><span class='hljl-t'>
     </span><span class='hljl-nf'>push!</span><span class='hljl-p'>(</span><span class='hljl-n'>subjects</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nf'>Subject</span><span class='hljl-p'>(</span><span class='hljl-n'>id</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>id</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>cvs</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>cvs</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>evs</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>evs</span><span class='hljl-p'>))</span><span class='hljl-t'>
 </span><span class='hljl-k'>end</span><span class='hljl-t'>
 </span><span class='hljl-nf'>show</span><span class='hljl-p'>(</span><span class='hljl-n'>subjects</span><span class='hljl-p'>)</span>
@@ -1120,37 +1119,37 @@ Subject&#91;Subject
   Observations: 0
   Covariates: 
     sex: male
+    age: 23
+, Subject
+  Events: 4
+  Observations: 0
+  Covariates: 
+    sex: female
     age: 22
 , Subject
   Events: 4
   Observations: 0
   Covariates: 
-    sex: female
-    age: 25
-, Subject
-  Events: 4
-  Observations: 0
-  Covariates: 
-    sex: female
+    sex: male
     age: 25
 , Subject
   Events: 5
   Observations: 0
   Covariates: 
     sex: female
-    age: 23
-, Subject
-  Events: 5
-  Observations: 0
-  Covariates: 
-    sex: female
-    age: 23
+    age: 21
 , Subject
   Events: 5
   Observations: 0
   Covariates: 
     sex: male
-    age: 23
+    age: 24
+, Subject
+  Events: 5
+  Observations: 0
+  Covariates: 
+    sex: male
+    age: 25
 &#93;
 </pre>
 
@@ -1185,20 +1184,20 @@ Subject
   Observations: 0
   Covariates: 
     sex: male
+    age: 23
+
+Subject
+  Events: 4
+  Observations: 0
+  Covariates: 
+    sex: female
     age: 22
 
 Subject
   Events: 4
   Observations: 0
   Covariates: 
-    sex: female
-    age: 25
-
-Subject
-  Events: 4
-  Observations: 0
-  Covariates: 
-    sex: female
+    sex: male
     age: 25
 
 Subject
@@ -1206,21 +1205,21 @@ Subject
   Observations: 0
   Covariates: 
     sex: female
-    age: 23
-
-Subject
-  Events: 5
-  Observations: 0
-  Covariates: 
-    sex: female
-    age: 23
+    age: 21
 
 Subject
   Events: 5
   Observations: 0
   Covariates: 
     sex: male
-    age: 23
+    age: 24
+
+Subject
+  Events: 5
+  Observations: 0
+  Covariates: 
+    sex: male
+    age: 25
 </pre>
 
 

@@ -22,7 +22,7 @@ Using the build command will download and install the dependencies.
 
 ## Subjects
 
-PuMaS unit of observation are subjects.
+PuMaS' unit of observation are subjects.
 
 Each `Subject` is an individual composed of:
 
@@ -37,7 +37,7 @@ A Population is a collection of subjects.
 
 ## NMTRAN data format
 
-The NMTRAN schema uses a single tabular representation to describe a `Population`
+The [NMTRAN schema](https://github.com/UMCTM/PuMaS.jl/wiki/EventSystem/) uses a single tabular representation to describe a `Population`
 
 Consider a NMTRAN text file. We can read the data using the CSV package to read it,
 and the DataFrames package to work with the tabular representation.
@@ -111,10 +111,6 @@ show(cvs)
 ```
 
 Lastly, we can generate a series of dosage events through a `DosageRegimen`
-
-```julia
-@doc DosageRegimen
-```
 
 The first argument is an amount. `addl` specifies additional dosages and `ii`
 the interdose interval.
@@ -226,7 +222,6 @@ We can now generate the six subjects using a
 
 subjects = Subject[]
 for (id, cvs, evs) in zip(ids, cvs, regimens)
-    global subjects
     push!(subjects, Subject(id = id, cvs = cvs, evs = evs))
 end
 show(subjects)
