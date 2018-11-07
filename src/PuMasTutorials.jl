@@ -2,13 +2,21 @@ module PuMaSTutorials
 
 using Weave
 
-tutorial_directory = joinpath(@__DIR__,"..","tutorials")
+repo_directory = joinpath(@__DIR__,"..")
+
+function weave_file(file)
+  println("File: $file")
+  tmp = joinpath(repo_directory,"tutorials",file)
+  #weave(tmp,doctype="pandoc",out_path=:pwd)
+  println("Building HTML")
+  weave(tmp,doctype = "md2html",out_path=joinpath(repo_directory,"html"))
+  println("Building PDF")
+  weave(tmp,doctype="md2pdf",out_path=joinpath(repo_directory,"pdf"))
+end
 
 function weave_all()
-  tmp = joinpath(tutorial_directory,"multiple_response/multiple_response.jmd")
-  #weave(tmp,doctype="pandoc",out_path=:pwd)
-  weave(tmp,doctype = "md2html",out_path=:pwd)
-  weave(tmp,doctype="md2pdf",out_path=:pwd)
+  foreach(weave_file,
+          file for file in readdir("tutorials") if endswith(file, ".jmd"))
 end
 
 end
