@@ -18,3 +18,5 @@ To build the file `multiple_response.jmd`, use the following commands:
 using PuMaSTutorials
 PuMaSTutorials.weave_file("multiple_response.jmd")
 ```
+
+To build all of the files, do `PuMaSTutorials.weave_all()`.
