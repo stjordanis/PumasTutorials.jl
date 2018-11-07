@@ -92,7 +92,7 @@ pbpkmodel = @model begin
         ADEGGU1' = GER * ADEGST - kt * ADEGGU1 + kilGU1 * ADISGU1
         AABSGU1' = kaGU * ADISGU1
 
-        # Other small intestinal compartments (GU2–GU7)
+        # Other small intestinal compartments (GU2-GU7)
         AUNDGU2' = kt * AUNDGU1 - kt * AUNDGU2 -((3*d)/(ρ*r*T)) * AUNDGU2 *(SGU2 - (ADISGU2/VGU))
         ADISGU2' = kt * ADISGU1 - kt * ADISGU2 +((3*d)/(ρ*r*T)) * AUNDGU2 *(SGU2 - (ADISGU2/VGU)) - kilGU2*ADISGU2 - kaGU*ADISGU2
         ADEGGU2' = kt*ADEGGU1 - kt*ADEGGU2 + kilGU2 * ADISGU2
@@ -183,7 +183,7 @@ sol_diffeq = solve(pbpkmodel,subject,param,y0,tspan=(0.0,600.0),progress=true)
 
 function sensivity_func(pars)
     y0 = (η = [0.0,0.0])
-    sim = solve(pbpkmodel,subject,pars,y0,tspan=(0.0,600.0))
+    sim = solve(pbpkmodel,subject,pars,y0,alg=Rosenbrock23(),tspan=(0.0,600.0))
     f = t -> -sim(t;idxs=3)
     res = optimize(f,0.0,600.0,Brent())
     i,e = quadgk(f,0.0,600.0)
@@ -195,10 +195,12 @@ for i in param
     if i != 0
         push!(a,[i-0.05*i,i+ 0.05*i])
     else
-        push!(a,[0.0,1.0])
+        push!(a,[0.0,1e-4])
     end
 end
 
+using Random
+Random.seed!(5)
 m = DiffEqSensitivity.morris_sensitivity(sensivity_func,a,[10 for i in 1:70];relative_scale= false,len_trajectory=75,total_num_trajectory=50,num_trajectory=20)
 
 using PuMaSTutorials, Weave
