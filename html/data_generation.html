@@ -797,7 +797,7 @@ Distributions.Normal&#123;Float64&#125;&#40;μ&#61;5.5, σ&#61;1.5&#41;
 
 
 
-<table class="data-frame"><thead><tr><th></th><th>time</th><th>glucose</th></tr><tr><th></th><th>Int64</th><th>Float64</th></tr></thead><tbody><tr><th>1</th><td>0</td><td>4.52878</td></tr><tr><th>2</th><td>8</td><td>5.70122</td></tr><tr><th>3</th><td>16</td><td>4.48659</td></tr><tr><th>4</th><td>24</td><td>4.71093</td></tr><tr><th>5</th><td>32</td><td>4.43732</td></tr></tbody></table>
+<table class="data-frame"><thead><tr><th></th><th>time</th><th>glucose</th></tr><tr><th></th><th>Int64</th><th>Float64</th></tr></thead><tbody><tr><th>1</th><td>0</td><td>7.12733</td></tr><tr><th>2</th><td>8</td><td>6.53401</td></tr><tr><th>3</th><td>16</td><td>2.71685</td></tr><tr><th>4</th><td>24</td><td>5.45369</td></tr><tr><th>5</th><td>32</td><td>4.37586</td></tr></tbody></table>
 
 <p>Next we generate the covariates for our subject</p>
 
@@ -862,31 +862,31 @@ Observation
   time of measurement &#61; 0.0
   compartment &#61; 1
   measurements
-    glucose &#61; 4.528784358897257
+    glucose &#61; 7.127325563089203
 
 Observation
   time of measurement &#61; 8.0
   compartment &#61; 1
   measurements
-    glucose &#61; 5.701222724144968
+    glucose &#61; 6.5340148530691495
 
 Observation
   time of measurement &#61; 16.0
   compartment &#61; 1
   measurements
-    glucose &#61; 4.486586050010643
+    glucose &#61; 2.7168549827121975
 
 Observation
   time of measurement &#61; 24.0
   compartment &#61; 1
   measurements
-    glucose &#61; 4.7109295917177505
+    glucose &#61; 5.453692479728058
 
 Observation
   time of measurement &#61; 32.0
   compartment &#61; 1
   measurements
-    glucose &#61; 4.437323788344756
+    glucose &#61; 4.3758596519813935
 </pre>
 
 
@@ -1041,9 +1041,9 @@ Dose event
 
 
 <pre class="hljl">
-NamedTuple&#123;&#40;:sex, :age&#41;,Tuple&#123;String,Int64&#125;&#125;&#91;&#40;sex &#61; &quot;male&quot;, age &#61; 23&#41;, &#40;sex
- &#61; &quot;female&quot;, age &#61; 21&#41;, &#40;sex &#61; &quot;female&quot;, age &#61; 21&#41;, &#40;sex &#61; &quot;female&quot;, age &#61; 
-21&#41;, &#40;sex &#61; &quot;male&quot;, age &#61; 23&#41;, &#40;sex &#61; &quot;female&quot;, age &#61; 21&#41;&#93;
+NamedTuple&#123;&#40;:sex, :age&#41;,Tuple&#123;String,Int64&#125;&#125;&#91;&#40;sex &#61; &quot;female&quot;, age &#61; 24&#41;, &#40;s
+ex &#61; &quot;female&quot;, age &#61; 24&#41;, &#40;sex &#61; &quot;female&quot;, age &#61; 25&#41;, &#40;sex &#61; &quot;female&quot;, age 
+&#61; 23&#41;, &#40;sex &#61; &quot;female&quot;, age &#61; 24&#41;, &#40;sex &#61; &quot;female&quot;, age &#61; 25&#41;&#93;
 </pre>
 
 
@@ -1062,16 +1062,16 @@ NamedTuple&#123;&#40;:sex, :age&#41;,Tuple&#123;String,Int64&#125;&#125;&#91;&#4
 │ Row │ time  │ dv       │
 │     │ Int64 │ Float64  │
 ├─────┼───────┼──────────┤
-│ 1   │ 0     │ 0.335817 │
-│ 2   │ 4     │ 0.392773 │
-│ 3   │ 8     │ 0.323051 │      
+│ 1   │ 0     │ 0.165432 │
+│ 2   │ 4     │ 0.639653 │
+│ 3   │ 8     │ 0.579288 │      
  3×2 DataFrames.DataFrame
 │ Row │ time  │ dv        │
 │     │ Int64 │ Float64   │
 ├─────┼───────┼───────────┤
-│ 1   │ 0     │ 0.0298482 │
-│ 2   │ 4     │ 0.687059  │
-│ 3   │ 8     │ 0.196042  │
+│ 1   │ 0     │ 0.0383262 │
+│ 2   │ 4     │ 0.988003  │
+│ 3   │ 8     │ 0.0349418 │
 </pre>
 
 
@@ -1104,38 +1104,38 @@ PuMaS.Subject&#91;Subject
   Events: 4
   Observations: 0
   Covariates: 
-    sex: male
-    age: 23
+    sex: female
+    age: 24
 , Subject
   Events: 4
   Observations: 0
   Covariates: 
     sex: female
-    age: 21
+    age: 24
 , Subject
   Events: 4
   Observations: 0
   Covariates: 
     sex: female
-    age: 21
+    age: 25
 , Subject
   Events: 5
   Observations: 0
   Covariates: 
     sex: female
-    age: 21
-, Subject
-  Events: 5
-  Observations: 0
-  Covariates: 
-    sex: male
     age: 23
 , Subject
   Events: 5
   Observations: 0
   Covariates: 
     sex: female
-    age: 21
+    age: 24
+, Subject
+  Events: 5
+  Observations: 0
+  Covariates: 
+    sex: female
+    age: 25
 &#93;
 </pre>
 
@@ -1169,35 +1169,28 @@ Subject
   Events: 4
   Observations: 0
   Covariates: 
-    sex: male
-    age: 23
+    sex: female
+    age: 24
 
 Subject
   Events: 4
   Observations: 0
   Covariates: 
     sex: female
-    age: 21
+    age: 24
 
 Subject
   Events: 4
   Observations: 0
   Covariates: 
     sex: female
-    age: 21
+    age: 25
 
 Subject
   Events: 5
   Observations: 0
   Covariates: 
     sex: female
-    age: 21
-
-Subject
-  Events: 5
-  Observations: 0
-  Covariates: 
-    sex: male
     age: 23
 
 Subject
@@ -1205,7 +1198,14 @@ Subject
   Observations: 0
   Covariates: 
     sex: female
-    age: 21
+    age: 24
+
+Subject
+  Events: 5
+  Observations: 0
+  Covariates: 
+    sex: female
+    age: 25
 </pre>
 
 
