@@ -1,6 +1,5 @@
 
 using PuMaS, LinearAlgebra, DiffEqSensitivity, Distributions, Optim, QuadGK
-
 pbpkmodel = @model begin
     @param begin
         GER ∈ ConstDomain(0.066)
@@ -181,17 +180,17 @@ param = (GER = 0.066,ρ = 5e-6,r = 1,T = 3e-5,d = 1e-4,SST = 5.5,kilST = 0.5,kaS
 
 y0 = (η = [0.0,0.0])
 
-
-sol_diffeq = solve(pbpkmodel,subject,param,y0,tspan=(0.0,600.0),progress=true)
+t = collect(range(0.0,stop=600.0,length=100))
+sol_diffeq = solve(pbpkmodel,subject,param,y0,tspan=(0.0,600.0),saveat=t,progress=true)
 
 
 using Plots
 plot(sol_diffeq,vars=3)
 
 
-function sensivity_func(pars)
+function sensitivity_func(pars)
     y0 = (η = [0.0,0.0])
-    sim = solve(pbpkmodel,subject,pars,y0,tspan=(0.0,600.0))
+    sim = solve(pbpkmodel,subject,pars,y0,tspan=(0.0,600.0),saveat=t)
     f = t -> -sim(t;idxs=3)
     res = optimize(f,0.0,600.0,Brent())
     i,e = quadgk(f,0.0,600.0)
@@ -211,7 +210,43 @@ end
 using Random
 Random.seed!(5)
 m = DiffEqSensitivity.morris_sensitivity(
-                      sensivity_func,a,[10 for i in 1:70];
+                      sensitivity_func,a,[10 for i in 1:70];
                       relative_scale= false,len_trajectory=75,
                       total_num_trajectory=50,num_trajectory=20)
 
+q = keys(param)
+sensitivities = NamedTuple()
+for i in 1:length(m.means)
+    global sensitivities = merge(sensitivities,[q[i] => m.means[i]])
+end
+
+sensitivity_var = NamedTuple()
+for i in 1:length(m.means)
+    global sensitivity_var = merge(sensitivity_var,[q[i] => m.variances[i]])
+end
+
+cvemax_sens = [[],[]]
+cvemax_sens[1] = [log(i[1]) for i in m.means]
+cvemax_sens[2] = [log(i[1]) for i in m.variances]
+cl_sens = [[],[]]
+cl_sens[1] = [log(i[2]) for i in m.means]
+cl_sens[2] = [log(i[2]) for i in m.variances]
+
+ann1 = []
+for i in 1:length(cvemax_sens[2])
+    if cvemax_sens[2][i] > -10
+        push!(ann1,[cvemax_sens[1][i]-1.0,cvemax_sens[2][i]+1.5,string(q[i] == :ρ ? "rho" : q[i]),10])
+
+    end
+end
+plot1 = scatter(cvemax_sens[1],cvemax_sens[2], annotations=ann1,legend=false,xlabel="Log mean of Morris Elementary Effects",ylabel="Log variance of Morris Elementary Effects",title="SA for Cmax")
+
+ann2 = []
+for i in 1:length(cl_sens[1])
+    if cl_sens[2][i] > -10 
+        push!(ann2,[cl_sens[1][i],cl_sens[2][i]+1.5,string(q[i] == :ρ ? "rho" : q[i]),10])
+    end
+end
+plot2 = scatter(cl_sens[1],cl_sens[2],annotations=ann2,legend=false,xlabel="Log mean of Morris Elementary Effects",ylabel="Log variance of Morris Elementary Effects",title="SA for AUC")
+
+plot(plot1,plot2,figsize=(20,55))
