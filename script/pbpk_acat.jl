@@ -1,5 +1,6 @@
 
 using PuMaS, LinearAlgebra, DiffEqSensitivity, Distributions, Optim, QuadGK
+
 pbpkmodel = @model begin
     @param begin
         GER ∈ ConstDomain(0.066)
@@ -180,6 +181,7 @@ param = (GER = 0.066,ρ = 5e-6,r = 1,T = 3e-5,d = 1e-4,SST = 5.5,kilST = 0.5,kaS
 
 y0 = (η = [0.0,0.0])
 
+
 t = collect(range(0.0,stop=600.0,length=100))
 sol_diffeq = solve(pbpkmodel,subject,param,y0,tspan=(0.0,600.0),saveat=t,progress=true)
 
@@ -188,7 +190,7 @@ using Plots
 plot(sol_diffeq,vars=3)
 
 
-function sensitivity_func(pars)
+function sensivity_func(pars)
     y0 = (η = [0.0,0.0])
     sim = solve(pbpkmodel,subject,pars,y0,tspan=(0.0,600.0),saveat=t)
     f = t -> -sim(t;idxs=3)
@@ -210,9 +212,10 @@ end
 using Random
 Random.seed!(5)
 m = DiffEqSensitivity.morris_sensitivity(
-                      sensitivity_func,a,[10 for i in 1:70];
+                      sensivity_func,a,[10 for i in 1:70];
                       relative_scale= false,len_trajectory=75,
                       total_num_trajectory=50,num_trajectory=20)
+
 
 q = keys(param)
 sensitivities = NamedTuple()
@@ -250,3 +253,4 @@ end
 plot2 = scatter(cl_sens[1],cl_sens[2],annotations=ann2,legend=false,xlabel="Log mean of Morris Elementary Effects",ylabel="Log variance of Morris Elementary Effects",title="SA for AUC")
 
 plot(plot1,plot2,figsize=(20,55))
+
