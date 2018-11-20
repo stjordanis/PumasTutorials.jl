@@ -1,0 +1,158 @@
+---
+title: Representative Samples
+author: José Bayoán Santiago Calderón
+date: 2018-11-20
+---
+
+# Introduction
+
+Our goal will be to learn how to generate representative samples for various
+covariates. This exercise will allow us to generate data that mirrors that of
+the US population for the civilian noninstitutional adult population (18 - 85
+years old). Some covariates that might be of interest are `gender`, `age`, `race`,
+`weight`, and `height`.
+
+## Installation
+
+Because PuMaS is still unregistered, you will need to give the Git repository
+in order to add the package. To do this, use the command
+`]add https://github.com/UMCTM/PuMaS.jl`. Doing it this way, PuMaS and its
+dependencies will install automatically. If one cannot authenticate for this
+command (since the repository is currently private!), then first clone the
+repository how you please, use `]add path/to/PuMaS.jl`, then then do `]build PuMaS`.
+Using the build command will download and install the dependencies.
+
+## Generating synthetic data
+
+Data Sources:
+
+    Annual Estimates of the Resident Population by Sex, Single Year of Age, Race
+    Alone or in Combination, and Hispanic Origin for the United States: April 1,
+    2010 to July 1, 2017
+    Source: U.S. Census Bureau, Population Division
+    Release Date: June 2018
+
+    Lynn A. Blewett, Julia A. Rivera Drew, Risa Griffin, Miriam L. King, and
+    Kari C.W. Williams. IPUMS Health Surveys: National Health Interview Survey,
+    Version 6.3 [dataset]. Minneapolis, MN: IPUMS, 2018.
+    http://doi.org/10.18128/D070.V6.3
+
+Gender and race are nominal variables which can be captured through a cross
+table with the join distributions. Age usually does not follow a typical
+distribution (i.e., demographic pyramids). We can use Census data to obtain the
+join distributions of gender and race for conditional on age which is a discrete
+variable.
+
+Some housekeeping
+
+```julia
+using CSV, DataFrames, Distributions, StatsBase, Tables
+```
+
+We will read the data set and select the conditional probability array. The
+first dimension is the age in years (18 - 85), the second dimension is the race
+(White, Black, Asian, or Latino), and the third dimension is the gender (Male or
+Female).
+
+```julia
+joint_distribution = CSV.File("data/census.tsv",
+                              allowmissing = :none,
+                              delim = '\t') |>
+                         DataFrame |>
+                         (df -> cat(Matrix(df[df.Gender .== "Male", 3:end]),
+                                    Matrix(df[df.Gender .== "Female", 3:end]),
+                                    dims = 3))
+size(joint_distribution)
+```
+
+The following functions apply the labels to each dimension and sample based on
+the joint distribution.
+
+```julia
+function gen_join_distribution(probabilities, output = Vector{Int}())
+    d = ndims(probabilities)
+    iszero(ndims(probabilities)) && return output
+    o = sample(1:size(probabilities, d),
+               sum.(selectdim.(Ref(probabilities),
+                               d,
+                               1:size(probabilities, d))) |>
+               weights)
+    push!(output, o)
+    gen_join_distribution(selectdim(probabilities, d, o), output)
+end
+labs = [(:gender, ["Male", "Female"]),
+        (:race, ["White", "Black", "Asian", "Latino"]),
+        (:age, 18:85)]
+function gen_gender_race_age(joint_distribution, labs)
+    NamedTuple{Tuple(first.(labs))}(getindex.(last.(labs),
+                                    gen_join_distribution(joint_distribution)))
+end
+```
+
+We can use the various components to generate a sample of 1,000 observations
+that is representative of the US non-noninstitutional adult population (18 - 85
+years old).
+
+```julia
+data = map(x -> gen_gender_race_age(joint_distribution, labs), 1:1e3) |>
+       DataFrame |>
+       categorical!
+```
+
+Using the National Health Interview Survey, we can estimate the conditional
+distribution of height and weight per gender and race. The normal distribution
+is a good fit for human heights for values around three standard deviations from
+the mean. Weight is log-normal distributed, but for the conditional distribution
+is easier to rely on a Weibull body mass index (BMI) distribution. The first step
+is to eliminate problematic outliers. For these purposes, observations were kept
+if BMI was between 15 (Very severely underweight) and 60 (Obese Class VI -
+Hyper Obese) and weight was between 30 kg and 140 kg. The BMI and weight implicitly
+apply a height outlier exclusion.
+
+For each gender and race subgroup, the mean and standard deviation of the heigh
+distribution was computed as well as the sufficient statistics of the maximum
+likelihood Weibull for BMI (using Optim.jl).
+
+```julia
+height_weight =
+    DataFrame(Gender = categorical(repeat(["Female", "Male"], inner = 4)),
+              Race = categorical(repeat(["Asian", "Black", "Latino", "White"], 2)),
+              μ = [159.69, 163.51, 160.23, 163.64, 172.13, 177.83, 173.89, 178.59],
+              σ = [5.75, 6.33, 5.98, 6.38, 6.4, 7.53, 7.27, 6.76],
+              α = [5.26, 4.89, 4.8, 4.61, 6.11, 5.6, 5.81, 5.99],
+              θ = [25.59, 32.91, 30.83, 29.68, 27.36, 30.46, 30.2, 29.81])
+head(height_weight)
+```
+
+The next function uses the groups-wise height and BMI statistics to simulated the
+joint distribution of height and weight per gender/race.
+
+```julia
+function add_height_weight!(data, height_weight)
+    data.height = NaN
+    data.weight = NaN
+    for row in Tables.rows(height_weight)
+        gender, race, μ, σ, α, θ =
+            row.Gender, row.Race, row.μ, row.σ, row.α, row.θ
+        idx = (data.gender .== gender) .& (data.race .== race)
+        data.height[idx] = round.(rand(Normal(μ, σ), count(idx)), digits = 2)
+        data.weight[idx] = round.(rand(Weibull(α, θ), count(idx)) .*
+                                  (data.height[idx] ./ 1e2).^2, digits = 2)
+    end
+    data
+end
+add_height_weight!(data, height_weight) |> head
+```
+
+We could also have simpler models such as correlated age and weight. Assume both
+are normally distributed: Age ~ Normal(70, 10) and Weight ~ Normal(30, 5) with a
+covariance of 32. The following code generates the specified case.
+
+```julia
+rand(MvNormal([70, 30], [10^2 32.
+                         32   5^2]),
+     Int(1e3)) |>
+     (x -> @views DataFrame(Age = Int.(round.(x[1,:])),
+                            Weight = round.(x[2, :], digits = 2))) |>
+    head
+```

@@ -1,0 +1,304 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[a4paper,text={16.5cm,25.2cm},centering]{geometry}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{graphicx}
+\usepackage{microtype}
+\usepackage{hyperref}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1.2ex}
+
+\hypersetup
+       {   pdfauthor = { José Bayoán Santiago Calderón },
+           pdftitle={ Representative Samples },
+           colorlinks=TRUE,
+           linkcolor=black,
+           citecolor=blue,
+           urlcolor=blue
+       }
+
+\title{ Representative Samples }
+
+\author{ José Bayoán Santiago Calderón }
+
+\date{ 2018-11-20 }
+
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage{upquote}
+\usepackage{listings}
+\usepackage{xcolor}
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    upquote=true,
+    breaklines=true,
+    keepspaces=true,
+    showspaces=false,
+    columns=fullflexible,
+    showtabs=false,
+    showstringspaces=false,
+    escapeinside={(*@}{@*)},
+    extendedchars=true,
+}
+\newcommand{\HLJLt}[1]{#1}
+\newcommand{\HLJLw}[1]{#1}
+\newcommand{\HLJLe}[1]{#1}
+\newcommand{\HLJLeB}[1]{#1}
+\newcommand{\HLJLo}[1]{#1}
+\newcommand{\HLJLk}[1]{\textcolor[RGB]{148,91,176}{\textbf{#1}}}
+\newcommand{\HLJLkc}[1]{\textcolor[RGB]{59,151,46}{\textit{#1}}}
+\newcommand{\HLJLkd}[1]{\textcolor[RGB]{214,102,97}{\textit{#1}}}
+\newcommand{\HLJLkn}[1]{\textcolor[RGB]{148,91,176}{\textbf{#1}}}
+\newcommand{\HLJLkp}[1]{\textcolor[RGB]{148,91,176}{\textbf{#1}}}
+\newcommand{\HLJLkr}[1]{\textcolor[RGB]{148,91,176}{\textbf{#1}}}
+\newcommand{\HLJLkt}[1]{\textcolor[RGB]{148,91,176}{\textbf{#1}}}
+\newcommand{\HLJLn}[1]{#1}
+\newcommand{\HLJLna}[1]{#1}
+\newcommand{\HLJLnb}[1]{#1}
+\newcommand{\HLJLnbp}[1]{#1}
+\newcommand{\HLJLnc}[1]{#1}
+\newcommand{\HLJLncB}[1]{#1}
+\newcommand{\HLJLnd}[1]{\textcolor[RGB]{214,102,97}{#1}}
+\newcommand{\HLJLne}[1]{#1}
+\newcommand{\HLJLneB}[1]{#1}
+\newcommand{\HLJLnf}[1]{\textcolor[RGB]{66,102,213}{#1}}
+\newcommand{\HLJLnfm}[1]{\textcolor[RGB]{66,102,213}{#1}}
+\newcommand{\HLJLnp}[1]{#1}
+\newcommand{\HLJLnl}[1]{#1}
+\newcommand{\HLJLnn}[1]{#1}
+\newcommand{\HLJLno}[1]{#1}
+\newcommand{\HLJLnt}[1]{#1}
+\newcommand{\HLJLnv}[1]{#1}
+\newcommand{\HLJLnvc}[1]{#1}
+\newcommand{\HLJLnvg}[1]{#1}
+\newcommand{\HLJLnvi}[1]{#1}
+\newcommand{\HLJLnvm}[1]{#1}
+\newcommand{\HLJLl}[1]{#1}
+\newcommand{\HLJLld}[1]{\textcolor[RGB]{148,91,176}{\textit{#1}}}
+\newcommand{\HLJLs}[1]{\textcolor[RGB]{201,61,57}{#1}}
+\newcommand{\HLJLsa}[1]{\textcolor[RGB]{201,61,57}{#1}}
+\newcommand{\HLJLsb}[1]{\textcolor[RGB]{201,61,57}{#1}}
+\newcommand{\HLJLsc}[1]{\textcolor[RGB]{201,61,57}{#1}}
+\newcommand{\HLJLsd}[1]{\textcolor[RGB]{201,61,57}{#1}}
+\newcommand{\HLJLsdB}[1]{\textcolor[RGB]{201,61,57}{#1}}
+\newcommand{\HLJLsdC}[1]{\textcolor[RGB]{201,61,57}{#1}}
+\newcommand{\HLJLse}[1]{\textcolor[RGB]{59,151,46}{#1}}
+\newcommand{\HLJLsh}[1]{\textcolor[RGB]{201,61,57}{#1}}
+\newcommand{\HLJLsi}[1]{#1}
+\newcommand{\HLJLso}[1]{\textcolor[RGB]{201,61,57}{#1}}
+\newcommand{\HLJLsr}[1]{\textcolor[RGB]{201,61,57}{#1}}
+\newcommand{\HLJLss}[1]{\textcolor[RGB]{201,61,57}{#1}}
+\newcommand{\HLJLssB}[1]{\textcolor[RGB]{201,61,57}{#1}}
+\newcommand{\HLJLnB}[1]{\textcolor[RGB]{59,151,46}{#1}}
+\newcommand{\HLJLnbB}[1]{\textcolor[RGB]{59,151,46}{#1}}
+\newcommand{\HLJLnfB}[1]{\textcolor[RGB]{59,151,46}{#1}}
+\newcommand{\HLJLnh}[1]{\textcolor[RGB]{59,151,46}{#1}}
+\newcommand{\HLJLni}[1]{\textcolor[RGB]{59,151,46}{#1}}
+\newcommand{\HLJLnil}[1]{\textcolor[RGB]{59,151,46}{#1}}
+\newcommand{\HLJLnoB}[1]{\textcolor[RGB]{59,151,46}{#1}}
+\newcommand{\HLJLoB}[1]{\textcolor[RGB]{102,102,102}{\textbf{#1}}}
+\newcommand{\HLJLow}[1]{\textcolor[RGB]{102,102,102}{\textbf{#1}}}
+\newcommand{\HLJLp}[1]{#1}
+\newcommand{\HLJLc}[1]{\textcolor[RGB]{153,153,119}{\textit{#1}}}
+\newcommand{\HLJLch}[1]{\textcolor[RGB]{153,153,119}{\textit{#1}}}
+\newcommand{\HLJLcm}[1]{\textcolor[RGB]{153,153,119}{\textit{#1}}}
+\newcommand{\HLJLcp}[1]{\textcolor[RGB]{153,153,119}{\textit{#1}}}
+\newcommand{\HLJLcpB}[1]{\textcolor[RGB]{153,153,119}{\textit{#1}}}
+\newcommand{\HLJLcs}[1]{\textcolor[RGB]{153,153,119}{\textit{#1}}}
+\newcommand{\HLJLcsB}[1]{\textcolor[RGB]{153,153,119}{\textit{#1}}}
+\newcommand{\HLJLg}[1]{#1}
+\newcommand{\HLJLgd}[1]{#1}
+\newcommand{\HLJLge}[1]{#1}
+\newcommand{\HLJLgeB}[1]{#1}
+\newcommand{\HLJLgh}[1]{#1}
+\newcommand{\HLJLgi}[1]{#1}
+\newcommand{\HLJLgo}[1]{#1}
+\newcommand{\HLJLgp}[1]{#1}
+\newcommand{\HLJLgs}[1]{#1}
+\newcommand{\HLJLgsB}[1]{#1}
+\newcommand{\HLJLgt}[1]{#1}
+
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+Our goal will be to learn how to generate representative samples for various covariates. This exercise will allow us to generate data that mirrors that of the US population for the civilian noninstitutional adult population (18 - 85 years old). Some covariates that might be of interest are \texttt{gender}, \texttt{age}, \texttt{race}, \texttt{weight}, and \texttt{height}.
+
+\subsection{Installation}
+Because PuMaS is still unregistered, you will need to give the Git repository in order to add the package. To do this, use the command \texttt{]add https://github.com/UMCTM/PuMaS.jl}. Doing it this way, PuMaS and its dependencies will install automatically. If one cannot authenticate for this command (since the repository is currently private!), then first clone the repository how you please, use \texttt{]add path/to/PuMaS.jl}, then then do \texttt{]build PuMaS}. Using the build command will download and install the dependencies.
+
+\subsection{Generating synthetic data}
+Data Sources:
+
+\begin{verbatim}
+Annual Estimates of the Resident Population by Sex, Single Year of Age, Race
+Alone or in Combination, and Hispanic Origin for the United States: April 1,
+2010 to July 1, 2017
+Source: U.S. Census Bureau, Population Division
+Release Date: June 2018
+
+Lynn A. Blewett, Julia A. Rivera Drew, Risa Griffin, Miriam L. King, and
+Kari C.W. Williams. IPUMS Health Surveys: National Health Interview Survey,
+Version 6.3 [dataset]. Minneapolis, MN: IPUMS, 2018.
+http://doi.org/10.18128/D070.V6.3
+\end{verbatim}
+Gender and race are nominal variables which can be captured through a cross table with the join distributions. Age usually does not follow a typical distribution (i.e., demographic pyramids). We can use Census data to obtain the join distributions of gender and race for conditional on age which is a discrete variable.
+
+Some housekeeping
+
+
+\begin{lstlisting}
+(*@\HLJLk{using}@*) (*@\HLJLn{CSV}@*)(*@\HLJLp{,}@*) (*@\HLJLn{DataFrames}@*)(*@\HLJLp{,}@*) (*@\HLJLn{Distributions}@*)(*@\HLJLp{,}@*) (*@\HLJLn{StatsBase}@*)(*@\HLJLp{,}@*) (*@\HLJLn{Tables}@*)
+\end{lstlisting}
+
+
+We will read the data set and select the conditional probability array. The first dimension is the age in years (18 - 85), the second dimension is the race (White, Black, Asian, or Latino), and the third dimension is the gender (Male or Female).
+
+
+\begin{lstlisting}
+(*@\HLJLn{joint{\_}distribution}@*) (*@\HLJLoB{=}@*) (*@\HLJLn{CSV}@*)(*@\HLJLoB{.}@*)(*@\HLJLnf{File}@*)(*@\HLJLp{(}@*)(*@\HLJLs{"data/census.tsv"}@*)(*@\HLJLp{,}@*)
+                              (*@\HLJLn{allowmissing}@*) (*@\HLJLoB{=}@*) (*@\HLJLsc{:none}@*)(*@\HLJLp{,}@*)
+                              (*@\HLJLn{delim}@*) (*@\HLJLoB{=}@*) (*@\HLJLsc{{\textquotesingle}{\textbackslash}t{\textquotesingle}}@*)(*@\HLJLp{)}@*) (*@\HLJLoB{|>}@*)
+                         (*@\HLJLn{DataFrame}@*) (*@\HLJLoB{|>}@*)
+                         (*@\HLJLp{(}@*)(*@\HLJLn{df}@*) (*@\HLJLoB{->}@*) (*@\HLJLnf{cat}@*)(*@\HLJLp{(}@*)(*@\HLJLnf{Matrix}@*)(*@\HLJLp{(}@*)(*@\HLJLn{df}@*)(*@\HLJLp{[}@*)(*@\HLJLn{df}@*)(*@\HLJLoB{.}@*)(*@\HLJLn{Gender}@*) (*@\HLJLoB{.==}@*) (*@\HLJLs{"Male"}@*)(*@\HLJLp{,}@*) (*@\HLJLni{3}@*)(*@\HLJLoB{:}@*)(*@\HLJLk{end}@*)(*@\HLJLp{]),}@*)
+                                    (*@\HLJLnf{Matrix}@*)(*@\HLJLp{(}@*)(*@\HLJLn{df}@*)(*@\HLJLp{[}@*)(*@\HLJLn{df}@*)(*@\HLJLoB{.}@*)(*@\HLJLn{Gender}@*) (*@\HLJLoB{.==}@*) (*@\HLJLs{"Female"}@*)(*@\HLJLp{,}@*) (*@\HLJLni{3}@*)(*@\HLJLoB{:}@*)(*@\HLJLk{end}@*)(*@\HLJLp{]),}@*)
+                                    (*@\HLJLn{dims}@*) (*@\HLJLoB{=}@*) (*@\HLJLni{3}@*)(*@\HLJLp{))}@*)
+(*@\HLJLnf{size}@*)(*@\HLJLp{(}@*)(*@\HLJLn{joint{\_}distribution}@*)(*@\HLJLp{)}@*)
+\end{lstlisting}
+
+\begin{lstlisting}
+(68, 4, 2)
+\end{lstlisting}
+
+
+The following functions apply the labels to each dimension and sample based on the joint distribution.
+
+
+\begin{lstlisting}
+(*@\HLJLk{function}@*) (*@\HLJLnf{gen{\_}join{\_}distribution}@*)(*@\HLJLp{(}@*)(*@\HLJLn{probabilities}@*)(*@\HLJLp{,}@*) (*@\HLJLn{output}@*) (*@\HLJLoB{=}@*) (*@\HLJLnf{Vector}@*)(*@\HLJLp{{\{}}@*)(*@\HLJLn{Int}@*)(*@\HLJLp{{\}}())}@*)
+    (*@\HLJLn{d}@*) (*@\HLJLoB{=}@*) (*@\HLJLnf{ndims}@*)(*@\HLJLp{(}@*)(*@\HLJLn{probabilities}@*)(*@\HLJLp{)}@*)
+    (*@\HLJLnf{iszero}@*)(*@\HLJLp{(}@*)(*@\HLJLnf{ndims}@*)(*@\HLJLp{(}@*)(*@\HLJLn{probabilities}@*)(*@\HLJLp{))}@*) (*@\HLJLoB{{\&}{\&}}@*) (*@\HLJLk{return}@*) (*@\HLJLn{output}@*)
+    (*@\HLJLn{o}@*) (*@\HLJLoB{=}@*) (*@\HLJLnf{sample}@*)(*@\HLJLp{(}@*)(*@\HLJLni{1}@*)(*@\HLJLoB{:}@*)(*@\HLJLnf{size}@*)(*@\HLJLp{(}@*)(*@\HLJLn{probabilities}@*)(*@\HLJLp{,}@*) (*@\HLJLn{d}@*)(*@\HLJLp{),}@*)
+               (*@\HLJLn{sum}@*)(*@\HLJLoB{.}@*)(*@\HLJLp{(}@*)(*@\HLJLn{selectdim}@*)(*@\HLJLoB{.}@*)(*@\HLJLp{(}@*)(*@\HLJLnf{Ref}@*)(*@\HLJLp{(}@*)(*@\HLJLn{probabilities}@*)(*@\HLJLp{),}@*)
+                               (*@\HLJLn{d}@*)(*@\HLJLp{,}@*)
+                               (*@\HLJLni{1}@*)(*@\HLJLoB{:}@*)(*@\HLJLnf{size}@*)(*@\HLJLp{(}@*)(*@\HLJLn{probabilities}@*)(*@\HLJLp{,}@*) (*@\HLJLn{d}@*)(*@\HLJLp{)))}@*) (*@\HLJLoB{|>}@*)
+               (*@\HLJLn{weights}@*)(*@\HLJLp{)}@*)
+    (*@\HLJLnf{push!}@*)(*@\HLJLp{(}@*)(*@\HLJLn{output}@*)(*@\HLJLp{,}@*) (*@\HLJLn{o}@*)(*@\HLJLp{)}@*)
+    (*@\HLJLnf{gen{\_}join{\_}distribution}@*)(*@\HLJLp{(}@*)(*@\HLJLnf{selectdim}@*)(*@\HLJLp{(}@*)(*@\HLJLn{probabilities}@*)(*@\HLJLp{,}@*) (*@\HLJLn{d}@*)(*@\HLJLp{,}@*) (*@\HLJLn{o}@*)(*@\HLJLp{),}@*) (*@\HLJLn{output}@*)(*@\HLJLp{)}@*)
+(*@\HLJLk{end}@*)
+(*@\HLJLn{labs}@*) (*@\HLJLoB{=}@*) (*@\HLJLp{[(}@*)(*@\HLJLsc{:gender}@*)(*@\HLJLp{,}@*) (*@\HLJLp{[}@*)(*@\HLJLs{"Male"}@*)(*@\HLJLp{,}@*) (*@\HLJLs{"Female"}@*)(*@\HLJLp{]),}@*)
+        (*@\HLJLp{(}@*)(*@\HLJLsc{:race}@*)(*@\HLJLp{,}@*) (*@\HLJLp{[}@*)(*@\HLJLs{"White"}@*)(*@\HLJLp{,}@*) (*@\HLJLs{"Black"}@*)(*@\HLJLp{,}@*) (*@\HLJLs{"Asian"}@*)(*@\HLJLp{,}@*) (*@\HLJLs{"Latino"}@*)(*@\HLJLp{]),}@*)
+        (*@\HLJLp{(}@*)(*@\HLJLsc{:age}@*)(*@\HLJLp{,}@*) (*@\HLJLni{18}@*)(*@\HLJLoB{:}@*)(*@\HLJLni{85}@*)(*@\HLJLp{)]}@*)
+(*@\HLJLk{function}@*) (*@\HLJLnf{gen{\_}gender{\_}race{\_}age}@*)(*@\HLJLp{(}@*)(*@\HLJLn{joint{\_}distribution}@*)(*@\HLJLp{,}@*) (*@\HLJLn{labs}@*)(*@\HLJLp{)}@*)
+    (*@\HLJLnf{NamedTuple}@*)(*@\HLJLp{{\{}}@*)(*@\HLJLnf{Tuple}@*)(*@\HLJLp{(}@*)(*@\HLJLn{first}@*)(*@\HLJLoB{.}@*)(*@\HLJLp{(}@*)(*@\HLJLn{labs}@*)(*@\HLJLp{)){\}}(}@*)(*@\HLJLn{getindex}@*)(*@\HLJLoB{.}@*)(*@\HLJLp{(}@*)(*@\HLJLn{last}@*)(*@\HLJLoB{.}@*)(*@\HLJLp{(}@*)(*@\HLJLn{labs}@*)(*@\HLJLp{),}@*)
+                                    (*@\HLJLnf{gen{\_}join{\_}distribution}@*)(*@\HLJLp{(}@*)(*@\HLJLn{joint{\_}distribution}@*)(*@\HLJLp{)))}@*)
+(*@\HLJLk{end}@*)
+\end{lstlisting}
+
+\begin{lstlisting}
+gen_gender_race_age (generic function with 1 method)
+\end{lstlisting}
+
+
+We can use the various components to generate a sample of 1,000 observations that is representative of the US non-noninstitutional adult population (18 - 85 years old).
+
+
+\begin{lstlisting}
+(*@\HLJLn{data}@*) (*@\HLJLoB{=}@*) (*@\HLJLnf{map}@*)(*@\HLJLp{(}@*)(*@\HLJLn{x}@*) (*@\HLJLoB{->}@*) (*@\HLJLnf{gen{\_}gender{\_}race{\_}age}@*)(*@\HLJLp{(}@*)(*@\HLJLn{joint{\_}distribution}@*)(*@\HLJLp{,}@*) (*@\HLJLn{labs}@*)(*@\HLJLp{),}@*) (*@\HLJLni{1}@*)(*@\HLJLoB{:}@*)(*@\HLJLnfB{1e3}@*)(*@\HLJLp{)}@*) (*@\HLJLoB{|>}@*)
+       (*@\HLJLn{DataFrame}@*) (*@\HLJLoB{|>}@*)
+       (*@\HLJLn{categorical!}@*)
+\end{lstlisting}
+
+
+Using the National Health Interview Survey, we can estimate the conditional distribution of height and weight per gender and race. The normal distribution is a good fit for human heights for values around three standard deviations from the mean. Weight is log-normal distributed, but for the conditional distribution is easier to rely on a Weibull body mass index (BMI) distribution. The first step is to eliminate problematic outliers. For these purposes, observations were kept if BMI was between 15 (Very severely underweight) and 60 (Obese Class VI - Hyper Obese) and weight was between 30 kg and 140 kg. The BMI and weight implicitly apply a height outlier exclusion.
+
+For each gender and race subgroup, the mean and standard deviation of the heigh distribution was computed as well as the sufficient statistics of the maximum likelihood Weibull for BMI (using Optim.jl).
+
+
+\begin{lstlisting}
+(*@\HLJLn{height{\_}weight}@*) (*@\HLJLoB{=}@*)
+    (*@\HLJLnf{DataFrame}@*)(*@\HLJLp{(}@*)(*@\HLJLn{Gender}@*) (*@\HLJLoB{=}@*) (*@\HLJLnf{categorical}@*)(*@\HLJLp{(}@*)(*@\HLJLnf{repeat}@*)(*@\HLJLp{([}@*)(*@\HLJLs{"Female"}@*)(*@\HLJLp{,}@*) (*@\HLJLs{"Male"}@*)(*@\HLJLp{],}@*) (*@\HLJLn{inner}@*) (*@\HLJLoB{=}@*) (*@\HLJLni{4}@*)(*@\HLJLp{)),}@*)
+              (*@\HLJLn{Race}@*) (*@\HLJLoB{=}@*) (*@\HLJLnf{categorical}@*)(*@\HLJLp{(}@*)(*@\HLJLnf{repeat}@*)(*@\HLJLp{([}@*)(*@\HLJLs{"Asian"}@*)(*@\HLJLp{,}@*) (*@\HLJLs{"Black"}@*)(*@\HLJLp{,}@*) (*@\HLJLs{"Latino"}@*)(*@\HLJLp{,}@*) (*@\HLJLs{"White"}@*)(*@\HLJLp{],}@*) (*@\HLJLni{2}@*)(*@\HLJLp{)),}@*)
+              (*@\HLJLn{\ensuremath{\mu}}@*) (*@\HLJLoB{=}@*) (*@\HLJLp{[}@*)(*@\HLJLnfB{159.69}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{163.51}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{160.23}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{163.64}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{172.13}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{177.83}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{173.89}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{178.59}@*)(*@\HLJLp{],}@*)
+              (*@\HLJLn{\ensuremath{\sigma}}@*) (*@\HLJLoB{=}@*) (*@\HLJLp{[}@*)(*@\HLJLnfB{5.75}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{6.33}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{5.98}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{6.38}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{6.4}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{7.53}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{7.27}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{6.76}@*)(*@\HLJLp{],}@*)
+              (*@\HLJLn{\ensuremath{\alpha}}@*) (*@\HLJLoB{=}@*) (*@\HLJLp{[}@*)(*@\HLJLnfB{5.26}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{4.89}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{4.8}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{4.61}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{6.11}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{5.6}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{5.81}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{5.99}@*)(*@\HLJLp{],}@*)
+              (*@\HLJLn{\ensuremath{\theta}}@*) (*@\HLJLoB{=}@*) (*@\HLJLp{[}@*)(*@\HLJLnfB{25.59}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{32.91}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{30.83}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{29.68}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{27.36}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{30.46}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{30.2}@*)(*@\HLJLp{,}@*) (*@\HLJLnfB{29.81}@*)(*@\HLJLp{])}@*)
+(*@\HLJLnf{head}@*)(*@\HLJLp{(}@*)(*@\HLJLn{height{\_}weight}@*)(*@\HLJLp{)}@*)
+\end{lstlisting}
+
+
+\begin{tabular}{r|cccccc}
+	& Gender & Race & μ & σ & α & θ\\
+	\hline
+	1 & Female & Asian & 159.69 & 5.75 & 5.26 & 25.59 \\
+	2 & Female & Black & 163.51 & 6.33 & 4.89 & 32.91 \\
+	3 & Female & Latino & 160.23 & 5.98 & 4.8 & 30.83 \\
+	4 & Female & White & 163.64 & 6.38 & 4.61 & 29.68 \\
+	5 & Male & Asian & 172.13 & 6.4 & 6.11 & 27.36 \\
+	6 & Male & Black & 177.83 & 7.53 & 5.6 & 30.46 \\
+\end{tabular}
+
+
+The next function uses the groups-wise height and BMI statistics to simulated the joint distribution of height and weight per gender/race.
+
+
+\begin{lstlisting}
+(*@\HLJLk{function}@*) (*@\HLJLnf{add{\_}height{\_}weight!}@*)(*@\HLJLp{(}@*)(*@\HLJLn{data}@*)(*@\HLJLp{,}@*) (*@\HLJLn{height{\_}weight}@*)(*@\HLJLp{)}@*)
+    (*@\HLJLn{data}@*)(*@\HLJLoB{.}@*)(*@\HLJLn{height}@*) (*@\HLJLoB{=}@*) (*@\HLJLn{NaN}@*)
+    (*@\HLJLn{data}@*)(*@\HLJLoB{.}@*)(*@\HLJLn{weight}@*) (*@\HLJLoB{=}@*) (*@\HLJLn{NaN}@*)
+    (*@\HLJLk{for}@*) (*@\HLJLn{row}@*) (*@\HLJLkp{in}@*) (*@\HLJLn{Tables}@*)(*@\HLJLoB{.}@*)(*@\HLJLnf{rows}@*)(*@\HLJLp{(}@*)(*@\HLJLn{height{\_}weight}@*)(*@\HLJLp{)}@*)
+        (*@\HLJLn{gender}@*)(*@\HLJLp{,}@*) (*@\HLJLn{race}@*)(*@\HLJLp{,}@*) (*@\HLJLn{\ensuremath{\mu}}@*)(*@\HLJLp{,}@*) (*@\HLJLn{\ensuremath{\sigma}}@*)(*@\HLJLp{,}@*) (*@\HLJLn{\ensuremath{\alpha}}@*)(*@\HLJLp{,}@*) (*@\HLJLn{\ensuremath{\theta}}@*) (*@\HLJLoB{=}@*)
+            (*@\HLJLn{row}@*)(*@\HLJLoB{.}@*)(*@\HLJLn{Gender}@*)(*@\HLJLp{,}@*) (*@\HLJLn{row}@*)(*@\HLJLoB{.}@*)(*@\HLJLn{Race}@*)(*@\HLJLp{,}@*) (*@\HLJLn{row}@*)(*@\HLJLoB{.}@*)(*@\HLJLn{\ensuremath{\mu}}@*)(*@\HLJLp{,}@*) (*@\HLJLn{row}@*)(*@\HLJLoB{.}@*)(*@\HLJLn{\ensuremath{\sigma}}@*)(*@\HLJLp{,}@*) (*@\HLJLn{row}@*)(*@\HLJLoB{.}@*)(*@\HLJLn{\ensuremath{\alpha}}@*)(*@\HLJLp{,}@*) (*@\HLJLn{row}@*)(*@\HLJLoB{.}@*)(*@\HLJLn{\ensuremath{\theta}}@*)
+        (*@\HLJLn{idx}@*) (*@\HLJLoB{=}@*) (*@\HLJLp{(}@*)(*@\HLJLn{data}@*)(*@\HLJLoB{.}@*)(*@\HLJLn{gender}@*) (*@\HLJLoB{.==}@*) (*@\HLJLn{gender}@*)(*@\HLJLp{)}@*) (*@\HLJLoB{.{\&}}@*) (*@\HLJLp{(}@*)(*@\HLJLn{data}@*)(*@\HLJLoB{.}@*)(*@\HLJLn{race}@*) (*@\HLJLoB{.==}@*) (*@\HLJLn{race}@*)(*@\HLJLp{)}@*)
+        (*@\HLJLn{data}@*)(*@\HLJLoB{.}@*)(*@\HLJLn{height}@*)(*@\HLJLp{[}@*)(*@\HLJLn{idx}@*)(*@\HLJLp{]}@*) (*@\HLJLoB{=}@*) (*@\HLJLn{round}@*)(*@\HLJLoB{.}@*)(*@\HLJLp{(}@*)(*@\HLJLnf{rand}@*)(*@\HLJLp{(}@*)(*@\HLJLnf{Normal}@*)(*@\HLJLp{(}@*)(*@\HLJLn{\ensuremath{\mu}}@*)(*@\HLJLp{,}@*) (*@\HLJLn{\ensuremath{\sigma}}@*)(*@\HLJLp{),}@*) (*@\HLJLnf{count}@*)(*@\HLJLp{(}@*)(*@\HLJLn{idx}@*)(*@\HLJLp{)),}@*) (*@\HLJLn{digits}@*) (*@\HLJLoB{=}@*) (*@\HLJLni{2}@*)(*@\HLJLp{)}@*)
+        (*@\HLJLn{data}@*)(*@\HLJLoB{.}@*)(*@\HLJLn{weight}@*)(*@\HLJLp{[}@*)(*@\HLJLn{idx}@*)(*@\HLJLp{]}@*) (*@\HLJLoB{=}@*) (*@\HLJLn{round}@*)(*@\HLJLoB{.}@*)(*@\HLJLp{(}@*)(*@\HLJLnf{rand}@*)(*@\HLJLp{(}@*)(*@\HLJLnf{Weibull}@*)(*@\HLJLp{(}@*)(*@\HLJLn{\ensuremath{\alpha}}@*)(*@\HLJLp{,}@*) (*@\HLJLn{\ensuremath{\theta}}@*)(*@\HLJLp{),}@*) (*@\HLJLnf{count}@*)(*@\HLJLp{(}@*)(*@\HLJLn{idx}@*)(*@\HLJLp{))}@*) (*@\HLJLoB{.*}@*)
+                                  (*@\HLJLp{(}@*)(*@\HLJLn{data}@*)(*@\HLJLoB{.}@*)(*@\HLJLn{height}@*)(*@\HLJLp{[}@*)(*@\HLJLn{idx}@*)(*@\HLJLp{]}@*) (*@\HLJLoB{./}@*) (*@\HLJLnfB{1e2}@*)(*@\HLJLp{)}@*)(*@\HLJLoB{.{\textasciicircum}}@*)(*@\HLJLni{2}@*)(*@\HLJLp{,}@*) (*@\HLJLn{digits}@*) (*@\HLJLoB{=}@*) (*@\HLJLni{2}@*)(*@\HLJLp{)}@*)
+    (*@\HLJLk{end}@*)
+    (*@\HLJLn{data}@*)
+(*@\HLJLk{end}@*)
+(*@\HLJLnf{add{\_}height{\_}weight!}@*)(*@\HLJLp{(}@*)(*@\HLJLn{data}@*)(*@\HLJLp{,}@*) (*@\HLJLn{height{\_}weight}@*)(*@\HLJLp{)}@*) (*@\HLJLoB{|>}@*) (*@\HLJLn{head}@*)
+\end{lstlisting}
+
+
+\begin{tabular}{r|ccccc}
+	& gender & race & age & height & weight\\
+	\hline
+	1 & Male & Latino & 32 & 163.2 & 86.15 \\
+	2 & Female & White & 48 & 163.07 & 45.44 \\
+	3 & Female & White & 33 & 153.91 & 73.16 \\
+	4 & Female & White & 26 & 151.5 & 49.4 \\
+	5 & Female & White & 74 & 170.32 & 107.41 \\
+	6 & Female & Latino & 27 & 166.43 & 92.45 \\
+\end{tabular}
+
+
+We could also have simpler models such as correlated age and weight. Assume both are normally distributed: Age {\sim} Normal(70, 10) and Weight {\sim} Normal(30, 5) with a covariance of 32. The following code generates the specified case.
+
+
+\begin{lstlisting}
+(*@\HLJLnf{rand}@*)(*@\HLJLp{(}@*)(*@\HLJLnf{MvNormal}@*)(*@\HLJLp{([}@*)(*@\HLJLni{70}@*)(*@\HLJLp{,}@*) (*@\HLJLni{30}@*)(*@\HLJLp{],}@*) (*@\HLJLp{[}@*)(*@\HLJLni{10}@*)(*@\HLJLoB{{\textasciicircum}}@*)(*@\HLJLni{2}@*) (*@\HLJLnfB{32.}@*)
+                         (*@\HLJLni{32}@*)   (*@\HLJLni{5}@*)(*@\HLJLoB{{\textasciicircum}}@*)(*@\HLJLni{2}@*)(*@\HLJLp{]),}@*)
+     (*@\HLJLnf{Int}@*)(*@\HLJLp{(}@*)(*@\HLJLnfB{1e3}@*)(*@\HLJLp{))}@*) (*@\HLJLoB{|>}@*)
+     (*@\HLJLp{(}@*)(*@\HLJLn{x}@*) (*@\HLJLoB{->}@*) (*@\HLJLnd{@views}@*) (*@\HLJLnf{DataFrame}@*)(*@\HLJLp{(}@*)(*@\HLJLn{Age}@*) (*@\HLJLoB{=}@*) (*@\HLJLn{Int}@*)(*@\HLJLoB{.}@*)(*@\HLJLp{(}@*)(*@\HLJLn{round}@*)(*@\HLJLoB{.}@*)(*@\HLJLp{(}@*)(*@\HLJLn{x}@*)(*@\HLJLp{[}@*)(*@\HLJLni{1}@*)(*@\HLJLp{,}@*)(*@\HLJLoB{:}@*)(*@\HLJLp{])),}@*)
+                            (*@\HLJLn{Weight}@*) (*@\HLJLoB{=}@*) (*@\HLJLn{round}@*)(*@\HLJLoB{.}@*)(*@\HLJLp{(}@*)(*@\HLJLn{x}@*)(*@\HLJLp{[}@*)(*@\HLJLni{2}@*)(*@\HLJLp{,}@*) (*@\HLJLoB{:}@*)(*@\HLJLp{],}@*) (*@\HLJLn{digits}@*) (*@\HLJLoB{=}@*) (*@\HLJLni{2}@*)(*@\HLJLp{)))}@*) (*@\HLJLoB{|>}@*)
+    (*@\HLJLn{head}@*)
+\end{lstlisting}
+
+
+\begin{tabular}{r|cc}
+	& Age & Weight\\
+	\hline
+	1 & 57 & 24.8 \\
+	2 & 92 & 36.3 \\
+	3 & 83 & 38.2 \\
+	4 & 61 & 30.73 \\
+	5 & 55 & 18.25 \\
+	6 & 92 & 35.18 \\
+\end{tabular}
+
+
+
+\end{document}
