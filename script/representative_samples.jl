@@ -1,55 +1,8 @@
----
-title: Representative Samples
-author: José Bayoán Santiago Calderón
-date: 2018-11-20
----
 
-# Introduction
+using CSV, DataFrames, DataFramesMeta, Distributions, HTTP, InfoZIP, LazyJSON,
+      Optim, StatsBase, StatPlots
 
-This is a comprehensive tutorial showing how to create a representative sample
-of the civilian noninstitutional adult population for the United States by
-race/ethnicity, age, weight, and height. It showcases the basic tools that can
-be used to generate simulated data for PuMaS.jl.
 
-# Population and Variables of Interest
-
-- US Civilian noninstitutional population
-- Sex (Male or Female)
-- Race (Latino,
-        Non-Hispanic Single Race White,
-        Non-Hispanic Single Race Black or
-        Non-Hispanic Single Race Asian)
-- Age (18 - 85 years old)
-- Height in inches
-- Weight in pounds
-
-# Housekeeping
-
-```julia
-using CSV, DataFrames, DataFramesMeta, Distributions, HTTP, InfoZIP, LazyJSON, Optim, StatsBase, StatPlots
-```
-
-# Age, Race, and Sex
-
-Sex and race are nominal variables which can be captured through a cross
-table with the join distributions. Age usually does not follow a typical
-distribution (i.e., demographic pyramids). We can use Census data to obtain the
-join distributions of sex and race conditional on age which is a discrete
-variable (in years old).
-
-The first dataset we will work with is the
-
-    Annual Estimates of the Resident Population by Sex, Single Year of Age,
-     Race Alone or in Combination, and Hispanic Origin for the United States:
-     April 1, 2010 to July 1, 2017
-     Source: U.S. Census Bureau, Population Division
-     Release Date: June 2018
-
-[Metadata](https://api.census.gov/data/2017/pep/charage), [Codebook](https://www.census.gov/data/developers/data-sets/popest-popproj/popest/popest-vars.Vintage_2017.html)
-
-We can obtain this dataset using the US Census API
-
-```julia
 cross_table =
     string("https://api.census.gov/data/", # Base URL
            "2017/", # Vintage 2017
@@ -61,9 +14,8 @@ cross_table =
     (url -> HTTP.request("GET", url)) |> # GET request
     (response -> response.status == 200 ? # Verify status code OK
                  String(response.body) : response.status) # Get body of response
-```
 
-```julia
+
 @views function detailedtable(jsontext)
     # We obtain the variable names (suppress the geography)
     vars = Symbol.(collect(LazyJSON.parse(jsontext)[1][1:end - 1]))
@@ -100,20 +52,12 @@ cross_table =
     (df -> aggregate(groupby(df, [:SEX, :RACE, :AGE]), sum)) |> # Collapse Latino
     (df -> names!(df[[:SEX, :RACE, :AGE, :POP_sum]], [:sex, :race, :age, :count]))
 end
-```
 
-```julia
+
 cross_table = detailedtable(cross_table)
 head(cross_table)
-```
 
-We can now use the tidy dataset to generate the conditional probabilities.
 
-We have three dimensions, (1) Age, (2) Race, and (3) Sex.
-
-We can obtain the joint distribution between age and race by sex.
-
-```julia
 females = (@linq cross_table |>
            where(:sex .== "Female") |>
            select(:race, :age, :count)) |>
@@ -126,33 +70,13 @@ males = (@linq cross_table |>
          (df -> unstack(df, :race, :count)) |> # To wide
          (df -> Matrix(df[2:end])) |>
          (A -> A / sum(A)) # conditional joint probabilities
-```
 
-Since males and females are matrices (two dimensional arrays), we can combine
-these in the third dimension (by sex).
 
-```julia
 println("Valid Probabilities: $(sum(females) ≈ sum(males) ≈ 1)")
 pepall5n = cat(females, males, dims = 3)
 size(pepall5n)
-```
 
-The dimensions match 68 age, four race, and two sex categories.
 
-The following functions apply the labels to each dimension and sample based on
-the joint distribution.
-
-The idea behind the implementation is:
-    (1) For each dimension, sample based on the conditional probability given the
-    realization for previous dimensions.
-    (2) Continue to do this recursively until every dimension has had a realization.
-    (3) Apply labels.
-
-For example, if the realization is (1, 3, 20) it means, choose the first level in
-sex (female), the third race category (Latino), and the 20th age category (37 years
-old).
-
-```julia
 function gen_join_distribution(probabilities, output = Vector{Int}())
     d = ndims(probabilities) # How many dimensions
     iszero(ndims(probabilities)) && return output # If no more dimensions, done
@@ -173,36 +97,14 @@ function gen_sex_race_age(joint_distribution, labs)
     NamedTuple{Tuple(first.(labs))}(getindex.(last.(labs),
                                     gen_join_distribution(joint_distribution)))
 end
-```
 
-We can now use our tools to generate 1,000 observations.
 
-```julia
 data = map(x -> gen_sex_race_age(pepall5n, labs), 1:1_000) |>
        DataFrame |>
        categorical!
 head(data)
-```
 
-## Height and Weight
 
-Adult height tends to be normally distributed by groups. Weight tends to be
-log-normal and be correlated with height. A good proxy for establishing the
-correlation between adult height and weight is the body mass index (BMI) which
-is Weibull distributed.
-
-Using the National Health Interview Survey, we can estimate the conditional
-distribution of height and weight sex/race groupwise. The normal distribution
-is a good fit for human heights for values around three standard deviations from
-the mean. Weight is log-normal distributed, but for the conditional distribution
-is easier to rely on a Weibull body mass index (BMI) distribution.
-
-We first access the
-    2017 National Health Interview Survey (NHIS)
-    [documentation](ftp://ftp.cdc.gov/pub/Health_Statistics/NCHS/Dataset_Documentation/NHIS/2017/readme.pdf)
-    [Codebook](ftp://ftp.cdc.gov/pub/Health_Statistics/NCHS/Dataset_Documentation/NHIS/2017/samadult_layout.pdf)
-
-```julia
 function parserace(race, hisp)
     if hisp ≠ 12
         output = "Latino"
@@ -247,12 +149,8 @@ nchs = string("ftp://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/",
     disallowmissing! |> # Drop missing values
     categorical! # String variables are treated as nominal variables
 head(nchs)
-```
 
-For fitting the Weibull distributions of BMI by sex and race we can use maximum
-likelihood estimation (MLE)
 
-```julia
 function mle_Weibull(data)
     x₀ = fill(2.0, 2) # Initial Parameters
     # Set up the objective function, first and second derivatives
@@ -268,25 +166,20 @@ function mle_Weibull(data)
     res = optimize(td, tdc, x₀, IPNewton()) # Solve the problem
     Weibull(Optim.minimizer(res)...) # MLE Distribution
 end
-```
 
-```julia
+
 height_bmi =
     by(nchs, [:sex, :race]) do subdf
         DataFrame(height = fit(Normal, subdf.height, float(subdf.wts)),
                   bmi = mle_Weibull(subdf))
     end
 head(height_bmi)
-```
 
-The next function uses the groups-wise height and BMI statistics to simulated the
-joint distribution of height and weight per gender/race.
 
-```julia
 function add_height_weight!(data, height_bmi)
     data.height = 0 # Initialize height
     data.weight = 0 # Initialize weight
-    for row in eachrow(height_bmi)
+    for row in eachrow(data)
         # Unpack
         sex, race, height, bmi =
             row.sex, row.race, row.height, row.bmi
@@ -300,21 +193,14 @@ function add_height_weight!(data, height_bmi)
     end
     data
 end
-```
 
-```julia
+
 add_height_weight!(data, height_bmi) |> head
-```
 
-We could also have simpler models such as linearly correlated age and weight.
-Assume both are normally distributed: Age ~ Normal(70, 10) and
-Weight ~ Normal(30, 5) with a covariance of 32. The following code generates
-the specified case.
 
-```julia
 @views rand(MvNormal([70, 30], [10^2 32.
                                 32   5^2]),
             10) |>
     (x -> DataFrame(age = round.(Int, x[1,:]),
                     weight = round.(Int, x[2, :])))
-```
+
