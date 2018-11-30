@@ -1,5 +1,5 @@
 ---
-title: Representative Samples
+title: Representative Samples of Subject Covariates
 author: José Bayoán Santiago Calderón
 date: 2018-11-20
 ---
@@ -25,6 +25,8 @@ be used to generate simulated data for PuMaS.jl.
 
 # Housekeeping
 
+First some housekeeping. Let's start by pulling in the packages we will be using in this tutorial.
+
 ```julia
 using CSV, DataFrames, DataFramesMeta, Distributions, HTTP, InfoZIP, LazyJSON, Optim, StatsBase, StatPlots
 ```
@@ -32,9 +34,9 @@ using CSV, DataFrames, DataFramesMeta, Distributions, HTTP, InfoZIP, LazyJSON, O
 # Age, Race, and Sex
 
 Sex and race are nominal variables which can be captured through a cross
-table with the join distributions. Age usually does not follow a typical
+table with the joint distributions. Age usually does not follow a typical
 distribution (i.e., demographic pyramids). We can use Census data to obtain the
-join distributions of sex and race conditional on age which is a discrete
+joint distributions of sex and race conditional on age which is a discrete
 variable (in years old).
 
 The first dataset we will work with is the
@@ -62,6 +64,8 @@ cross_table =
     (response -> response.status == 200 ? # Verify status code OK
                  String(response.body) : response.status) # Get body of response
 ```
+
+We will now convert the string containing the data into a tabular representation.
 
 ```julia
 @views function detailedtable(jsontext)
@@ -112,6 +116,10 @@ We can now use the tidy dataset to generate the conditional probabilities.
 We have three dimensions, (1) Age, (2) Race, and (3) Sex.
 
 We can obtain the joint distribution between age and race by sex.
+
+`DataFramesMeta.@linq` is a macro that allows for a convinient way to apply
+data manipulation (i.e., `where`, `transform`, `by`, `groupby`, `based_on`,
+`orderby`, `select`).
 
 ```julia
 females = (@linq cross_table |>
@@ -303,7 +311,62 @@ end
 ```
 
 ```julia
-add_height_weight!(data, height_bmi) |> head
+output = add_height_weight!(data, height_bmi)
+head(output)
+```
+
+## Verify Approach
+
+Let us see the distribution of covariates to verify our implementation gives
+sensible results
+
+The following function shows a scatter plot of weight and height and the BMI density.
+
+```julia
+function height_weight(race, sex)
+    data = @where(output, (:sex .== sex) .& (:race .== race))
+    plot(@df(data, scatter(:weight, :height,
+                          title = string(race, " ", sex),
+                          xlab = "Weight (pounds)",
+                          ylab = "Heigh (inches)",
+                          legend = :none)),
+        @df(data, density(703 * :weight ./ :height.^2,
+                          legend = :none,
+                          title = "BMI")),
+        )
+end
+```
+
+```julia
+height_weight("White", "Male")
+```
+
+```julia
+height_weight("Black", "Male")
+```
+
+```julia
+height_weight("Asian", "Male")
+```
+
+```julia
+height_weight("Latino", "Male")
+```
+
+```julia
+height_weight("White", "Female")
+```
+
+```julia
+height_weight("Black", "Female")
+```
+
+```julia
+height_weight("Asian", "Female")
+```
+
+```julia
+height_weight("Latino", "Female")
 ```
 
 We could also have simpler models such as linearly correlated age and weight.

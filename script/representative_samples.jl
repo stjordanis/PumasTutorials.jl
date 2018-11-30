@@ -1,6 +1,5 @@
 
-using CSV, DataFrames, DataFramesMeta, Distributions, HTTP, InfoZIP, LazyJSON,
-      Optim, StatsBase, StatPlots
+using CSV, DataFrames, DataFramesMeta, Distributions, HTTP, InfoZIP, LazyJSON, Optim, StatsBase, StatPlots
 
 
 cross_table =
@@ -179,7 +178,7 @@ head(height_bmi)
 function add_height_weight!(data, height_bmi)
     data.height = 0 # Initialize height
     data.weight = 0 # Initialize weight
-    for row in eachrow(data)
+    for row in eachrow(height_bmi)
         # Unpack
         sex, race, height, bmi =
             row.sex, row.race, row.height, row.bmi
@@ -195,7 +194,46 @@ function add_height_weight!(data, height_bmi)
 end
 
 
-add_height_weight!(data, height_bmi) |> head
+output = add_height_weight!(data, height_bmi)
+head(output)
+
+
+function height_weight(race, sex)
+    data = @where(output, (:sex .== sex) .& (:race .== race))
+    plot(@df(data, scatter(:weight, :height,
+                          title = string(race, " ", sex),
+                          xlab = "Weight (pounds)",
+                          ylab = "Heigh (inches)",
+                          legend = :none)),
+        @df(data, density(703 * :weight ./ :height.^2,
+                          legend = :none,
+                          title = "BMI")),
+        )
+end
+
+
+height_weight("White", "Male")
+
+
+height_weight("Black", "Male")
+
+
+height_weight("Asian", "Male")
+
+
+height_weight("Latino", "Male")
+
+
+height_weight("White", "Female")
+
+
+height_weight("Black", "Female")
+
+
+height_weight("Asian", "Female")
+
+
+height_weight("Latino", "Female")
 
 
 @views rand(MvNormal([70, 30], [10^2 32.
