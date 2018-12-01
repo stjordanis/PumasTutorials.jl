@@ -29,7 +29,10 @@ auc(ncas[1], auctype=:AUClast)
 @. auc(ncas, auctype=:AUClast)
 
 
-auc(ncas[1], interval=(10,Inf));
+auc(ncas[1], interval=(10,Inf))
+
+
+auc(ncas[1], interval=[(10,Inf), (10, 15)])
 
 
 auc_extrap_percent(ncas[1])
@@ -54,6 +57,7 @@ lambdaz(ncas[1], slopetimes=[1,2,3])
 tmax(ncas[1])
 cmax(ncas[1])
 cmax(ncas[1], interval=(20, 24))
+cmax(ncas[1], interval=[(20, 24), (10, 15)])
 
 
 tlast(ncas[1])

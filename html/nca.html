@@ -795,9 +795,28 @@ pre.hljl > span.hljl-gt { }
 
 
 <pre class='hljl'>
-<span class='hljl-nf'>auc</span><span class='hljl-p'>(</span><span class='hljl-n'>ncas</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>interval</span><span class='hljl-oB'>=</span><span class='hljl-p'>(</span><span class='hljl-ni'>10</span><span class='hljl-p'>,</span><span class='hljl-n'>Inf</span><span class='hljl-p'>));</span>
+<span class='hljl-nf'>auc</span><span class='hljl-p'>(</span><span class='hljl-n'>ncas</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>interval</span><span class='hljl-oB'>=</span><span class='hljl-p'>(</span><span class='hljl-ni'>10</span><span class='hljl-p'>,</span><span class='hljl-n'>Inf</span><span class='hljl-p'>))</span>
 </pre>
 
+
+<pre class="hljl">
+&#40;auc &#61; 27.824427196048966, auc_dn &#61; 0.005564885439209793&#41;
+</pre>
+
+
+<p>One can also specify multiple intervals</p>
+
+
+<pre class='hljl'>
+<span class='hljl-nf'>auc</span><span class='hljl-p'>(</span><span class='hljl-n'>ncas</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>interval</span><span class='hljl-oB'>=</span><span class='hljl-p'>[(</span><span class='hljl-ni'>10</span><span class='hljl-p'>,</span><span class='hljl-n'>Inf</span><span class='hljl-p'>),</span><span class='hljl-t'> </span><span class='hljl-p'>(</span><span class='hljl-ni'>10</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>15</span><span class='hljl-p'>)])</span>
+</pre>
+
+
+<pre class="hljl">
+2-element Array&#123;NamedTuple&#123;&#40;:auc, :auc_dn&#41;,Tuple&#123;Float64,Float64&#125;&#125;,1&#125;:
+ &#40;auc &#61; 27.824427196048966, auc_dn &#61; 0.005564885439209793&#41;
+ &#40;auc &#61; 4.6593795, auc_dn &#61; 0.0009318759&#41;
+</pre>
 
 
 <p>In many cases, the AUC commands may need to extrapolate in order to cover the desired interval. To see the percentage of extrapolation &#40;<span class="math">$\frac{\text{extrapolated AUC}}{\text{Total AUC}}\cdot 100$</span>&#41;, you can use the command:</p>
@@ -893,12 +912,15 @@ pre.hljl > span.hljl-gt { }
 <pre class='hljl'>
 <span class='hljl-nf'>tmax</span><span class='hljl-p'>(</span><span class='hljl-n'>ncas</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>])</span><span class='hljl-t'>
 </span><span class='hljl-nf'>cmax</span><span class='hljl-p'>(</span><span class='hljl-n'>ncas</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>])</span><span class='hljl-t'>
-</span><span class='hljl-nf'>cmax</span><span class='hljl-p'>(</span><span class='hljl-n'>ncas</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>interval</span><span class='hljl-oB'>=</span><span class='hljl-p'>(</span><span class='hljl-ni'>20</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>24</span><span class='hljl-p'>))</span>
+</span><span class='hljl-nf'>cmax</span><span class='hljl-p'>(</span><span class='hljl-n'>ncas</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>interval</span><span class='hljl-oB'>=</span><span class='hljl-p'>(</span><span class='hljl-ni'>20</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>24</span><span class='hljl-p'>))</span><span class='hljl-t'>
+</span><span class='hljl-nf'>cmax</span><span class='hljl-p'>(</span><span class='hljl-n'>ncas</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>interval</span><span class='hljl-oB'>=</span><span class='hljl-p'>[(</span><span class='hljl-ni'>20</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>24</span><span class='hljl-p'>),</span><span class='hljl-t'> </span><span class='hljl-p'>(</span><span class='hljl-ni'>10</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>15</span><span class='hljl-p'>)])</span>
 </pre>
 
 
 <pre class="hljl">
-&#40;cmax &#61; 0.653632, cmax_dn &#61; 0.0001307264&#41;
+2-element Array&#123;NamedTuple&#123;&#40;:cmax, :cmax_dn&#41;,Tuple&#123;Float64,Float64&#125;&#125;,1&#125;:
+ &#40;cmax &#61; 0.653632, cmax_dn &#61; 0.0001307264&#41;
+ &#40;cmax &#61; 1.10532, cmax_dn &#61; 0.000221064&#41;
 </pre>
 
 

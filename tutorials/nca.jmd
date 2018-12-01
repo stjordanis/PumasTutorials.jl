@@ -97,7 +97,13 @@ One can also compute AUC on a certain interval. To compute AUC on the interval
 $[10, \infty]$ on the first individual
 
 ```julia
-auc(ncas[1], interval=(10,Inf));
+auc(ncas[1], interval=(10,Inf))
+```
+
+One can also specify multiple intervals
+
+```julia
+auc(ncas[1], interval=[(10,Inf), (10, 15)])
 ```
 
 In many cases, the AUC commands may need to extrapolate in order to cover the
@@ -163,6 +169,7 @@ observed, and they can be computed by:
 tmax(ncas[1])
 cmax(ncas[1])
 cmax(ncas[1], interval=(20, 24))
+cmax(ncas[1], interval=[(20, 24), (10, 15)])
 ```
 
 Note that `cmax` returns `C_max` and normalized `C_max` if `dose` is provided.
