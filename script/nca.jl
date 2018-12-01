@@ -29,7 +29,7 @@ auc(ncas[1], auctype=:AUClast)
 @. auc(ncas, auctype=:AUClast)
 
 
-auc(ncas[1], interval=(10,Inf))
+auc(ncas[1], interval=(10,Inf));
 
 
 auc_extrap_percent(ncas[1])
@@ -55,6 +55,9 @@ cmax(ncas[1], interval=(20, 24))
 
 tlast(ncas[1])
 clast(ncas[1])
+
+
+NCAdata(concs(1), times(1), llq=0.5, concblq=:keep)
 
 
 thalf(ncas[1])

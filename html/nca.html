@@ -789,17 +789,13 @@ pre.hljl > span.hljl-gt { }
 </pre>
 
 
-<p>One can also compute AUC on a certain interval. To compute AUC on the interval <span class="math">$[10, \infty]$</span></p>
+<p>One can also compute AUC on a certain interval. To compute AUC on the interval <span class="math">$[10, \infty]$</span> on the first individual</p>
 
 
 <pre class='hljl'>
-<span class='hljl-nf'>auc</span><span class='hljl-p'>(</span><span class='hljl-n'>ncas</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>interval</span><span class='hljl-oB'>=</span><span class='hljl-p'>(</span><span class='hljl-ni'>10</span><span class='hljl-p'>,</span><span class='hljl-n'>Inf</span><span class='hljl-p'>))</span>
+<span class='hljl-nf'>auc</span><span class='hljl-p'>(</span><span class='hljl-n'>ncas</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>interval</span><span class='hljl-oB'>=</span><span class='hljl-p'>(</span><span class='hljl-ni'>10</span><span class='hljl-p'>,</span><span class='hljl-n'>Inf</span><span class='hljl-p'>));</span>
 </pre>
 
-
-<pre class="hljl">
-&#40;27.824427196048966, 0.005564885439209793&#41;
-</pre>
 
 
 <p>In many cases, the AUC commands may need to extrapolate in order to cover the desired interval. To see the percentage of extrapolation &#40;<span class="math">$\frac{\text{extrapolated AUC}}{\text{Total AUC}}\cdot 100$</span>&#41;, you can use the command:</p>
@@ -821,7 +817,7 @@ pre.hljl > span.hljl-gt { }
 \int_{t_0}^{t_1} t\cdot\text{concentration}(t) dt.
 \end{align}
 \]</p>
-<p>The interface of computing AUMC is exactly the same with AUC, and one needs to change <code>auc</code> to <code>aumc</code> for calculating AUMC or related quantities. For instance</p>
+<p>The interface of computing AUMC is exactly the same with AUC, and one needs to change <code>auc</code> to <code>aumc</code> for calculating AUMC or related quantities. For instance,</p>
 
 
 <pre class='hljl'>
@@ -836,7 +832,7 @@ pre.hljl > span.hljl-gt { }
 
 
 <h2>Terminal Rate Constant &#40;<span class="math">$\Lambda Z$</span>&#41;</h2>
-<p>The negative of the concentration vs. time slope in log-lin scale is often referred to as <span class="math">$\Lambda Z$</span> or terminal rate constant. To compute <span class="math">$\Lambda Z$</span>, one can issue</p>
+<p>The negative slope for concentration vs time in log-linear scale is the terminal rate constant, often denoted by <span class="math">$\Lambda Z$</span>. To compute <span class="math">$\Lambda Z$</span>, one can call</p>
 
 
 <pre class='hljl'>
@@ -845,11 +841,11 @@ pre.hljl > span.hljl-gt { }
 
 
 <pre class="hljl">
-&#40;0.03876710923615265, 5, 0.7444781209375907&#41;
+&#40;lambdaz &#61; 0.03876710923615265, points &#61; 5, r2 &#61; 0.7444781209375907&#41;
 </pre>
 
 
-<p><code>lambdaz</code> returns a tuple in the form of <span class="math">$(\Lambda Z, \text{the number of data points used}, r^2)$</span>. By default, it checks last <span class="math">$10$</span> or less data points, one can change it by providing the keyword <code>threshold</code>, e.g.</p>
+<p><code>lambdaz</code> returns a tuple in the form of <span class="math">$(\Lambda Z, \text{the number of data points used}, r^2)$</span>, where <span class="math">$r^2$</span> is the coefficient of determination from the linear regression of the slope determination. By default, it checks last <span class="math">$10$</span> or less data points, one can change it by providing the keyword <code>threshold</code>, e.g.</p>
 
 
 <pre class='hljl'>
@@ -858,7 +854,7 @@ pre.hljl > span.hljl-gt { }
 
 
 <pre class="hljl">
-&#40;0.03876710923615265, 5, 0.7444781209375907&#41;
+&#40;lambdaz &#61; 0.03876710923615265, points &#61; 5, r2 &#61; 0.7444781209375907&#41;
 </pre>
 
 
@@ -871,7 +867,7 @@ pre.hljl > span.hljl-gt { }
 
 
 <pre class="hljl">
-&#40;0.03876710923615265, 5, 0.7444781209375907&#41;
+&#40;lambdaz &#61; 0.03876710923615265, points &#61; 5, r2 &#61; 0.7444781209375907&#41;
 </pre>
 
 
@@ -892,7 +888,7 @@ pre.hljl > span.hljl-gt { }
 
 
 <p>note that <code>cmax</code> returns <code>C_max</code> and normalized <code>C_max</code> if <code>dose</code> is provided.</p>
-<p><code>T_last</code> is the time of the last observed concentration value above the lower limit of quantization &#40;LOQ&#41;, and the corresponding concentration value is &#40;<code>C_last</code>&#41;. They can be computed by the command</p>
+<p><code>T_last</code> is the time of the last observed concentration value above the lower limit of quantization &#40;LLQ&#41;, and the corresponding concentration value is &#40;<code>C_last</code>&#41;. They can be computed by the command</p>
 
 
 <pre class='hljl'>
@@ -903,6 +899,25 @@ pre.hljl > span.hljl-gt { }
 
 <pre class="hljl">
 0.653632
+</pre>
+
+
+<p>By default, LLQ is <span class="math">$0$</span>, and concentrations that are below LLQ &#40;BLQ&#41; are dropped. If you wish to keep BLQ data and change LLQ to <span class="math">$0.5$</span>, you can do</p>
+
+
+<pre class='hljl'>
+<span class='hljl-nf'>NCAdata</span><span class='hljl-p'>(</span><span class='hljl-nf'>concs</span><span class='hljl-p'>(</span><span class='hljl-ni'>1</span><span class='hljl-p'>),</span><span class='hljl-t'> </span><span class='hljl-nf'>times</span><span class='hljl-p'>(</span><span class='hljl-ni'>1</span><span class='hljl-p'>),</span><span class='hljl-t'> </span><span class='hljl-n'>llq</span><span class='hljl-oB'>=</span><span class='hljl-nfB'>0.5</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>concblq</span><span class='hljl-oB'>=:</span><span class='hljl-n'>keep</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="hljl">
+NCAdata:
+  concentration: Float64
+  time:          Float64
+  auc:           Float64
+  aumc:          Float64
+  λz:            Float64
+  dose:          Nothing
 </pre>
 
 
@@ -919,7 +934,7 @@ pre.hljl > span.hljl-gt { }
 </pre>
 
 
-<p>One may need to interpolate or to extrapolate the concentration-time data. It can be done by:</p>
+<p>One may need to interpolate or to extrapolate the concentration-time data. For example, if you wanted to interpolate the concentration at <span class="math">$t=12$</span> using linear interpolation, you would do:</p>
 
 
 <pre class='hljl'>
@@ -932,7 +947,7 @@ pre.hljl > span.hljl-gt { }
 </pre>
 
 
-<p><code>interperpmethod</code> can be <code>:linear</code>, <code>:linuplogdown</code>, or <code>:linlog</code>.</p>
+<p><code>interpmethod</code> can be <code>:linear</code>, <code>:linuplogdown</code>, or <code>:linlog</code>.</p>
 
 
 

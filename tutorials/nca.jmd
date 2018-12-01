@@ -86,10 +86,10 @@ Or to compute the AUC on every individual, once would do:
 ```
 
 One can also compute AUC on a certain interval. To compute AUC on the interval
-$[10, \infty]$
+$[10, \infty]$ on the first individual
 
 ```julia
-auc(ncas[1], interval=(10,Inf))
+auc(ncas[1], interval=(10,Inf));
 ```
 
 In many cases, the AUC commands may need to extrapolate in order to cover the
@@ -106,7 +106,8 @@ Area under the first moment of the concentration (AUMC) is
 $\int_{t_0}^{t_1} t\cdot\text{concentration}(t) dt.$
 
 The interface of computing AUMC is exactly the same with AUC, and one needs to
-change `auc` to `aumc` for calculating AUMC or related quantities. For instance
+change `auc` to `aumc` for calculating AUMC or related quantities. For
+instance,
 
 ```julia
 aumc(ncas[1])
@@ -115,17 +116,19 @@ aumc_extrap_percent(ncas[1])
 
 ## Terminal Rate Constant ($\Lambda Z$)
 
-The negative of the concentration vs. time slope in log-lin scale is often
-referred to as $\Lambda Z$ or terminal rate constant. To compute $\Lambda Z$,
-one can issue
+The negative slope for concentration vs time in log-linear scale is the
+terminal rate constant, often denoted by $\Lambda Z$. To compute $\Lambda Z$,
+one can call
 
 ```julia
 lambdaz(ncas[1])
 ```
 
 `lambdaz` returns a tuple in the form of $(\Lambda Z, \text{the number of data
-points used}, r^2)$. By default, it checks last $10$ or less data points, one
-can change it by providing the keyword `threshold`, e.g.
+points used}, r^2)$, where $r^2$ is the coefficient of determination from the
+linear regression of the slope determination. By default, it checks last $10$
+or less data points, one can change it by providing the keyword `threshold`,
+e.g.
 
 ```julia
 lambdaz(ncas[1], threshold=15)
@@ -152,12 +155,19 @@ note that `cmax` returns `C_max` and normalized `C_max` if `dose` is provided.
 
 
 `T_last` is the time of the last observed concentration value above the lower
-limit of quantization (LOQ), and the corresponding concentration value is
+limit of quantization (LLQ), and the corresponding concentration value is
 (`C_last`). They can be computed by the command
 
 ```julia
 tlast(ncas[1])
 clast(ncas[1])
+```
+
+By default, LLQ is $0$, and concentrations that are below LLQ (BLQ) are
+dropped. If you wish to keep BLQ data and change LLQ to $0.5$, you can do
+
+```julia
+NCAdata(concs(1), times(1), llq=0.5, concblq=:keep)
 ```
 
 The half-time can be computed by:
@@ -166,11 +176,12 @@ The half-time can be computed by:
 thalf(ncas[1])
 ```
 
-One may need to interpolate or to extrapolate the concentration-time data. It
-can be done by:
+One may need to interpolate or to extrapolate the concentration-time data. For
+example, if you wanted to interpolate the concentration at $t=12$ using linear
+interpolation, you would do:
 
 ```julia
 NCA.interpextrapconc(ncas[1], 12., interpmethod=:linear)
 ```
 
-`interperpmethod` can be `:linear`, `:linuplogdown`, or `:linlog`.
+`interpmethod` can be `:linear`, `:linuplogdown`, or `:linlog`.
