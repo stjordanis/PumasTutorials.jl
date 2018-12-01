@@ -40,7 +40,8 @@ times(i) = Float64.(example_nca_data[:TIME])[16(i-1)+1:16*i]
 ## AUC and AUMC
 
 We can compute the area under the curve (AUC) from the first observation time
-to infinity
+to infinity. Below we are accessing the concentration and corresponding time
+array for the first individual.
 
 ```julia
 auc(concs(1), times(1))
@@ -60,13 +61,20 @@ nca = NCAdata(concs(1), times(1))
 auc(nca)
 ```
 
-Let's create `NCAData(concs(i),times(i))` for each individual `i` from $1$ to
+Here, `nca` is a lazy data structure and actual computations are not performed.
+When we are instantiating `NCAdata`, it only performs data checking and
+cleaning.
+
+Let's create `NCAdata(concs(i),times(i))` for each individual `i` from $1$ to
 $24$. To do that, we would broadcast the whole expression over the individual
 indices we'd want to use, like:
 
 ```julia
 ncas = @. NCAdata(concs(1:24), times(1:24));
 ```
+
+`ncas` is an array of `NCAdata`s and its `i`th entry is the data for the `i`th
+subject.
 
 `AUClast` is the area under the curve from the first observation to the last
 observation. To compute `AUClast` on the first individual, one would do:
@@ -110,21 +118,21 @@ change `auc` to `aumc` for calculating AUMC or related quantities. For
 instance,
 
 ```julia
-aumc(ncas[1])
 aumc_extrap_percent(ncas[1])
+aumc(ncas[1])
 ```
 
-## Terminal Rate Constant ($\Lambda Z$)
+## Terminal Rate Constant ($\lambda z$)
 
 The negative slope for concentration vs time in log-linear scale is the
-terminal rate constant, often denoted by $\Lambda Z$. To compute $\Lambda Z$,
+terminal rate constant, often denoted by $\lambda z$. To compute $\lambda z$,
 one can call
 
 ```julia
 lambdaz(ncas[1])
 ```
 
-`lambdaz` returns a tuple in the form of $(\Lambda Z, \text{the number of data
+`lambdaz` returns a tuple in the form of $(\lambda z, \text{the number of data
 points used}, r^2)$, where $r^2$ is the coefficient of determination from the
 linear regression of the slope determination. By default, it checks last $10$
 or less data points, one can change it by providing the keyword `threshold`,
@@ -137,7 +145,13 @@ lambdaz(ncas[1], threshold=15)
 One can also specify the exact data points by passing their indices
 
 ```julia
-lambdaz(ncas[1], idx=[10, 15, 16])
+lambdaz(ncas[1], idxs=[10, 15, 16])
+```
+
+You can also pass their time points
+
+```julia
+lambdaz(ncas[1], slopetimes=[1,2,3])
 ```
 
 ## Simple functions
@@ -151,7 +165,9 @@ cmax(ncas[1])
 cmax(ncas[1], interval=(20, 24))
 ```
 
-note that `cmax` returns `C_max` and normalized `C_max` if `dose` is provided.
+Note that `cmax` returns `C_max` and normalized `C_max` if `dose` is provided.
+If `dose` is provided in the `NCAdata`, that `dose` will be used by all
+computations where dose can be used.
 
 
 `T_last` is the time of the last observed concentration value above the lower
@@ -170,7 +186,7 @@ dropped. If you wish to keep BLQ data and change LLQ to $0.5$, you can do
 NCAdata(concs(1), times(1), llq=0.5, concblq=:keep)
 ```
 
-The half-time can be computed by:
+The half-life can be computed by:
 
 ```julia
 thalf(ncas[1])

@@ -35,8 +35,8 @@ auc(ncas[1], interval=(10,Inf));
 auc_extrap_percent(ncas[1])
 
 
-aumc(ncas[1])
 aumc_extrap_percent(ncas[1])
+aumc(ncas[1])
 
 
 lambdaz(ncas[1])
@@ -45,7 +45,10 @@ lambdaz(ncas[1])
 lambdaz(ncas[1], threshold=15)
 
 
-lambdaz(ncas[1], idx=[10, 15, 16])
+lambdaz(ncas[1], idxs=[10, 15, 16])
+
+
+lambdaz(ncas[1], slopetimes=[1,2,3])
 
 
 tmax(ncas[1])

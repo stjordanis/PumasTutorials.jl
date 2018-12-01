@@ -694,7 +694,7 @@ pre.hljl > span.hljl-gt { }
 
 <h1>Efficient Computation of Multiple NCA Diagnostics</h1>
 <h2>AUC and AUMC</h2>
-<p>We can compute the area under the curve &#40;AUC&#41; from the first observation time to infinity</p>
+<p>We can compute the area under the curve &#40;AUC&#41; from the first observation time to infinity. Below we are accessing the concentration and corresponding time array for the first individual.</p>
 
 
 <pre class='hljl'>
@@ -732,7 +732,8 @@ pre.hljl > span.hljl-gt { }
 </pre>
 
 
-<p>Let&#39;s create <code>NCAData&#40;concs&#40;i&#41;,times&#40;i&#41;&#41;</code> for each individual <code>i</code> from <span class="math">$1$</span> to <span class="math">$24$</span>. To do that, we would broadcast the whole expression over the individual indices we&#39;d want to use, like:</p>
+<p>Here, <code>nca</code> is a lazy data structure and actual computations are not performed. When we are instantiating <code>NCAdata</code>, it only performs data checking and cleaning.</p>
+<p>Let&#39;s create <code>NCAdata&#40;concs&#40;i&#41;,times&#40;i&#41;&#41;</code> for each individual <code>i</code> from <span class="math">$1$</span> to <span class="math">$24$</span>. To do that, we would broadcast the whole expression over the individual indices we&#39;d want to use, like:</p>
 
 
 <pre class='hljl'>
@@ -741,6 +742,7 @@ pre.hljl > span.hljl-gt { }
 
 
 
+<p><code>ncas</code> is an array of <code>NCAdata</code>s and its <code>i</code>th entry is the data for the <code>i</code>th subject.</p>
 <p><code>AUClast</code> is the area under the curve from the first observation to the last observation. To compute <code>AUClast</code> on the first individual, one would do:</p>
 
 
@@ -751,7 +753,7 @@ pre.hljl > span.hljl-gt { }
 
 
 <pre class="hljl">
-&#40;246.932184, 0.0493864368&#41;
+&#40;auc &#61; 246.932184, auc_dn &#61; 0.0493864368&#41;
 </pre>
 
 
@@ -765,27 +767,27 @@ pre.hljl > span.hljl-gt { }
 
 
 <pre class="hljl">
-24-element Array&#123;Tuple&#123;Float64,Float64&#125;,1&#125;:
- &#40;246.932184, 0.0493864368&#41;                
- &#40;302.24594, 0.060449188&#41;                  
- &#40;288.579555, 0.05771591100000001&#41;         
- &#40;333.80397999999997, 0.066760796&#41;         
- &#40;129.06118400000003, 0.025812236800000006&#41;
- &#40;291.9510375, 0.0583902075&#41;               
- &#40;333.99432249999995, 0.06679886449999999&#41; 
- &#40;259.9668375, 0.0519933675&#41;               
- &#40;233.64285700000002, 0.0467285714&#41;        
- &#40;242.71946250000002, 0.048543892500000005&#41;
- ⋮                                         
- &#40;196.6721735, 0.039334434700000004&#41;       
- &#40;319.29748499999994, 0.06385949699999999&#41; 
- &#40;185.39912850000002, 0.037079825700000006&#41;
- &#40;403.216205, 0.080643241&#41;                 
- &#40;202.639537, 0.0405279074&#41;                
- &#40;222.76995, 0.04455399&#41;                   
- &#40;364.75571750000006, 0.07295114350000001&#41; 
- &#40;265.6632825, 0.05313265649999999&#41;        
- &#40;156.80645950000002, 0.031361291900000005&#41;
+24-element Array&#123;NamedTuple&#123;&#40;:auc, :auc_dn&#41;,Tuple&#123;Float64,Float64&#125;&#125;,1&#125;:
+ &#40;auc &#61; 246.932184, auc_dn &#61; 0.0493864368&#41;                
+ &#40;auc &#61; 302.24594, auc_dn &#61; 0.060449188&#41;                  
+ &#40;auc &#61; 288.579555, auc_dn &#61; 0.05771591100000001&#41;         
+ &#40;auc &#61; 333.80397999999997, auc_dn &#61; 0.066760796&#41;         
+ &#40;auc &#61; 129.06118400000003, auc_dn &#61; 0.025812236800000006&#41;
+ &#40;auc &#61; 291.9510375, auc_dn &#61; 0.0583902075&#41;               
+ &#40;auc &#61; 333.99432249999995, auc_dn &#61; 0.06679886449999999&#41; 
+ &#40;auc &#61; 259.9668375, auc_dn &#61; 0.0519933675&#41;               
+ &#40;auc &#61; 233.64285700000002, auc_dn &#61; 0.0467285714&#41;        
+ &#40;auc &#61; 242.71946250000002, auc_dn &#61; 0.048543892500000005&#41;
+ ⋮                                                        
+ &#40;auc &#61; 196.6721735, auc_dn &#61; 0.039334434700000004&#41;       
+ &#40;auc &#61; 319.29748499999994, auc_dn &#61; 0.06385949699999999&#41; 
+ &#40;auc &#61; 185.39912850000002, auc_dn &#61; 0.037079825700000006&#41;
+ &#40;auc &#61; 403.216205, auc_dn &#61; 0.080643241&#41;                 
+ &#40;auc &#61; 202.639537, auc_dn &#61; 0.0405279074&#41;                
+ &#40;auc &#61; 222.76995, auc_dn &#61; 0.04455399&#41;                   
+ &#40;auc &#61; 364.75571750000006, auc_dn &#61; 0.07295114350000001&#41; 
+ &#40;auc &#61; 265.6632825, auc_dn &#61; 0.05313265649999999&#41;        
+ &#40;auc &#61; 156.80645950000002, auc_dn &#61; 0.031361291900000005&#41;
 </pre>
 
 
@@ -821,18 +823,18 @@ pre.hljl > span.hljl-gt { }
 
 
 <pre class='hljl'>
-<span class='hljl-nf'>aumc</span><span class='hljl-p'>(</span><span class='hljl-n'>ncas</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>])</span><span class='hljl-t'>
-</span><span class='hljl-nf'>aumc_extrap_percent</span><span class='hljl-p'>(</span><span class='hljl-n'>ncas</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>])</span>
+<span class='hljl-nf'>aumc_extrap_percent</span><span class='hljl-p'>(</span><span class='hljl-n'>ncas</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>])</span><span class='hljl-t'>
+</span><span class='hljl-nf'>aumc</span><span class='hljl-p'>(</span><span class='hljl-n'>ncas</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>])</span>
 </pre>
 
 
 <pre class="hljl">
-59.47554145363463
+&#40;aumc &#61; 1411.6198735770822, aumc_dn &#61; 0.2823239747154164&#41;
 </pre>
 
 
-<h2>Terminal Rate Constant &#40;<span class="math">$\Lambda Z$</span>&#41;</h2>
-<p>The negative slope for concentration vs time in log-linear scale is the terminal rate constant, often denoted by <span class="math">$\Lambda Z$</span>. To compute <span class="math">$\Lambda Z$</span>, one can call</p>
+<h2>Terminal Rate Constant &#40;<span class="math">$\lambda z$</span>&#41;</h2>
+<p>The negative slope for concentration vs time in log-linear scale is the terminal rate constant, often denoted by <span class="math">$\lambda z$</span>. To compute <span class="math">$\lambda z$</span>, one can call</p>
 
 
 <pre class='hljl'>
@@ -845,7 +847,7 @@ pre.hljl > span.hljl-gt { }
 </pre>
 
 
-<p><code>lambdaz</code> returns a tuple in the form of <span class="math">$(\Lambda Z, \text{the number of data points used}, r^2)$</span>, where <span class="math">$r^2$</span> is the coefficient of determination from the linear regression of the slope determination. By default, it checks last <span class="math">$10$</span> or less data points, one can change it by providing the keyword <code>threshold</code>, e.g.</p>
+<p><code>lambdaz</code> returns a tuple in the form of <span class="math">$(\lambda z, \text{the number of data points used}, r^2)$</span>, where <span class="math">$r^2$</span> is the coefficient of determination from the linear regression of the slope determination. By default, it checks last <span class="math">$10$</span> or less data points, one can change it by providing the keyword <code>threshold</code>, e.g.</p>
 
 
 <pre class='hljl'>
@@ -854,7 +856,7 @@ pre.hljl > span.hljl-gt { }
 
 
 <pre class="hljl">
-&#40;lambdaz &#61; 0.03876710923615265, points &#61; 5, r2 &#61; 0.7444781209375907&#41;
+&#40;lambdaz &#61; 0.03876710923615265, points &#61; 5, r2 &#61; 0.8033543979137503&#41;
 </pre>
 
 
@@ -862,12 +864,25 @@ pre.hljl > span.hljl-gt { }
 
 
 <pre class='hljl'>
-<span class='hljl-nf'>lambdaz</span><span class='hljl-p'>(</span><span class='hljl-n'>ncas</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>idx</span><span class='hljl-oB'>=</span><span class='hljl-p'>[</span><span class='hljl-ni'>10</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>15</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>16</span><span class='hljl-p'>])</span>
+<span class='hljl-nf'>lambdaz</span><span class='hljl-p'>(</span><span class='hljl-n'>ncas</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>idxs</span><span class='hljl-oB'>=</span><span class='hljl-p'>[</span><span class='hljl-ni'>10</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>15</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>16</span><span class='hljl-p'>])</span>
 </pre>
 
 
 <pre class="hljl">
-&#40;lambdaz &#61; 0.03876710923615265, points &#61; 5, r2 &#61; 0.7444781209375907&#41;
+&#40;lambdaz &#61; 0.10617388957053892, points &#61; 3, r2 &#61; 0.9455398464554603&#41;
+</pre>
+
+
+<p>You can also pass their time points</p>
+
+
+<pre class='hljl'>
+<span class='hljl-nf'>lambdaz</span><span class='hljl-p'>(</span><span class='hljl-n'>ncas</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>slopetimes</span><span class='hljl-oB'>=</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>,</span><span class='hljl-ni'>2</span><span class='hljl-p'>,</span><span class='hljl-ni'>3</span><span class='hljl-p'>])</span>
+</pre>
+
+
+<pre class="hljl">
+&#40;lambdaz &#61; 0.5387479621404708, points &#61; 3, r2 &#61; 0.9870369564177864&#41;
 </pre>
 
 
@@ -883,11 +898,11 @@ pre.hljl > span.hljl-gt { }
 
 
 <pre class="hljl">
-&#40;0.653632, 0.0001307264&#41;
+&#40;cmax &#61; 0.653632, cmax_dn &#61; 0.0001307264&#41;
 </pre>
 
 
-<p>note that <code>cmax</code> returns <code>C_max</code> and normalized <code>C_max</code> if <code>dose</code> is provided.</p>
+<p>Note that <code>cmax</code> returns <code>C_max</code> and normalized <code>C_max</code> if <code>dose</code> is provided. If <code>dose</code> is provided in the <code>NCAdata</code>, that <code>dose</code> will be used by all computations where dose can be used.</p>
 <p><code>T_last</code> is the time of the last observed concentration value above the lower limit of quantization &#40;LLQ&#41;, and the corresponding concentration value is &#40;<code>C_last</code>&#41;. They can be computed by the command</p>
 
 
@@ -921,7 +936,7 @@ NCAdata:
 </pre>
 
 
-<p>The half-time can be computed by:</p>
+<p>The half-life can be computed by:</p>
 
 
 <pre class='hljl'>
@@ -930,7 +945,7 @@ NCAdata:
 
 
 <pre class="hljl">
-17.879774742490834
+1.2865889604594312
 </pre>
 
 
@@ -955,7 +970,7 @@ NCAdata:
           <div class="footer"><p>
           Published from <a href="nca.jmd">nca.jmd</a> using
           <a href="http://github.com/mpastell/Weave.jl">Weave.jl</a>
-           on 2018-11-30.
+           on 2018-12-01.
           <p></div>
 
 
