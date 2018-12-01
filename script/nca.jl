@@ -4,13 +4,14 @@ using PuMaS.NCA
 
 using PuMaS, CSV
 
-root = joinpath(dirname(pathof(PuMaS)), "..")
-const example_nca_data = CSV.read("$root/examples/nca_test_data/dapa_IV.csv")
+const example_nca_data = CSV.read(example_nmtran_data("nca_test_data/dapa_IV"))
 concs(i) = Float64.(example_nca_data[:CObs])[16(i-1)+1:16*i]
 times(i) = Float64.(example_nca_data[:TIME])[16(i-1)+1:16*i]
 
 
 auc(concs(1), times(1))
+
+
 auc(concs(1), times(1), method=:linuplogdown)
 
 
