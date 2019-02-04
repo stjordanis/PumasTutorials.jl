@@ -1,7 +1,7 @@
 ---
 title: Representative Samples of Subject Covariates
 author: José Bayoán Santiago Calderón
-date: 2018-11-20
+date: 2019-02-03
 ---
 
 # Introduction
@@ -28,7 +28,7 @@ be used to generate simulated data for PuMaS.jl.
 First some housekeeping. Let's start by pulling in the packages we will be using in this tutorial.
 
 ```julia
-using CSV, DataFrames, DataFramesMeta, Distributions, HTTP, InfoZIP, LazyJSON, Optim, StatsBase, StatPlots
+using CSV, DataFrames, DataFramesMeta, Distributions, HTTP, InfoZIP, LazyJSON, Optim, StatsBase, StatsPlots
 ```
 
 # Age, Race, and Sex
@@ -90,25 +90,28 @@ We will now convert the string containing the data into a tabular representation
         end
         output
     end
+    # Build a DataFrame with the data
     DataFrame(parserow.(LazyJSON.parse(jsontext)[2:end])) |>
-    (df -> @where(df,
-                  (:SEX .∈ Ref(1:2)) .& # Male = 1, Female = 2
-                  (:AGE .∈ Ref(18:85)) .& # Subset ages 18-85 years old
-                  ((:HISP .== 2) .| # Hispanic = 2
+    # Filter the data based on sex/age/ethnicity
+    (data -> data[(data.SEX .∈ Ref(1:2)) .& # Male = 1, Female = 2
+                  (data.AGE .∈ Ref(18:85)) .& # Subset ages 18-85 years old
+                  ((data.HISP .== 2) .| # Hispanic = 2
                   # Not Hispanic and one of the select races
                   # White = 1, Black = 2, Asian = 4
-                   ((:HISP .== 1) .& (:RACE .∈ Ref([1, 2, 4])))))) |>
+                   (data.HISP .== 1) .& (data.RACE .∈ Ref([1, 2, 4]))), :]) |>
+    # Clean sex and race
     (df -> @transform(df,
                       SEX = ifelse.(:SEX .== 1, "Male", "Female") |> categorical,
                       RACE = parserace.(:HISP, :RACE) |> categorical)) |>
     (df -> aggregate(groupby(df, [:SEX, :RACE, :AGE]), sum)) |> # Collapse Latino
+    # Select and rename variables
     (df -> names!(df[[:SEX, :RACE, :AGE, :POP_sum]], [:sex, :race, :age, :count]))
 end
 ```
 
 ```julia
 cross_table = detailedtable(cross_table)
-head(cross_table)
+first(cross_table, 5)
 ```
 
 We can now use the tidy dataset to generate the conditional probabilities.
@@ -117,31 +120,25 @@ We have three dimensions, (1) Age, (2) Race, and (3) Sex.
 
 We can obtain the joint distribution between age and race by sex.
 
-`DataFramesMeta.@linq` is a macro that allows for a convinient way to apply
-data manipulation (i.e., `where`, `transform`, `by`, `groupby`, `based_on`,
-`orderby`, `select`).
-
 ```julia
-females = (@linq cross_table |>
-           where(:sex .== "Female") |>
-           select(:race, :age, :count)) |>
-           (df -> unstack(df, :race, :count)) |> # To wide
-           (df -> Matrix(df[2:end])) |>
-           (A -> A / sum(A)) # conditional joint probabilities
-males = (@linq cross_table |>
-         where(:sex .== "Male") |> # Filter males
-         select(:race, :age, :count)) |>
-         (df -> unstack(df, :race, :count)) |> # To wide
-         (df -> Matrix(df[2:end])) |>
-         (A -> A / sum(A)) # conditional joint probabilities
+females = cross_table |>
+    (data -> data[data.sex .== "Female", [:race, :age, :count]]) |>
+    (df -> unstack(df, :race, :count)) |> # To wide
+    (data -> Matrix(data[2:end])) |>
+    (A -> A / sum(A)) # conditional joint probabilities
+males = cross_table |>
+    (data -> data[data.sex .== "Male", [:race, :age, :count]]) |>
+    (df -> unstack(df, :race, :count)) |> # To wide
+    (data -> Matrix(data[2:end])) |>
+    (A -> A / sum(A)) # conditional joint probabilities
 ```
 
 Since males and females are matrices (two dimensional arrays), we can combine
 these in the third dimension (by sex).
 
 ```julia
-println("Valid Probabilities: $(sum(females) ≈ sum(males) ≈ 1)")
-pepall5n = cat(females, males, dims = 3)
+println(string("Valid Probabilities: ", sum(females) ≈ sum(males) ≈ 1))
+pepall5n = cat(females, males, dims = 3) # 3D array
 size(pepall5n)
 ```
 
@@ -177,10 +174,9 @@ end
 labs = [(:sex, levels(cross_table.sex)),
         (:race, levels(cross_table.race)),
         (:age, levels(cross_table.age))]
-function gen_sex_race_age(joint_distribution, labs)
+gen_sex_race_age(joint_distribution, labs) =
     NamedTuple{Tuple(first.(labs))}(getindex.(last.(labs),
                                     gen_join_distribution(joint_distribution)))
-end
 ```
 
 We can now use our tools to generate 1,000 observations.
@@ -189,7 +185,7 @@ We can now use our tools to generate 1,000 observations.
 data = map(x -> gen_sex_race_age(pepall5n, labs), 1:1_000) |>
        DataFrame |>
        categorical!
-head(data)
+first(data, 5)
 ```
 
 ## Height and Weight
@@ -234,42 +230,40 @@ nchs = string("ftp://ftp.cdc.gov/pub/Health_Statistics/NCHS/Datasets/",
     IOBuffer |> # Suitable stream to parse as text file rather than string
     CSV.File |> # Reads coma separated file
     DataFrame |> # Materialize as DataFrame
-    (df -> (@linq df |>
-            # Exclude currently pregnant and invalid BMI records
-            where(ifelse.(ismissing.(:PREGNOW), true, :PREGNOW .== 2) .&
-                  (1 .≤ :BMI .≤ 9994)) |>
-            select(:SEX, :RACERPI2, :HISPAN_I, :AGE_P, :AHEIGHT, :BMI,
-                   :WTFA_SA))) |> # Survey weights
+    # Exclude currently pregnant and invalid BMI records
+    (data -> data[ifelse.(ismissing.(data.PREGNOW), true, data.PREGNOW .== 2) .&
+                  (1 .≤ data.BMI .≤ 9994),
+                  [:SEX, :RACERPI2, :HISPAN_I, :AGE_P, :AHEIGHT, :BMI, :WTFA_SA]]) |>
     (df -> @transform(df,
                       SEX = ifelse.(:SEX .== 1, "Male", "Female"),
                       RACERPI2 = parserace.(:RACERPI2, :HISPAN_I),
                       BMI = :BMI / 100)) |> # Adjust implied decimals
-    (df -> @select(df, :SEX, :RACERPI2, :AGE_P, :AHEIGHT, :BMI, :WTFA_SA)) |>
-    (df -> names!(df, [:sex, :race, :age, :height, :bmi, :wts])) |>
+    # Select and rename variables
+    (data -> names!(data[[:SEX, :RACERPI2, :AGE_P, :AHEIGHT, :BMI, :WTFA_SA]],
+                    [:sex, :race, :age, :height, :bmi, :wts])) |>
     # Ensure valid values for height given documentation
     # Filter races of interest
-    (df -> @where(df,
-                  (((:sex .== "Male") .& (59 .≤ :height .≤ 76)) .|
-                   ((:sex .== "Female") .& (59 .≤ :height .≤ 70))) .&
-                   (:race .≠ ""))) |>
+    (data -> data[(((data.sex .== "Male") .& (59 .≤ data.height .≤ 76)) .|
+                   ((data.sex .== "Female") .& (59 .≤ data.height .≤ 70))) .&
+                  (data.race .≠ ""),
+                  :]) |>
     disallowmissing! |> # Drop missing values
     categorical! # String variables are treated as nominal variables
-head(nchs)
+first(nchs, 5)
 ```
 
 For fitting the Weibull distributions of BMI by sex and race we can use maximum
 likelihood estimation (MLE)
 
 ```julia
-function mle_Weibull(data)
+function mle_Weibull(data, wts)
     x₀ = fill(2.0, 2) # Initial Parameters
     # Set up the objective function, first and second derivatives
-    wts = data.wts ./ sum(data.wts)
-    td = TwiceDifferentiable(x -> -sum(logpdf.(Weibull(x[1], # Flip sign
-                                                       x[2]),
-                                               data.bmi) .*
-                                        wts),
-                            x₀)
+    wts = wts ./ sum(wts)
+    td = TwiceDifferentiable(x -> Weibull(x[1], x[2]) |>
+                                  # Flip sign
+                                  (d -> -sum(w * logpdf(d, v) for (w, v) ∈ zip(wts, data))),
+                             x₀)
     lx = ones(2) # Lower bound is one for both parameters
     ux = fill(Inf, 2) # No upper bound
     tdc = TwiceDifferentiableConstraints(lx, ux) # Autodiff
@@ -280,11 +274,12 @@ end
 
 ```julia
 height_bmi =
-    by(nchs, [:sex, :race]) do subdf
-        DataFrame(height = fit(Normal, subdf.height, float(subdf.wts)),
-                  bmi = mle_Weibull(subdf))
-    end
-head(height_bmi)
+    by(nchs,
+       [:sex, :race],
+       [:bmi, :height, :wts] =>
+       data -> (height = fit(Normal, data.height, float(data.wts)),
+                bmi = mle_Weibull(data.bmi, data.wts)))
+first(height_bmi, 5)
 ```
 
 The next function uses the groups-wise height and BMI statistics to simulated the
@@ -296,8 +291,7 @@ function add_height_weight!(data, height_bmi)
     data.weight = 0 # Initialize weight
     for row in eachrow(height_bmi)
         # Unpack
-        sex, race, height, bmi =
-            row.sex, row.race, row.height, row.bmi
+        sex, race, height, bmi = row.sex, row.race, row.height, row.bmi
         # Identify relevant cases
         idx = (data.sex .== sex) .& (data.race .== race)
         # Sample height for group
@@ -312,7 +306,7 @@ end
 
 ```julia
 output = add_height_weight!(data, height_bmi)
-head(output)
+first(output, 5)
 ```
 
 ## Verify Approach
@@ -324,15 +318,15 @@ The following function shows a scatter plot of weight and height and the BMI den
 
 ```julia
 function height_weight(race, sex)
-    data = @where(output, (:sex .== sex) .& (:race .== race))
+    data = output[(output.sex .== sex) .& (output.race .== race),[:weight, :height]]
     plot(@df(data, scatter(:weight, :height,
-                          title = string(race, " ", sex),
-                          xlab = "Weight (pounds)",
-                          ylab = "Heigh (inches)",
-                          legend = :none)),
-        @df(data, density(703 * :weight ./ :height.^2,
-                          legend = :none,
-                          title = "BMI")),
+                           title = string(race, " ", sex),
+                           xlab = "Weight (pounds)",
+                           ylab = "Heigh (inches)",
+                           legend = :none)),
+         @df(data, density(703 * :weight ./ :height.^2,
+                           legend = :none,
+                           title = "BMI")),
         )
 end
 ```
