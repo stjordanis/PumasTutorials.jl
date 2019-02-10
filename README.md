@@ -7,6 +7,7 @@ Tutorials for pharmaceutical modeling and simulation with PuMaS.jl
 - [PuMaS for Multiple Response Pk/Pd](https://github.com/UMCTM/PuMaSTutorials.jl/blob/master/pdf/multiple_response.pdf)
 - [Data Generation for PuMaS](https://github.com/UMCTM/PuMaSTutorials.jl/blob/master/pdf/data_generation.pdf)
 - [PBPK in PuMaS, A Model for ACAT](https://github.com/UMCTM/PuMaSTutorials.jl/blob/master/pdf/pbpk_acat.pdf)
+- [Introduction to Noncompartmental Analysis (NCA)](https://github.com/UMCTM/PuMaSTutorials.jl/blob/master/pdf/basic_nca.pdf)
 
 # Developer Documentation
 
