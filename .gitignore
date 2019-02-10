@@ -3,3 +3,7 @@
 *.jl.mem
 deps/deps.jl
 *.tmp
+tmp*/
+*.aux
+*.log
+*.out
