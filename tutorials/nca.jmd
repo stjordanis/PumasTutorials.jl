@@ -23,16 +23,19 @@ using PuMaS.NCA
 ```
 
 First, let's load the example NCA data inside `PuMaS.jl`. This data have $24$
-individuals, and each of them has $16$ data points. Here, we are creating two
-functions `concs(i)` and `times(i)` which give the concentration timeseries of
-individual `i`.
+individuals, and each of them has $16$ data points.
 
 ```julia
 using PuMaS, CSV
 
-const example_nca_data = CSV.read(example_nmtran_data("nca_test_data/dapa_IV"))
-concs(i) = Float64.(example_nca_data[:CObs])[16(i-1)+1:16*i]
-times(i) = Float64.(example_nca_data[:TIME])[16(i-1)+1:16*i]
+file = PuMaS.example_nmtran_data("nca_test_data/dapa_IV")
+data = CSV.read(file)
+```
+
+here is what the dataset looks like
+
+```julia
+first(data, 6) # take first 6 rows
 ```
 
 # Efficient Computation of Multiple NCA Diagnostics
@@ -44,66 +47,62 @@ to infinity. Below we are accessing the concentration and corresponding time
 array for the first individual.
 
 ```julia
-auc(concs(1), times(1))
+NCA.auc(data[:CObs][1:16], data[:TIME][1:16])
 ```
+
 ```julia
-auc(concs(1), times(1), method=:linuplogdown)
+NCA.auc(data[:CObs][1:16], data[:TIME][1:16], method=:linuplogdown)
 ```
 
 the keyword argument `method` can be `:linear`, `:linuplogdown`, or `:linlog`,
 and it defaults to `:linear`. This is a simple interface, however it is not
 efficient if you want to compute many quantities. The recommended way is to
-create an `NCAdata` object first and then call the respective NCA diagnostic on
-the data object:
+create an `NCASubject` or an `NCAPopulation` object first and then call the
+respective NCA diagnostic on the data object. To parse data to an
+`NCAPopulation` object one can call the `parse_ncadata` function and give
+column names of `id`, `time`, `conc` (concentration), `amt` (dosage),
+`formulation`, `iv` (IV bolus name). Note that, by default, the lower limit of
+quantization (LLQ) is $0$, and concentrations that are below LLQ (BLQ) are
+dropped.
 
 ```julia
-nca = NCAdata(concs(1), times(1))
-auc(nca)
+pop = parse_ncadata(data, id=:ID, time=:TIME, conc=:CObs, amt=:AMT_IV, formulation=:Formulation, iv="IV", llq=0)
+pop[1]
 ```
 
-Here, `nca` is a lazy data structure and actual computations are not performed.
-When we are instantiating `NCAdata`, it only performs data checking and
-cleaning.
-
-Let's create `NCAdata(concs(i),times(i))` for each individual `i` from $1$ to
-$24$. To do that, we would broadcast the whole expression over the individual
-indices we'd want to use, like:
+Here, each element of `pop` has the type `NCASubject`. Tt is a lazy data
+structure and actual computations are not performed.  When we are instantiating
+`NCASubject`, it only performs data checking and cleaning. To calculate AUC,
+one can do:
 
 ```julia
-ncas = @. NCAdata(concs(1:24), times(1:24));
+NCA.auc(pop)
 ```
-
-`ncas` is an array of `NCAdata`s and its `i`th entry is the data for the `i`th
-subject.
 
 `AUClast` is the area under the curve from the first observation to the last
-observation. To compute `AUClast` on the first individual, one would do:
+observation. To compute `AUClast` on the second individual, one would do:
 
 ```julia
-ncas = @. NCAdata(concs(1:24), times(1:24), dose=5000.)
-auc(ncas[1], auctype=:AUClast)
+NCA.auc(pop[2], auctype=:last)
 ```
 
-Note that if `dose` is provided, `auc` will return a tuple, which is in the
-form of $(\text{AUC}, \text{normalized AUC})$.
-
-Or to compute the AUC on every individual, once would do:
+Or to compute the AUC on every individual, one would do:
 
 ```julia
-@. auc(ncas, auctype=:AUClast)
+NCA.auc(pop, auctype=:last)
 ```
 
 One can also compute AUC on a certain interval. To compute AUC on the interval
 $[10, \infty]$ on the first individual
 
 ```julia
-auc(ncas[1], interval=(10,Inf))
+NCA.auc(pop[1], interval=(10,Inf))
 ```
 
 One can also specify multiple intervals
 
 ```julia
-auc(ncas[1], interval=[(10,Inf), (10, 15)])
+NCA.auc(pop[1], interval=[(10,Inf), (10, 15)])
 ```
 
 In many cases, the AUC commands may need to extrapolate in order to cover the
@@ -112,7 +111,7 @@ desired interval. To see the percentage of extrapolation
 the command:
 
 ```julia
-auc_extrap_percent(ncas[1])
+NCA.auc_extrap_percent(pop[1])
 ```
 
 Area under the first moment of the concentration (AUMC) is
@@ -124,8 +123,8 @@ change `auc` to `aumc` for calculating AUMC or related quantities. For
 instance,
 
 ```julia
-aumc_extrap_percent(ncas[1])
-aumc(ncas[1])
+NCA.aumc_extrap_percent(pop[1])
+NCA.aumc(pop[1])
 ```
 
 ## Terminal Rate Constant ($\lambda z$)
@@ -135,29 +134,38 @@ terminal rate constant, often denoted by $\lambda z$. To compute $\lambda z$,
 one can call
 
 ```julia
-lambdaz(ncas[1])
+NCA.lambdaz(pop[1])
 ```
 
-`lambdaz` returns a tuple in the form of $(\lambda z, \text{the number of data
-points used}, r^2)$, where $r^2$ is the coefficient of determination from the
-linear regression of the slope determination. By default, it checks last $10$
-or less data points, one can change it by providing the keyword `threshold`,
-e.g.
+To get the coefficient of determination ($r^2$), the adjusted coefficient of
+determination ($adjr^2$), the $y$-intercept, the first time point used, and the
+number of points used while computing $\lambda z$, one can do:
 
 ```julia
-lambdaz(ncas[1], threshold=15)
+NCA.lambdazr2(pop)
+NCA.lambdazadjr2(pop)
+NCA.lambdazintercept(pop)
+NCA.lambdaztimefirst(pop)
+NCA.lambdaznpoints(pop)
+```
+
+By default, $\lambda z$ calculation checks last $10$ or less data points, one
+can change it by providing the keyword `threshold`, e.g.
+
+```julia
+NCA.lambdaz(pop[1], threshold=2)
 ```
 
 One can also specify the exact data points by passing their indices
 
 ```julia
-lambdaz(ncas[1], idxs=[10, 15, 16])
+NCA.lambdaz(pop[1], idxs=[10, 15, 16])
 ```
 
 You can also pass their time points
 
 ```julia
-lambdaz(ncas[1], slopetimes=[1,2,3])
+NCA.lambdaz(pop[1], slopetimes=[1,2,3])
 ```
 
 ## Simple functions
@@ -166,14 +174,14 @@ lambdaz(ncas[1], slopetimes=[1,2,3])
 observed, and they can be computed by:
 
 ```julia
-tmax(ncas[1])
-cmax(ncas[1])
-cmax(ncas[1], interval=(20, 24))
-cmax(ncas[1], interval=[(20, 24), (10, 15)])
+NCA.tmax(pop[1])
+NCA.cmax(pop[1])
+NCA.cmax(pop[1], interval=(20, 24))
+NCA.cmax(pop[1], interval=[(20, 24), (10, 15)])
 ```
 
 Note that `cmax` returns `C_max` and normalized `C_max` if `dose` is provided.
-If `dose` is provided in the `NCAdata`, that `dose` will be used by all
+If `dose` is provided in the `NCASubject`, that `dose` will be used by all
 computations where dose can be used.
 
 
@@ -182,21 +190,14 @@ limit of quantization (LLQ), and the corresponding concentration value is
 (`C_last`). They can be computed by the command
 
 ```julia
-tlast(ncas[1])
-clast(ncas[1])
-```
-
-By default, LLQ is $0$, and concentrations that are below LLQ (BLQ) are
-dropped. If you wish to keep BLQ data and change LLQ to $0.5$, you can do
-
-```julia
-NCAdata(concs(1), times(1), llq=0.5, concblq=:keep)
+NCA.tlast(pop[1])
+NCA.clast(pop[1])
 ```
 
 The half-life can be computed by:
 
 ```julia
-thalf(ncas[1])
+NCA.thalf(pop[1])
 ```
 
 One may need to interpolate or to extrapolate the concentration-time data. For
@@ -204,7 +205,7 @@ example, if you wanted to interpolate the concentration at $t=12$ using linear
 interpolation, you would do:
 
 ```julia
-NCA.interpextrapconc(ncas[1], 12., interpmethod=:linear)
+NCA.interpextrapconc(pop[1], 12., interpmethod=:linear)
 ```
 
 `interpmethod` can be `:linear`, `:linuplogdown`, or `:linlog`.

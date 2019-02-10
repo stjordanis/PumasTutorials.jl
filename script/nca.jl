@@ -4,71 +4,76 @@ using PuMaS.NCA
 
 using PuMaS, CSV
 
-const example_nca_data = CSV.read(example_nmtran_data("nca_test_data/dapa_IV"))
-concs(i) = Float64.(example_nca_data[:CObs])[16(i-1)+1:16*i]
-times(i) = Float64.(example_nca_data[:TIME])[16(i-1)+1:16*i]
+file = PuMaS.example_nmtran_data("nca_test_data/dapa_IV")
+data = CSV.read(file)
 
 
-auc(concs(1), times(1))
+first(data, 6) # take first 6 rows
 
 
-auc(concs(1), times(1), method=:linuplogdown)
+NCA.auc(data[:CObs][1:16], data[:TIME][1:16])
 
 
-nca = NCAdata(concs(1), times(1))
-auc(nca)
+NCA.auc(data[:CObs][1:16], data[:TIME][1:16], method=:linuplogdown)
 
 
-ncas = @. NCAdata(concs(1:24), times(1:24));
+pop = parse_ncadata(data, id=:ID, time=:TIME, conc=:CObs, amt=:AMT_IV, formulation=:Formulation, iv="IV", llq=0)
+pop[1]
 
 
-ncas = @. NCAdata(concs(1:24), times(1:24), dose=5000.)
-auc(ncas[1], auctype=:AUClast)
+NCA.auc(pop)
 
 
-@. auc(ncas, auctype=:AUClast)
+NCA.auc(pop[2], auctype=:last)
 
 
-auc(ncas[1], interval=(10,Inf))
+NCA.auc(pop, auctype=:last)
 
 
-auc(ncas[1], interval=[(10,Inf), (10, 15)])
+NCA.auc(pop[1], interval=(10,Inf))
 
 
-auc_extrap_percent(ncas[1])
+NCA.auc(pop[1], interval=[(10,Inf), (10, 15)])
 
 
-aumc_extrap_percent(ncas[1])
-aumc(ncas[1])
+NCA.auc_extrap_percent(pop[1])
 
 
-lambdaz(ncas[1])
+NCA.aumc_extrap_percent(pop[1])
+NCA.aumc(pop[1])
 
 
-lambdaz(ncas[1], threshold=15)
+NCA.lambdaz(pop[1])
 
 
-lambdaz(ncas[1], idxs=[10, 15, 16])
+NCA.lambdazr2(pop)
+NCA.lambdazadjr2(pop)
+NCA.lambdazintercept(pop)
+NCA.lambdaztimefirst(pop)
+NCA.lambdaznpoints(pop)
 
 
-lambdaz(ncas[1], slopetimes=[1,2,3])
+NCA.lambdaz(pop[1], threshold=2)
 
 
-tmax(ncas[1])
-cmax(ncas[1])
-cmax(ncas[1], interval=(20, 24))
-cmax(ncas[1], interval=[(20, 24), (10, 15)])
+NCA.lambdaz(pop[1], idxs=[10, 15, 16])
 
 
-tlast(ncas[1])
-clast(ncas[1])
+NCA.lambdaz(pop[1], slopetimes=[1,2,3])
 
 
-NCAdata(concs(1), times(1), llq=0.5, concblq=:keep)
+NCA.tmax(pop[1])
+NCA.cmax(pop[1])
+NCA.cmax(pop[1], interval=(20, 24))
+NCA.cmax(pop[1], interval=[(20, 24), (10, 15)])
 
 
-thalf(ncas[1])
+NCA.tlast(pop[1])
+NCA.clast(pop[1])
 
 
-NCA.interpextrapconc(ncas[1], 12., interpmethod=:linear)
+NCA.thalf(pop[1])
+
+
+NCA.interpextrapconc(pop[1], 12., interpmethod=:linear)
 
