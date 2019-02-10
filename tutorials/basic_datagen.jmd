@@ -29,7 +29,7 @@ tutorial.
 ```julia
 mdsl = @model begin
   @param begin
-    θ ∈ VectorDomain(3)
+    θ ∈ VectorDomain(4)
     Ω ∈ PSDDomain(3)
     σ_prop ∈ RealDomain(init=0.1)
   end
@@ -38,9 +38,13 @@ mdsl = @model begin
     η ~ MvNormal(Ω)
   end
 
+  @covariates isPM Wt
+
+
   @pre begin
-    CL = θ[1]*exp(η[1])
-    V = θ[2]*exp(η[2])
+    TVCL = isPM == 1 ? θ[1] : θ[4]
+    CL = θ[1]*(Wt/70)^0.75*exp(η[1])
+    V = θ[2]*(Wt/70)^0.75*exp(η[2])
     Ka = θ[3]*exp(η[3])
   end
 
@@ -68,7 +72,7 @@ proportional residual error.
 
 ```julia
 parms = (
-θ = [1,20,1.1],
+θ = [1,20,1.1,2],
 Ω = PDMat(diagm(0 => [0.04,0.04,0.04])),
 σ_prop = 0.04
 )
@@ -92,10 +96,12 @@ Handling of units will be covered in a different tutorial.
 Note that `ev` is of class `DosageRegimen` - `julia typeof(ev)` Specified like above,
 `DosageRegimen` is one of the four fundamental building block of a `Subject` (more on `Subject` below).
 
+### Single subject
+
 Let's create a single subject
 
 ```julia
-s1 = Subject(id=1,evs=ev)
+s1 = Subject(id=1,evs=ev,cvs=(isPM=0, Wt=70))
 for fn in fieldnames(Subject)
            x = getproperty(s1, fn)
            if !isa(x, Nothing)
@@ -111,12 +117,18 @@ Note that each `Subject` is an individual composed of:
   - `obs`: observations
   - `evs`: events
 
-In the example above, we only provided the `id` and the `evs`. Since `cvs` and `obs` were not
-provided, they are represented a `nothing` or a empty array. Lets take a closer at the events for this
+In the example above, we only provided the `id`, `evs`, and the `cvs`. Since  `obs` were not
+provided, they are represented by an empty array. Lets take a closer at the events for this
 subject 1.
 
 ```julia
 s1.events
+```
+
+and now the covariates
+
+```julia
+s1.covariates
 ```
 
 Each event has some associated information as can be seen above.
@@ -131,6 +143,9 @@ obs = simobs(mdsl,s1,parms,obstimes=0:0.1:120)
 gr()
 plot(collect(obs.times),obs.derived[:conc], yaxis="Concentration (mg/L)", xaxis="Time (hrs)", color=2,thickness_scaling=1.5, legend=false)
 ```
+
+### A Population
+
 Now, lets build a population, which is essentially a collection of subjects
 
 ```julia
@@ -146,7 +161,32 @@ plot(collect(obs[1].times),obs[1].derived[:conc], yaxis="Concentration (mg/L)", 
 for i in 2:10
   plot!(obs[i].times,obs[i][:conc])
 end
-#savefig("demo.png")
+```
+
+### Covariates
+
+As was discussed earlier, a `Subject` can also be provided details regarding covariates. In the model above, there are two covariates,
+`isPM` which stands for _is the subject a poor metabolizer_ and takes a boolean of _yes_ and  _no_. The second covariate is a
+a continuos covariate where body weight `Wt` impacts both `CL` and `V`. Let us now specify covariates to the population of 10 subjects we created earlier.
+
+```julia
+choose_covariates() = (isPM = rand(["yes", "no"]),
+                    Wt = rand(55:80))
+```
+`choose_covariates` will randomly choose a `isPM` and an `Wt` between 55-80 kgs
+
+We can make a list with covariates for six subjects through a list comprehension
+
+```julia
+cvs = [ choose_covariates() for i in 1:10 ]
+show(cvs)
+```
+
+Now, we add these covariates to the population as below
+
+
+```julia
+pop_with_covariates = Population(map(i -> Subject(id=i,evs=ev,cvs=choose_covariates()),1:10))
 ```
 
 ```julia
