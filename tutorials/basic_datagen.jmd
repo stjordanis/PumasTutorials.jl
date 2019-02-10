@@ -1,0 +1,177 @@
+---
+title : Data Generation in PuMaS
+author : Vijay Ivaturi
+date: 22nd October 2018
+---
+
+
+```julia
+using Weave
+using PuMaS
+using DataFrames
+using LinearAlgebra
+using Plots
+using Gadfly
+```
+# Introduction
+
+In this tutorial, we will cover the fundamentals of data generation using PuMaS. We will
+demonstrate the different designs one can create by using a simple example model as provided below.
+
+# A simple example
+
+## The model
+
+Below is a PuMaS model that specifies a 1-compartment oral absorption system with between-subject
+variability on all the parameters. Details of the model specification are provided in a different
+tutorial.
+
+```julia
+mdsl = @model begin
+  @param begin
+    θ ∈ VectorDomain(3)
+    Ω ∈ PSDDomain(3)
+    σ_prop ∈ RealDomain(init=0.1)
+  end
+
+  @random begin
+    η ~ MvNormal(Ω)
+  end
+
+  @pre begin
+    CL = θ[1]*exp(η[1])u"L/hr"
+    V = θ[2]*exp(η[2])u"L"
+    Ka = θ[3]*exp(η[3])u"hr^-1"
+  end
+
+  @init begin
+    Depot = 0.0u"mg"
+  #  Central = 0.0u"mg"
+  end
+
+  @dynamics begin
+    Depot' = -Ka*Depot
+    Central' = Ka*Depot - Depot*CL/V
+  end
+
+  @vars begin
+  conc = Central/V
+  end
+
+# Note that ustrip function is used below until a fix is provided in Distributions.jl
+  @derived begin
+    conc = @. Central/V
+    dv ~ @.Normal(ustrip(conc),sqrt(ustrip(conc)^2*σ_prop+ eps()))
+  end
+
+end
+```
+## Setting up parameters
+Below we are providing the initial estimates of the parameters to simulate from. The fixed effects are provided
+in the θ vector (CL, V, Ka) and the between-subject variability parameteres are provided in the Ω vector as
+variances. So, 0.04 variance on Ω_11 suggests a 20% coefficient of variation. Similarly, σ_prop has a 20%
+proportional residual error.
+
+```julia
+parms = (
+θ = [10,35,2],
+Ω = PDMat(diagm(0 => [0.04,0.04,0.04])),
+σ_prop = 0.04
+)
+```
+
+## Simulation dataset
+`DosageRegimen()` is the function that lets you create a dosing regimen.  The first argument of the `DosageRegimen`
+is `amt` and is not a named argument. All subsequent arguments need to be named. Lets try
+a simple example where you provide a 100 mg dose.
+
+```julia
+ev = DosageRegimen(1000u"mg", time=0u"hr")
+head(ev.data)
+typeof(ev)
+```
+As you can see above, we provided a single 100 mg dose. `DosageRegimen` provides some defaults when
+it creates the dataset, `time=0`, `evid=1`, `cmt=1`, `rate=0`, `ii=0` & `addl=0`. Since we provided
+units to the `amt`, any other variable that is derived from `amt`, e.g. `rate`, will have associated units.
+Note that `ev` is of class `DosageRegimen` - `julia typeof(ev)` Specified like above,
+`DosageRegimen` is one of the four fundamental building block of a `Subject` (more on `Subject` below).
+
+Let's create a single subject
+
+```julia
+s1 = Subject(id=1,evs=ev)
+```
+Note that each `Subject` is an individual composed of:
+
+  - `id`: an unique identifier
+  - `cvs`: covariates
+  - `obs`: observations
+  - `evs`: events
+
+In the example above, we only provided the `id` and the `evs`. Since `cvs` and `obs` were not
+provided, they are represented a `nothing` or a empty array. Lets take a closer at the events for this
+subject 1.
+
+```julia
+s1.events
+```
+
+Each event has some associated information as can be seen above. Also, note that the units specified
+in the `DosageRegimen` have been carried forward as properties of the subject.
+
+Using this one subject, `s1`, let us simulate a simple concentration time profile using the model above.
+
+```julia
+obs = simobs(mdsl,s1,parms,obstimes=0u"hr":1u"hr":24u"hr", alg=Tsit5())
+```
+
+```julia
+plot(collect(obs.times),obs.derived[:conc],yaxis="conc",xaxis="time",title="conc vs time",legend=false,color=1)
+```
+Now, lets build a population of subjects
+
+```julia
+pop = Population(map(i -> Subject(id=i,evs=ev),1:10))
+```
+
+```julia
+obs = simobs(mdsl,pop,parms,obstimes=0:1:24)
+```
+
+```julia
+plot(collect(obs[1].times),obs[1].derived[:conc],yaxis="conc",xaxis="time",title="conc vs time",legend=false,color=1)
+for i in 2:10
+  plot!(obs[i].times,obs[i][:conc])
+end
+#savefig("demo.png")
+```
+
+```julia
+ev1 = DosageRegimen(100u"mg",time=0u"hr")
+s1  = Subject(id=1,evs=ev1)
+obs = simobs(mdsl,s1,parms,obstimes=0u"hr":1u"hr":24u"hr")
+plot(collect(obs.times),obs.derived[:conc],
+yaxis="conc",xaxis="time",title="conc vs time",legend=false,color=1)
+
+#obs = simobs(mdsl,subs,parms,obstimes=0u"hr":2u"hr":24u"hr")
+```
+
+```julia
+ev1 = DosageRegimen(100,addl=3,ii=24)
+s2  = Subject(id=1,evs=ev1)
+obs = simobs(mdsl,s2,parms,obstimes=0:1:96)
+plot(collect(obs.times),obs.derived[:conc],
+yaxis="conc",xaxis="time",title="conc vs time",legend=false,color=1)
+
+#obs = simobs(mdsl,subs,parms,obstimes=0u"hr":2u"hr":24u"hr")
+```
+
+```julia
+loading = DosageRegimen(1000,time=0, cmt=1)
+head(loading.data)
+```
+
+```julia
+maintanance = DosageRegimen(500,time=12, cmt=1, ii=12, addl=10)
+head(maintanance.data)
+```
