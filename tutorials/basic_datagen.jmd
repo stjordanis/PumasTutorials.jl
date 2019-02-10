@@ -39,19 +39,14 @@ mdsl = @model begin
   end
 
   @pre begin
-    CL = θ[1]*exp(η[1])u"L/hr"
-    V = θ[2]*exp(η[2])u"L"
-    Ka = θ[3]*exp(η[3])u"hr^-1"
-  end
-
-  @init begin
-    Depot = 0.0u"mg"
-  #  Central = 0.0u"mg"
+    CL = θ[1]*exp(η[1])
+    V = θ[2]*exp(η[2])
+    Ka = θ[3]*exp(η[3])
   end
 
   @dynamics begin
     Depot' = -Ka*Depot
-    Central' = Ka*Depot - Depot*CL/V
+    Central' = Ka*Depot - Central*CL/V
   end
 
   @vars begin
@@ -60,8 +55,7 @@ mdsl = @model begin
 
 # Note that ustrip function is used below until a fix is provided in Distributions.jl
   @derived begin
-    conc = @. Central/V
-    dv ~ @.Normal(ustrip(conc),sqrt(ustrip(conc)^2*σ_prop+ eps()))
+    dv ~ @.Normal(conc,sqrt(conc^2*σ_prop+ eps()))
   end
 
 end
@@ -74,7 +68,7 @@ proportional residual error.
 
 ```julia
 parms = (
-θ = [10,35,2],
+θ = [1,20,1.1],
 Ω = PDMat(diagm(0 => [0.04,0.04,0.04])),
 σ_prop = 0.04
 )
@@ -86,13 +80,15 @@ is `amt` and is not a named argument. All subsequent arguments need to be named.
 a simple example where you provide a 100 mg dose.
 
 ```julia
-ev = DosageRegimen(1000u"mg", time=0u"hr")
+ev = DosageRegimen(100, time=0)
 head(ev.data)
 typeof(ev)
 ```
 As you can see above, we provided a single 100 mg dose. `DosageRegimen` provides some defaults when
-it creates the dataset, `time=0`, `evid=1`, `cmt=1`, `rate=0`, `ii=0` & `addl=0`. Since we provided
-units to the `amt`, any other variable that is derived from `amt`, e.g. `rate`, will have associated units.
+it creates the dataset, `time=0`, `evid=1`, `cmt=1`, `rate=0`, `ii=0` & `addl=0`. We can also provide
+units to the `amt` and any other variable that is derived from `amt`, e.g. `rate`, will have associated units.
+Handling of units will be covered in a different tutorial.
+
 Note that `ev` is of class `DosageRegimen` - `julia typeof(ev)` Specified like above,
 `DosageRegimen` is one of the four fundamental building block of a `Subject` (more on `Subject` below).
 
@@ -100,6 +96,13 @@ Let's create a single subject
 
 ```julia
 s1 = Subject(id=1,evs=ev)
+for fn in fieldnames(Subject)
+           x = getproperty(s1, fn)
+           if !isa(x, Nothing)
+               println(fn)
+               println(x)
+           end
+end
 ```
 Note that each `Subject` is an individual composed of:
 
@@ -116,30 +119,30 @@ subject 1.
 s1.events
 ```
 
-Each event has some associated information as can be seen above. Also, note that the units specified
-in the `DosageRegimen` have been carried forward as properties of the subject.
+Each event has some associated information as can be seen above.
 
 Using this one subject, `s1`, let us simulate a simple concentration time profile using the model above.
 
 ```julia
-obs = simobs(mdsl,s1,parms,obstimes=0u"hr":1u"hr":24u"hr", alg=Tsit5())
+obs = simobs(mdsl,s1,parms,obstimes=0:0.1:120)
 ```
 
 ```julia
-plot(collect(obs.times),obs.derived[:conc],yaxis="conc",xaxis="time",title="conc vs time",legend=false,color=1)
+gr()
+plot(collect(obs.times),obs.derived[:conc], yaxis="Concentration (mg/L)", xaxis="Time (hrs)", color=2,thickness_scaling=1.5, legend=false)
 ```
-Now, lets build a population of subjects
+Now, lets build a population, which is essentially a collection of subjects
 
 ```julia
 pop = Population(map(i -> Subject(id=i,evs=ev),1:10))
 ```
 
 ```julia
-obs = simobs(mdsl,pop,parms,obstimes=0:1:24)
+obs = simobs(mdsl,pop,parms,obstimes=0:0.1:120)
 ```
 
 ```julia
-plot(collect(obs[1].times),obs[1].derived[:conc],yaxis="conc",xaxis="time",title="conc vs time",legend=false,color=1)
+plot(collect(obs[1].times),obs[1].derived[:conc], yaxis="Concentration (mg/L)", xaxis="Time (hrs)", color=2,thickness_scaling=1.5, legend=false)
 for i in 2:10
   plot!(obs[i].times,obs[i][:conc])
 end
