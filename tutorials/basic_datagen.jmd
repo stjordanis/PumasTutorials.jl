@@ -48,15 +48,14 @@ mdsl = @model begin
   end
 
   @dynamics begin
-    Depot' = -Ka*Depot
-    Central' = Ka*Depot - Central*CL/V
+    Depot'   = -Ka*Depot
+    Central' =  Ka*Depot - Central*CL/V
   end
 
   @vars begin
-  conc = Central/V
+    conc = Central/V
   end
 
-# Note that ustrip function is used below until a fix is provided in Distributions.jl
   @derived begin
     dv ~ @.Normal(conc,sqrt(conc^2*σ_prop+ eps()))
   end
@@ -80,7 +79,7 @@ parms = (
 ## Simulation dataset
 `DosageRegimen()` is the function that lets you create a dosing regimen.  The first argument of the `DosageRegimen`
 is `amt` and is not a named argument. All subsequent arguments need to be named. Lets try
-a simple example where you provide a 100 mg dose.
+a simple example where you provide a 100 mg dose at `time=0`.
 
 ```julia
 ev = DosageRegimen(100, time=0)
@@ -143,9 +142,36 @@ obs = simobs(mdsl,s1,parms,obstimes=0:0.1:120)
 are dealing with a single subject `s1`. `obstimes` is the way we specify to the simulator the times at which the simulation output should
 be stored and output. `obstimes` is specified as a range here, from 0 to 120 hours every 0.1 hours.
 
+You can use the default plotting recipes built using the `Plots.jl` library that plots the two different outputs in the simulation.
+
+```julia
+plot(obs)
+```
+
+This can further be extended and customized by overriding the plot defaults as below
+
+```julia
+plot(obs,
+color=2,thickness_scaling=1.5,
+legend=false, lw=2)
+```
+
+If you would like to plot only one of the outputs, you can specify as
+
+```julia
+plot(obs[:conc],
+yaxis="Concentration (mg/L)", xaxis="Time (hrs)",
+color=2,thickness_scaling=1.5,
+legend=false, lw=2)
+```
+Or, if you feel like plotting from scratch, you can use any of the plotting libraries in the Julia framework. Below is an example using `Plots.jl`
+
 ```julia
 gr()
-plot(collect(obs.times),obs.derived[:conc], yaxis="Concentration (mg/L)", xaxis="Time (hrs)", color=2,thickness_scaling=1.5, legend=false)
+plot(obs)
+plot(collect(obs.times),obs.derived[:conc],
+yaxis="Concentration (mg/L)", xaxis="Time (hrs)",
+color=2,thickness_scaling=1.5, legend=false, lw=3)
 ```
 
 ### A Population
@@ -177,11 +203,10 @@ Now, we can simulate this `Population` of 2 subjects as below
 ```julia
 obs = simobs(mdsl,twosubjs,parms,obstimes=0:0.1:120)
 ```
+When using `simobs` on more than one subject, i.e., on a `Population`, the simulation is automatically parallelized across the subejcts.
 
 ```julia
-ps1 = plot(collect(obs[1].times),obs[1].derived[:conc], yaxis="Concentration (mg/L)", xaxis="Time (hrs)", color=2,thickness_scaling=1.0, legend=false)
-ps2  = plot(collect(obs[2].times),obs[2].derived[:conc], yaxis="Concentration (mg/L)", xaxis="Time (hrs)", color=2,thickness_scaling=1.0, legend=false)
-plot(ps1,ps2, layout=(2,1))
+plot(obs)
 ```
 
 Similarly, we can build a population of any number of subjects. But before we do that, let's dive into covariate generation.
@@ -221,10 +246,5 @@ obs = simobs(mdsl,pop_with_covariates,parms,obstimes=0:0.1:120)
 and visualize the output
 
 ```julia
-plot(collect(obs[1].times),obs[1].derived[:conc], yaxis="Concentration (mg/L)", xaxis="Time (hrs)", color=2,thickness_scaling=1.5, legend=false)
-for i in 2:10
-  plot!(obs[i].times,obs[i][:conc])
-end
-#savefig("./tutorials/plotwithcovs.jpg")
+plot(obs)
 ```
-![]("./plotwithcovs.jpg")
