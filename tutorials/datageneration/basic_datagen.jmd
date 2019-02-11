@@ -76,8 +76,8 @@ parms = (
 )
 ```
 
-## Simulation dataset
-`DosageRegimen()` is the function that lets you create a dosing regimen.  The first argument of the `DosageRegimen`
+## Single dose example
+`DosageRegimen()` is the function that lets you construct a dosing regimen.  The first argument of the `DosageRegimen`
 is `amt` and is not a named argument. All subsequent arguments need to be named. Lets try
 a simple example where you provide a 100 mg dose at `time=0`.
 
@@ -244,6 +244,94 @@ obs = simobs(mdsl,pop_with_covariates,parms,obstimes=0:0.1:120)
 ```
 
 and visualize the output
+
+```julia
+plot(obs)
+```
+
+## Multiple dose example
+
+Multiple dose datasets are pretty simple to construct in PuMaS
+
+```julia
+md =  DosageRegimen(100,ii=24,addl=6)
+```
+
+Let's create a new subject, `s3`
+
+```julia
+s3 = Subject(id=3,evs=md, cvs=(isPM=0,Wt=70))
+```
+
+```julia
+obs = simobs(mdsl, s3, parms,obstimes=0:0.1:240)
+```
+
+```julia
+plot(obs)
+```
+
+## Combine events
+
+We can also combine events of different nature as seen below
+
+
+```julia
+ldmd = DosageRegimen([500,100],cmt=1, time=[0,24], addl=[0,6],ii=[0,24])
+```
+
+```julia
+s4 = Subject(id=4, evs=ldmd, cvs=(isPM=0,Wt=70))
+```
+
+```julia
+obs = simobs(mdsl, s4, parms,obstimes=0:0.1:120)
+```
+
+```julia
+plot(obs, ylims=(0,50))
+```
+
+We can take several event objects and combine them into a single simulation data frame as below.
+
+```julia
+e1 = DosageRegimen(100, ii=24, addl=6)
+e2 = DosageRegimen(50,  ii=12, addl=13)
+e3 = DosageRegimen(200, ii=24, addl=2)
+```
+
+```julia
+pop1 = Population(map(i -> Subject(id=i,evs=e1,cvs=choose_covariates()),1:5))
+pop2 = Population(map(i -> Subject(id=i,evs=e2,cvs=choose_covariates()),6:8))
+pop3 = Population(map(i -> Subject(id=i,evs=e3,cvs=choose_covariates()),9:10))
+pop = Population(vcat(pop1,pop2,pop3))
+```
+Simulate into the population
+
+```julia
+obs = simobs(mdsl,pop,parms,obstimes=0:0.1:120)
+```
+
+and visualize the output
+
+```julia
+plot(obs)
+```
+
+
+## Infusions
+
+```julia
+inf = DosageRegimen(100,rate=3, cmt=2)
+```
+
+```julia
+s5 = Subject(id=5, evs=inf, cvs=(isPM=0,Wt=70))
+```
+
+```julia
+obs = simobs(mdsl, s5, parms,obstimes=0:0.1:120)
+```
 
 ```julia
 plot(obs)
