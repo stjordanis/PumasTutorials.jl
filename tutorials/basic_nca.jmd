@@ -103,7 +103,7 @@ $[10, \infty]$ on the first individual
 NCA.auc(pop[1], interval=(10,Inf).*timeu)
 ```
 
-note that we need to apply the time unit to the interval for units
+Note that we need to apply the time unit to the interval for units
 compatibility. One can also specify multiple intervals
 
 ```julia
