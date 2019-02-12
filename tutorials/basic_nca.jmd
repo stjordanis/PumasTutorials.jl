@@ -63,14 +63,17 @@ respective NCA diagnostic on the data object. To parse data to an
 column names of `id`, `time`, `conc` (concentration), `amt` (dosage),
 `formulation`, `iv` (IV bolus name). Note that, by default, the lower limit of
 quantization (LLQ) is $0$, and concentrations that are below LLQ (BLQ) are
-dropped.
+dropped. Also, we can add units by providing `timeu`, `concu`, and `amtu`.
 
 ```julia
-pop = parse_ncadata(data, id=:ID, time=:TIME, conc=:CObs, amt=:AMT_IV, formulation=:Formulation, iv="IV", llq=0)
-pop[1]
+timeu = u"hr"
+concu = u"mg/L"
+amtu  = u"mg"
+pop = parse_ncadata(data, id=:ID, time=:TIME, conc=:CObs, amt=:AMT_IV, formulation=:Formulation, iv="IV",
+  llq=0concu, timeu=timeu, concu=concu, amtu=amtu)
 ```
 
-Here, each element of `pop` has the type `NCASubject`. Tt is a lazy data
+Here, each element of `pop` has the type `NCASubject`. It is a lazy data
 structure and actual computations are not performed.  When we are instantiating
 `NCASubject`, it only performs data checking and cleaning. To calculate AUC,
 one can do:
@@ -96,13 +99,14 @@ One can also compute AUC on a certain interval. To compute AUC on the interval
 $[10, \infty]$ on the first individual
 
 ```julia
-NCA.auc(pop[1], interval=(10,Inf))
+NCA.auc(pop[1], interval=(10,Inf).*timeu)
 ```
 
-One can also specify multiple intervals
+note that we need to apply the time unit to the interval for units
+compatibility. One can also specify multiple intervals
 
 ```julia
-NCA.auc(pop[1], interval=[(10,Inf), (10, 15)])
+NCA.auc(pop[1], interval=[(10,Inf).*timeu, (10, 15).*timeu])
 ```
 
 In many cases, the AUC commands may need to extrapolate in order to cover the
@@ -165,7 +169,7 @@ NCA.lambdaz(pop[1], idxs=[10, 15, 16])
 You can also pass their time points
 
 ```julia
-NCA.lambdaz(pop[1], slopetimes=[1,2,3])
+NCA.lambdaz(pop[1], slopetimes=[1,2,3].*timeu)
 ```
 
 ## Simple functions
@@ -176,8 +180,8 @@ observed, and they can be computed by:
 ```julia
 NCA.tmax(pop[1])
 NCA.cmax(pop[1])
-NCA.cmax(pop[1], interval=(20, 24))
-NCA.cmax(pop[1], interval=[(20, 24), (10, 15)])
+NCA.cmax(pop[1], interval=(20, 24).*timeu)
+NCA.cmax(pop[1], interval=[(20, 24).*timeu, (10, 15).*timeu])
 ```
 
 Note that `cmax` returns `C_max` and normalized `C_max` if `dose` is provided.
@@ -205,7 +209,77 @@ example, if you wanted to interpolate the concentration at $t=12$ using linear
 interpolation, you would do:
 
 ```julia
-NCA.interpextrapconc(pop[1], 12., interpmethod=:linear)
+NCA.interpextrapconc(pop[1], 12timeu, interpmethod=:linear)
 ```
 
 `interpmethod` can be `:linear`, `:linuplogdown`, or `:linlog`.
+
+# Plots and Summary
+
+To generate linear and log-linear plots, one can do:
+
+```julia
+using Plots # load the plotting library
+plot(pop)
+```
+
+to only generate the linear plot:
+
+```julia
+plot(pop, loglinear=false)
+```
+
+Similarly, to generate log-linear plot:
+
+```julia
+plot(pop, linear=false)
+```
+
+To calculate all NCA quantities, one can do
+
+```julia
+report = NCAReport(pop)
+```
+
+The `NCAReport` object holds all quantities, and one can call
+`NCA.to_dataframe` to get a `DataFrame` object.
+
+```julia
+NCA.to_dataframe(report)
+```
+
+# Multiple dose
+
+The interface of doing NCA with multiple doses is the same as doing single dose
+NCA. To load the data with multiple doses, one can do
+
+```julia
+multiple_doses_file = PuMaS.example_nmtran_data("nca_test_data/dapa_IV_ORAL")
+mdata = CSV.read(multiple_doses_file)
+
+timeu = u"hr"
+concu = u"mg/L"
+amtu  = u"mg"
+mpop = parse_ncadata(mdata, time=:TIME, conc=:COBS, amt=:AMT, formulation=:FORMULATION, occasion=:OCC,
+                                     iv="IV", timeu=timeu, concu=concu, amtu=amtu)
+```
+
+To plot:
+
+```julia
+plot(mpop)
+```
+
+To compute AUC and $\lambda z$:
+
+```julia
+NCA.auc(mpop)
+```
+
+To get a summary, we need to provide a reference dose. In this example, we are
+going to let the first dose be the reference dose.
+
+```julia
+rep = NCAReport(mpop, ithdose=1)
+NCA.to_dataframe(rep)
+```
