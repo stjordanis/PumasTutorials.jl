@@ -1,7 +1,7 @@
 ---
 title: NCA Tutorial
 author: Yingbo Ma
-date: November 30, 2018
+date: February 12, 2019
 ---
 
 # Introduction
@@ -44,7 +44,8 @@ first(data, 6) # take first 6 rows
 
 We can compute the area under the curve (AUC) from the first observation time
 to infinity. Below we are accessing the concentration and corresponding time
-array for the first individual.
+array for the first individual. By default, the `auc` function computes the AUC
+from initial time to infinity (AUCinf).
 
 ```julia
 NCA.auc(data[:CObs][1:16], data[:TIME][1:16])

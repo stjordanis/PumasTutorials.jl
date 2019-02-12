@@ -22,7 +22,7 @@
 
 \author{ Yingbo Ma }
 
-\date{ November 30, 2018 }
+\date{ February 12, 2019 }
 
 \usepackage[T1]{fontenc}
 \usepackage{textcomp}
@@ -174,7 +174,7 @@ here is what the dataset looks like
 
 \section{Efficient Computation of Multiple NCA Diagnostics}
 \subsection{AUC and AUMC}
-We can compute the area under the curve (AUC) from the first observation time to infinity. Below we are accessing the concentration and corresponding time array for the first individual.
+We can compute the area under the curve (AUC) from the first observation time to infinity. Below we are accessing the concentration and corresponding time array for the first individual. By default, the \texttt{auc} function computes the AUC from initial time to infinity (AUCinf).
 
 
 \begin{lstlisting}
@@ -519,7 +519,7 @@ To generate linear and log-linear plots, one can do:
 (*@\HLJLnf{plot}@*)(*@\HLJLp{(}@*)(*@\HLJLn{pop}@*)(*@\HLJLp{)}@*)
 \end{lstlisting}
 
-\includegraphics[width=\linewidth]{/home/ggnore/.julia/dev/PuMaSTutorials/pdf/tmpul13t7/basic_nca_23_1.pdf}
+\includegraphics[width=\linewidth]{/home/ggnore/.julia/dev/PuMaSTutorials/pdf/tmp48IkwZ/basic_nca_23_1.pdf}
 
 to only generate the linear plot:
 
@@ -528,7 +528,7 @@ to only generate the linear plot:
 (*@\HLJLnf{plot}@*)(*@\HLJLp{(}@*)(*@\HLJLn{pop}@*)(*@\HLJLp{,}@*) (*@\HLJLn{loglinear}@*)(*@\HLJLoB{=}@*)(*@\HLJLkc{false}@*)(*@\HLJLp{)}@*)
 \end{lstlisting}
 
-\includegraphics[width=\linewidth]{/home/ggnore/.julia/dev/PuMaSTutorials/pdf/tmpul13t7/basic_nca_24_1.pdf}
+\includegraphics[width=\linewidth]{/home/ggnore/.julia/dev/PuMaSTutorials/pdf/tmp48IkwZ/basic_nca_24_1.pdf}
 
 Similarly, to generate log-linear plot:
 
@@ -537,7 +537,7 @@ Similarly, to generate log-linear plot:
 (*@\HLJLnf{plot}@*)(*@\HLJLp{(}@*)(*@\HLJLn{pop}@*)(*@\HLJLp{,}@*) (*@\HLJLn{linear}@*)(*@\HLJLoB{=}@*)(*@\HLJLkc{false}@*)(*@\HLJLp{)}@*)
 \end{lstlisting}
 
-\includegraphics[width=\linewidth]{/home/ggnore/.julia/dev/PuMaSTutorials/pdf/tmpul13t7/basic_nca_25_1.pdf}
+\includegraphics[width=\linewidth]{/home/ggnore/.julia/dev/PuMaSTutorials/pdf/tmp48IkwZ/basic_nca_25_1.pdf}
 
 To calculate all NCA quantities, one can do
 
@@ -610,7 +610,7 @@ To plot:
 (*@\HLJLnf{plot}@*)(*@\HLJLp{(}@*)(*@\HLJLn{mpop}@*)(*@\HLJLp{)}@*)
 \end{lstlisting}
 
-\includegraphics[width=\linewidth]{/home/ggnore/.julia/dev/PuMaSTutorials/pdf/tmpul13t7/basic_nca_29_1.pdf}
+\includegraphics[width=\linewidth]{/home/ggnore/.julia/dev/PuMaSTutorials/pdf/tmp48IkwZ/basic_nca_29_1.pdf}
 
 To compute AUC and $\lambda z$:
 
