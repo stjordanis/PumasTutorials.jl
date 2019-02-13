@@ -210,10 +210,10 @@ example, if you wanted to interpolate the concentration at $t=12$ using linear
 interpolation, you would do:
 
 ```julia
-NCA.interpextrapconc(pop[1], 12timeu, interpmethod=:linear)
+NCA.interpextrapconc(pop[1], 12timeu, method=:linear)
 ```
 
-`interpmethod` can be `:linear`, `:linuplogdown`, or `:linlog`.
+`method` can be `:linear`, `:linuplogdown`, or `:linlog`.
 
 # Plots and Summary
 

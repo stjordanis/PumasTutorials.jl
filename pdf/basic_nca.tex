@@ -500,7 +500,7 @@ One may need to interpolate or to extrapolate the concentration-time data. For e
 
 
 \begin{lstlisting}
-(*@\HLJLn{NCA}@*)(*@\HLJLoB{.}@*)(*@\HLJLnf{interpextrapconc}@*)(*@\HLJLp{(}@*)(*@\HLJLn{pop}@*)(*@\HLJLp{[}@*)(*@\HLJLni{1}@*)(*@\HLJLp{],}@*) (*@\HLJLni{12}@*)(*@\HLJLn{timeu}@*)(*@\HLJLp{,}@*) (*@\HLJLn{interpmethod}@*)(*@\HLJLoB{=:}@*)(*@\HLJLn{linear}@*)(*@\HLJLp{)}@*)
+(*@\HLJLn{NCA}@*)(*@\HLJLoB{.}@*)(*@\HLJLnf{interpextrapconc}@*)(*@\HLJLp{(}@*)(*@\HLJLn{pop}@*)(*@\HLJLp{[}@*)(*@\HLJLni{1}@*)(*@\HLJLp{],}@*) (*@\HLJLni{12}@*)(*@\HLJLn{timeu}@*)(*@\HLJLp{,}@*) (*@\HLJLn{method}@*)(*@\HLJLoB{=:}@*)(*@\HLJLn{linear}@*)(*@\HLJLp{)}@*)
 \end{lstlisting}
 
 \begin{lstlisting}
@@ -508,7 +508,7 @@ One may need to interpolate or to extrapolate the concentration-time data. For e
 \end{lstlisting}
 
 
-\texttt{interpmethod} can be \texttt{:linear}, \texttt{:linuplogdown}, or \texttt{:linlog}.
+\texttt{method} can be \texttt{:linear}, \texttt{:linuplogdown}, or \texttt{:linlog}.
 
 \section{Plots and Summary}
 To generate linear and log-linear plots, one can do:
@@ -519,7 +519,7 @@ To generate linear and log-linear plots, one can do:
 (*@\HLJLnf{plot}@*)(*@\HLJLp{(}@*)(*@\HLJLn{pop}@*)(*@\HLJLp{)}@*)
 \end{lstlisting}
 
-\includegraphics[width=\linewidth]{/home/ggnore/.julia/dev/PuMaSTutorials/pdf/tmpydqOwG/basic_nca_23_1.pdf}
+\includegraphics[width=\linewidth]{/home/ggnore/.julia/dev/PuMaSTutorials/pdf/tmpGW5hFR/basic_nca_23_1.pdf}
 
 to only generate the linear plot:
 
@@ -528,7 +528,7 @@ to only generate the linear plot:
 (*@\HLJLnf{plot}@*)(*@\HLJLp{(}@*)(*@\HLJLn{pop}@*)(*@\HLJLp{,}@*) (*@\HLJLn{loglinear}@*)(*@\HLJLoB{=}@*)(*@\HLJLkc{false}@*)(*@\HLJLp{)}@*)
 \end{lstlisting}
 
-\includegraphics[width=\linewidth]{/home/ggnore/.julia/dev/PuMaSTutorials/pdf/tmpydqOwG/basic_nca_24_1.pdf}
+\includegraphics[width=\linewidth]{/home/ggnore/.julia/dev/PuMaSTutorials/pdf/tmpGW5hFR/basic_nca_24_1.pdf}
 
 Similarly, to generate log-linear plot:
 
@@ -537,7 +537,7 @@ Similarly, to generate log-linear plot:
 (*@\HLJLnf{plot}@*)(*@\HLJLp{(}@*)(*@\HLJLn{pop}@*)(*@\HLJLp{,}@*) (*@\HLJLn{linear}@*)(*@\HLJLoB{=}@*)(*@\HLJLkc{false}@*)(*@\HLJLp{)}@*)
 \end{lstlisting}
 
-\includegraphics[width=\linewidth]{/home/ggnore/.julia/dev/PuMaSTutorials/pdf/tmpydqOwG/basic_nca_25_1.pdf}
+\includegraphics[width=\linewidth]{/home/ggnore/.julia/dev/PuMaSTutorials/pdf/tmpGW5hFR/basic_nca_25_1.pdf}
 
 To calculate all NCA quantities, one can do
 
@@ -610,7 +610,7 @@ To plot:
 (*@\HLJLnf{plot}@*)(*@\HLJLp{(}@*)(*@\HLJLn{mpop}@*)(*@\HLJLp{)}@*)
 \end{lstlisting}
 
-\includegraphics[width=\linewidth]{/home/ggnore/.julia/dev/PuMaSTutorials/pdf/tmpydqOwG/basic_nca_29_1.pdf}
+\includegraphics[width=\linewidth]{/home/ggnore/.julia/dev/PuMaSTutorials/pdf/tmpGW5hFR/basic_nca_29_1.pdf}
 
 To compute AUC and $\lambda z$:
 

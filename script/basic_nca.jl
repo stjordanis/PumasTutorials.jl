@@ -78,7 +78,7 @@ NCA.clast(pop[1])
 NCA.thalf(pop[1])
 
 
-NCA.interpextrapconc(pop[1], 12timeu, interpmethod=:linear)
+NCA.interpextrapconc(pop[1], 12timeu, method=:linear)
 
 
 using Plots # load the plotting library
