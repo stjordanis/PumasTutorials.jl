@@ -96,42 +96,60 @@ model = @model begin
 end
 
 
-pop = process_nmtran(example_nmtran_data("event_data/data23"),[], [:ev1,:cp,:periph,:resp])
+DosageRegimen(15, time=0)
 
 
-subject = pop[1]
+regimen = DosageRegimen([15,15,15,15], time=[0,4,8,12])
 
 
-x0 = (θ = [
-              1, # Ka1  Absorption rate constant 1 (1/time)
-              1, # CL   Clearance (volume/time)
-              20, # Vc   Central volume (volume)
-              2, # Q    Inter-compartmental clearance (volume/time)
-              10, # Vp   Peripheral volume of distribution (volume)
-              10, # Kin  Response in rate constant (1/time)
-              2, # Kout Response out rate constant (1/time)
-              2, # IC50 Concentration for 50% of max inhibition (mass/volume)
-              1, # IMAX Maximum inhibition
-              1, # γ    Emax model sigmoidicity
-              0, # Vmax Maximum reaction velocity (mass/time)
-              2  # Km   Michaelis constant (mass/volume)
-              ],)
-
-sim = simobs(model, subject, x0)
+subject = Subject(id=1,evs=regimen)
 
 
-y0 = (η = zeros(11),)
-sim = simobs(model, subject, x0, y0)
+p = (θ = [
+          1, # Ka1  Absorption rate constant 1 (1/time)
+          1, # CL   Clearance (volume/time)
+          20, # Vc   Central volume (volume)
+          2, # Q    Inter-compartmental clearance (volume/time)
+          10, # Vp   Peripheral volume of distribution (volume)
+          10, # Kin  Response in rate constant (1/time)
+          2, # Kout Response out rate constant (1/time)
+          2, # IC50 Concentration for 50% of max inhibition (mass/volume)
+          1, # IMAX Maximum inhibition
+          1, # γ    Emax model sigmoidicity
+          0, # Vmax Maximum reaction velocity (mass/time)
+          2  # Km   Michaelis constant (mass/volume)
+          ],)
+
+sim = simobs(model, subject, p)
 
 
-sim = simobs(model, subject, x0, y0, obstimes = 0:0.1:19)
-
-
-sim.derived.cp
-
-
-DataFrame(sim.derived)
-
-#This adds the plot of simulated DVs
 using Plots
-plot(sim.times,sim.derived.ev1)
+plot(sim)
+
+
+plot(sim,
+     color=2,thickness_scaling=1.5,
+     legend=false, lw=2)
+
+
+rfx = (η = rand(11),)
+sim = simobs(model, subject, p, rfx)
+plot(sim)
+
+
+sim = simobs(model, subject, p, rfx, obstimes = 0:0.1:19)
+plot(sim)
+
+
+sim[:cp]
+
+
+DataFrame(sim)
+
+
+plot(sim.times,sim[:ev1])
+
+
+using PuMaSTutorials
+PuMaSTutorials.tutorial_footer(WEAVE_ARGS[:folder],WEAVE_ARGS[:file])
+

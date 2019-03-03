@@ -1,15 +1,25 @@
 ---
-title: PuMaS for Multiple Response Pk/Pd
+title: Introduction to PuMaS
 author: Chris Rackauckas
-date: 22nd October 2018
+date: March 3, 2019
 ---
 
 # Introduction
 
 This is an introduction to PuMaS, a software for pharmacometric modeling and
-simulation. In this tutorial we will show how to simulate from a multiple
-response PK/PD model defined by ordinary differential equations, and how to
-extract information about the solution.
+simulation.
+
+The basic workflow of PuMaS is:
+
+1. Build a model.
+2. Define subjects or populations to simulate or estimate.
+3. Analyze the results with post-processing and plots.
+
+We will show how to build a multiple-response PK/PD model
+via the `@model` macro, define a subject with multiple doses, and analyze
+the results of the simulation. This tutorial is made to be a broad overview
+of the workflow and more in-depth treatment of each section can be found in
+the subsequent tutorials and documentation.
 
 ## Installation
 
@@ -29,9 +39,7 @@ To load the package, use
 using PuMaS
 ```
 
-## Our Example Model
-
-## Using the `@model` Macro
+## Using the Model Macro
 
 Now let's define a model. A model is defined in an `@model` block. Inside of
 this block we have a few subsections. The first of which is `@param`. In here
@@ -165,26 +173,40 @@ model = @model begin
 end
 ```
 
-## Grabbing Data
+## Building a Subject
 
-In this tutorial we will utilize an example dataset in NMTRAN form. To bring in
-data we utilize the `process_nmtran` function. The first argument is the path
-to the dataset. The path to our example data is
-`example_nmtran_data("event_data/data23")`. Next we give it the name of the
-covariate from the dataset. Our example data has no covariates, so we note this
-as `[]`. Lastly, we declare the names of the columns which correspond to the
-observation variables. In this dataset, we have observations for all of
-`[:ev1,:cp,:periph,:resp]`. Together, this gives us the command:
+Now let's build a subject to simulate the model with. A subject defines three
+components:
 
-```julia
-pop = process_nmtran(example_nmtran_data("event_data/data23"),[], [:ev1,:cp,:periph,:resp])
+1. The dosage regimen
+2. The covariates of the indvidual
+3. Observations associated with the individual.
+
+Our model did not make use of covariates so we will ignore (2) for now, and
+(3) is only necessary for fitting parameters to data which will not be covered
+in this tutorial. Thus our subject will be defined simply by its dosage regimen.
+
+To do this, we use the `DosageRegimen` constructor. It uses terms from the
+NMTRAN format to specify its dose schedule. The first value is always the
+dosing amount. Then there are optional arguments, the most important of which
+is `time` which specifies the time that the dosing occurs. For example,
+
+```julia{line_width=90}
+DosageRegimen(15, time=0)
 ```
 
-That gives us a whole population. If we wish to grab a subject out of the population,
-we simply index the population. Let's grab the first subject:
+is a dosage regimen which simply does a single dose at time `t=0` of amount 15.
+If we use arrays, then the dosage regimen will be the grouping of the values.
+For example, let's define a dose of amount 15 at times `t=0,4,8`, and `12`:
 
 ```julia
-subject = pop[1]
+regimen = DosageRegimen([15,15,15,15], time=[0,4,8,12])
+```
+
+Let's define our subject to have `id=1` and this multiple dosing regimen:
+
+```julia
+subject = Subject(id=1,evs=regimen)
 ```
 
 ## Running a Simulation
@@ -196,22 +218,38 @@ initialized values, then we pass them in. Let's simulate subject 1 with a set
 of chosen parameters:
 
 ```julia
-x0 = (θ = [
-              1, # Ka1  Absorption rate constant 1 (1/time)
-              1, # CL   Clearance (volume/time)
-              20, # Vc   Central volume (volume)
-              2, # Q    Inter-compartmental clearance (volume/time)
-              10, # Vp   Peripheral volume of distribution (volume)
-              10, # Kin  Response in rate constant (1/time)
-              2, # Kout Response out rate constant (1/time)
-              2, # IC50 Concentration for 50% of max inhibition (mass/volume)
-              1, # IMAX Maximum inhibition
-              1, # γ    Emax model sigmoidicity
-              0, # Vmax Maximum reaction velocity (mass/time)
-              2  # Km   Michaelis constant (mass/volume)
-              ],)
+p = (θ = [
+          1, # Ka1  Absorption rate constant 1 (1/time)
+          1, # CL   Clearance (volume/time)
+          20, # Vc   Central volume (volume)
+          2, # Q    Inter-compartmental clearance (volume/time)
+          10, # Vp   Peripheral volume of distribution (volume)
+          10, # Kin  Response in rate constant (1/time)
+          2, # Kout Response out rate constant (1/time)
+          2, # IC50 Concentration for 50% of max inhibition (mass/volume)
+          1, # IMAX Maximum inhibition
+          1, # γ    Emax model sigmoidicity
+          0, # Vmax Maximum reaction velocity (mass/time)
+          2  # Km   Michaelis constant (mass/volume)
+          ],)
 
-sim = simobs(model, subject, x0)
+sim = simobs(model, subject, p)
+```
+
+We can then plot the simulated observations by using the `plot` command:
+
+```julia
+using Plots
+plot(sim)
+```
+
+Note that we can use the [attributes from `Plots.jl`](http://docs.juliaplots.org/latest/attributes/)
+to further modify the plot. For example,
+
+```julia
+plot(sim,
+     color=2,thickness_scaling=1.5,
+     legend=false, lw=2)
 ```
 
 Notice that in our model we said that there was a single parameter `θ` so our
@@ -221,17 +259,19 @@ distributions. If we wish to prescribe a value for the random effects, we pass
 initial values similarly:
 
 ```julia
-y0 = (η = zeros(11),)
-sim = simobs(model, subject, x0, y0)
+rfx = (η = rand(11),)
+sim = simobs(model, subject, p, rfx)
+plot(sim)
 ```
 
-The points which are saved automatically match the observations from the
-dataset. If you wish to change the saving time points, or did not have observations
-in your dataset, pass the keyword argument `obstimes`. For example, let's save
-at every `0.1` hours and run the simulation for 19 hours:
+The points which are saved are by default at once every hour until one day after
+the last event. If you wish to change the saving time points, pass the keyword
+argument `obstimes`. For example, let's save at every `0.1` hours and run the
+simulation for 19 hours:
 
 ```julia
-sim = simobs(model, subject, x0, y0, obstimes = 0:0.1:19)
+sim = simobs(model, subject, p, rfx, obstimes = 0:0.1:19)
+plot(sim)
 ```
 
 ## Handling the SimulatedObservations
@@ -242,14 +282,14 @@ of the derived variables. From there, the derived variabes are accessed by name.
 For example,
 
 ```julia
-sim.derived.cp
+sim[:cp]
 ```
 
 is the array of `cp` values at the associated time points. We can turn this
 into a DataFrame via using the `DataFrame` command:
 
 ```julia
-DataFrame(sim.derived)
+DataFrame(sim)
 ```
 
 From there, any Julia tools can be used to analyze these arrays and DataFrames.
@@ -257,6 +297,22 @@ For example, if we wish the plot the result of `ev1` over time, we'd use the
 following:
 
 ```julia
-using Plots
-plot(sim.times,sim.derived.ev1)
+plot(sim.times,sim[:ev1])
+```
+
+Using these commands, a Julia program can be written to post-process the
+program however you like!
+
+## Conclusion
+
+This tutorial covered basic workflow for how to build a model and simulate
+results from it. The subsequent models will go into more detail in the components,
+such as:
+
+1. More detailed treatment of specifying populations, dosage regimens, and covariates.
+2. Reading in dosage regimens and observations from NMTRAN data.
+
+```julia{echo=false,skip="notebook"}
+using PuMaSTutorials
+PuMaSTutorials.tutorial_footer(WEAVE_ARGS[:folder],WEAVE_ARGS[:file])
 ```
