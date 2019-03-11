@@ -218,7 +218,7 @@ initialized values, then we pass them in. Let's simulate subject 1 with a set
 of chosen parameters:
 
 ```julia
-p = (θ = [
+fixeffs = (θ = [
           1, # Ka1  Absorption rate constant 1 (1/time)
           1, # CL   Clearance (volume/time)
           20, # Vc   Central volume (volume)
@@ -233,7 +233,7 @@ p = (θ = [
           2  # Km   Michaelis constant (mass/volume)
           ],)
 
-sim = simobs(model, subject, p)
+sim = simobs(model, subject, fixeffs)
 ```
 
 We can then plot the simulated observations by using the `plot` command:
@@ -259,8 +259,8 @@ distributions. If we wish to prescribe a value for the random effects, we pass
 initial values similarly:
 
 ```julia
-rfx = (η = rand(11),)
-sim = simobs(model, subject, p, rfx)
+randeffs = (η = rand(11),)
+sim = simobs(model, subject, fixeffs, randeffs)
 plot(sim)
 ```
 
@@ -270,7 +270,7 @@ argument `obstimes`. For example, let's save at every `0.1` hours and run the
 simulation for 19 hours:
 
 ```julia
-sim = simobs(model, subject, p, rfx, obstimes = 0:0.1:19)
+sim = simobs(model, subject, fixeffs, randeffs, obstimes = 0:0.1:19)
 plot(sim)
 ```
 
