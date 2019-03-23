@@ -168,7 +168,6 @@ sim = simobs(m_diffeq, ev6, p; abstol=1e-14, reltol=1e-14)
 plot(sim)
 
 # Infusion doses, with lag time and bioav factor
-#FIXME ss=1 does not work
 ev = DosageRegimen(100, ii = 24, addl = 3, rate = 100/10, ss = 1, cmt = 2)
 ev7 =  generate_population(ev)
 
@@ -189,8 +188,7 @@ p = (  θ = [1.5,  #Ka
 sim = simobs(m_diffeq, ev7, p; abstol=1e-14, reltol=1e-14)
 plot(sim)
 
-# Infusion doses at steady-state, with lag time and bioav factor
-#FIXME ss=1 does not work
+# Infusion doses at steady-state, with bioav factor=0.812
 ev = DosageRegimen(100, ii = 12, addl = 4, rate = 100/50, ss = 1, cmt = 2)
 ev8 =  generate_population(ev)
 
@@ -211,7 +209,6 @@ sim = simobs(m_diffeq, ev8, p; abstol=1e-14, reltol=1e-14)
 plot(sim)
 
 # Infusion doses, at steady state
-#FIXME ss=1 does not work
 ev = DosageRegimen(100, ii = 12, addl = 3, rate = 100/50, ss = 1, cmt = 2)
 ev9 =  generate_population(ev)
 
@@ -232,7 +229,6 @@ sim = simobs(m_diffeq, ev9, p; abstol=1e-14, reltol=1e-14)
 plot(sim)
 
 # Infusion doses at steady state, II < DUR, no bioav factor
-#FIXME ss=1 does not work
 ev = DosageRegimen(100, ii = 6, addl = 12, rate = round(100/12,digits=5), ss = 1, cmt = 2)
 ev10 =  generate_population(ev)
 
@@ -253,7 +249,6 @@ sim = simobs(m_diffeq, ev10, p; abstol=1e-14, reltol=1e-14)
 plot(sim)
 
 # Infusion doses at steady state where II == DUR, with bioav factor
-#FIXME ss=1 does not work
 ev = DosageRegimen(100, ii = 10, addl = 8, rate = 0.412*100/10,  ss = 1, cmt = 2)
 ev11 =  generate_population(ev)
 
@@ -275,7 +270,6 @@ plot(sim)
 
 
 # Infusion doses at steady state, where II == DUR
-#FIXME ss=1 does not work
 ev = DosageRegimen(100, ii = 10, addl = 8, rate = 100/10, ss = 1, cmt = 2)
 ev12 =  generate_population(ev)
 
@@ -297,13 +291,13 @@ plot(sim)
 
 
 # Bolus doses at steady state, with bioav factor and lag time
-#FIXME ss=1 does not work
-ev = DosageRegimen(100, ii = 24, addl = 3,  LAGT = 4, BIOAV = 0.412, ss = 1, cmt = 2)
+#FIXME lags don't work on subsequent doses
+ev = DosageRegimen(100, ii = 24, addl = 3,  ss = 1, cmt = 2)
 ev13 =  generate_population(ev)
 p = (  θ = [1.5,  #Ka
            1.1,  #CL
            20.0,  #V
-           0, # lags2
+           4, # lags2
            0.412, #Bioav
            0.5, # isPM CL
            0 # duration
@@ -360,7 +354,8 @@ plot(sim)
 
 # Infusion with modeled duration=9, lag time=5, and bioav factor=0.61
 #FIXME DosageRegimen should allow rate value of -2 to allow modeling durations
-ev = DosageRegimen(100, rate = -2, cmt = 2, ii = 24, addl = 3)
+# rate = 0 allows modeling durations in pumas. Rate=-2 is nonmem convention
+ev = DosageRegimen(100, rate = 0, cmt = 2)
 ev16 =  generate_population(ev)
 
 p = (  θ = [1.5,  #Ka
@@ -381,8 +376,7 @@ plot(sim)
 
 # Infusion with modeled duration=9, at steady state with bioav factor=0.61
 #FIXME DosageRegimen should allow rate value of -2 to allow modeling durations
-#FIXME ss=1 does not work
-ev = DosageRegimen(100, rate = -2, cmt = 2, ii = 24, addl = 3, ss = 1)
+ev = DosageRegimen(100, rate = 0, cmt = 2, ii = 24, addl = 3, ss = 1)
 ev17 =  generate_population(ev)
 
 
@@ -428,8 +422,8 @@ m_diffeq = @model begin
         CL = TVCL*exp(η[1])
         V  = θ[3]*exp(η[2])
         lags = [0,θ[4]]
-        #bioav = time .>= 50 ? [1,θ[5]] : [1,θ[8]]
-        bioav = [1,θ[5]]
+        bioav = time >= 50 ? [1,θ[5]] : [1,θ[8]]
+        #bioav = [1,θ[5]]
         duration = [0,θ[7]]
     end
 
@@ -477,3 +471,19 @@ firstdose = DosageRegimen(100, ii = 24, addl = 3, ss = 1)
 seconddose = DosageRegimen(50, time = 12, ii = 24, addl = 3, ss = 2)
 ev = DosageRegimen(firstdose,seconddose)
 ev20 =  generate_population(ev)
+
+p = (  θ = [1.5,  #Ka
+           1.1,  #CL
+           20.0,  #V
+           0, # lags2
+           1, #Bioav
+           0.5, # isPM CL
+           0 # duration
+           ],
+      Ω = PDMat(diagm(0 => [0.04,0.04])),
+      σ_prop = 0.00
+  )
+
+
+sim = simobs(m_diffeq, ev20, p; abstol=1e-14, reltol=1e-14)
+plot(sim)
