@@ -40,6 +40,7 @@ m_diffeq = @model begin
 
     @derived begin
         cp = @. 1000*(Central / V)
+        cp2 = cp*0.01
     end
 end
 
@@ -56,7 +57,7 @@ p = (  θ = [1.5,  #Ka
            0 # duration
            ],
       Ω = PDMat(diagm(0 => [0.04,0.04])),
-      σ_prop = 0.00
+      σ_prop = 0.04
   )
 
 
@@ -355,7 +356,7 @@ plot(sim)
 # Infusion with modeled duration=9, lag time=5, and bioav factor=0.61
 #FIXME DosageRegimen should allow rate value of -2 to allow modeling durations
 # rate = 0 allows modeling durations in pumas. Rate=-2 is nonmem convention
-ev = DosageRegimen(100, rate = 0, cmt = 2)
+ev = DosageRegimen(100, rate = -2, cmt = 2, addl=3,ii=12)
 ev16 =  generate_population(ev)
 
 p = (  θ = [1.5,  #Ka
@@ -458,15 +459,32 @@ sim = simobs(m_diffeq, ev18, p; abstol=1e-14, reltol=1e-14)
 plot(sim)
 
 # Reset and dose (EVID 4) with additional
-#FIXME evid=3 error #371 does not allow the creation of this dataset
+#FIXME evid=3 error #371 fixed however assertion rules do not allow creation of population
 firstdose = DosageRegimen(100, ii = 12, addl = 3, rate = 50) #bioav here is , BIOAV = 0.61
 seconddose = DosageRegimen(0, time = 50, evid = 3, cmt = 2)
 thirddose = DosageRegimen(120, time = 54, ii = 16, addl = 2)
 ev = DosageRegimen(firstdose,seconddose,thirddose)
+#ev = DosageRegimen(DosageRegimen(firstdose,seconddose),thirddose)
 ev19 =  generate_population(ev)
 
+p = (  θ = [1.5,  #Ka
+           1.1,  #CL
+           20.0,  #V
+           0, # lags2
+           1, #Bioav central
+           0.5, # isPM CL
+           9, # duration
+           0.5, #Bioav central after time=50
+           ],
+      Ω = PDMat(diagm(0 => [0.04,0.04])),
+      σ_prop = 0.00
+  )
+
+
+sim = simobs(m_diffeq, ev19, p; abstol=1e-14, reltol=1e-14)
+plot(sim)
+
 # Steady state 1 and 2
-#FIXME steadystates don't work
 firstdose = DosageRegimen(100, ii = 24, addl = 3, ss = 1)
 seconddose = DosageRegimen(50, time = 12, ii = 24, addl = 3, ss = 2)
 ev = DosageRegimen(firstdose,seconddose)
