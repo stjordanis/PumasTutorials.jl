@@ -11,7 +11,7 @@ ir1 = @model begin
 
     @random begin
         η ~ MvNormal(Ω)
-    end
+    end 
 
 
     @pre begin
