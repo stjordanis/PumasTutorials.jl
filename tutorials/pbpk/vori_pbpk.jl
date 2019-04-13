@@ -1004,10 +1004,16 @@ nSampl = 1000
 x = rand(Normal(log(30.3/25),0.33),nSampl)
 mppgiSampl = exp.(x)
 fpermSampl = exp.(rand(Normal(log(fperm), 0.4), nSampl))  #lognormal; CV = 40%
-lpars =
+lpars = DataFrame(MPPGI = mppgiSampl, fperm = fpermSampl)
+lpars = hcat(mppgiSampl, fpermSampl)
 
 function Foo(x,y)
-    return list(x,y)
+    mod = (p_RR...,MPPGI = x, fperm = y)
+    regimen = DosageRegimen(200, time = 0, addl=13, ii=12, cmt = 1, ss = 1)
+    sub = Subject(id=1, evs=regimen)
+    return simobs(model, sub, mod, obstimes=0:0.1:12)
 end
 
-map.(Foo, [mppgiSampl, fpermSampl])
+mapslices(Foo, lpars, [1000,2])
+
+a = reshape(Vector(1:16),(8,2))
