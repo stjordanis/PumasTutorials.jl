@@ -12,12 +12,13 @@ using PuMaS, DataFrames, LinearAlgebra, Plots
 
 The objectives of this tutorial is to implement a target-mediated drug dispostion
  (TMDD) model in PuMaS. TMDD...
- - Concept is introduced by Leby (1994)
- - Full model is indtroducd by Mager and Jusko (2001)
- - Many approximation by Gibiansky (2008), ...
- - Nice tutorial
-     - CPTPSP 2015
-     - [Monolix website] (http://mlxtran.lixoft.com/libraries/target-mediated-drug-disposition-tmdd-model-library/)
+ - Concept is introduced by [Levy (1994)](https://www.ncbi.nlm.nih.gov/pubmed/7924119)
+ - Full TMDD model is introduced by [Mager and Jusko (2001)](https://www.ncbi.nlm.nih.gov/pubmed/11999290)
+ - Approximations of TMDD model by [Gibiansky (2008)](https://www.ncbi.nlm.nih.gov/pubmed/19005743)
+ - Nice tutorials
+     - [Tutorial on TMDD Models in CPTPSP 2015](https://www.ncbi.nlm.nih.gov/pubmed/26225261)
+     - [TMDD model library by Monolix](http://mlxtran.lixoft.com/libraries/target-mediated-drug-disposition-tmdd-model-library/)
+     - [Modeling Drugs with TMDD by Leonid Gibianksy](http://www.quantpharm.com/pdf_files/TMDD_Talk_PAGE_2011.pdf)
 
 # Model
 
@@ -37,6 +38,7 @@ The objectives of this tutorial is to implement a target-mediated drug dispostio
     - All equations are in molar form with different molar weights
     - Dose and concentration sholud be converted to molar units
 
+### Model file
 
 ```julia
 tmdd_full = @model begin
@@ -82,8 +84,8 @@ Initial value of receptor compartment (R) is defined by KSYN/KDEG in @init.
 L is defined by amount and R and P are defined by concentration.
 Ligand concentration (LCONC) is defined by L/VC in @vars
 
+### Setting up parameters
 
-## Setting up parameters
 ```julia
 θ_full = [
       3,       # VC, Central volume (L)
@@ -103,7 +105,8 @@ parameter = (θ = θ_full,
 In this model, we simulated using only population parameters.
 ?(How to fix random effect as 0?)
 
-## Simulation design
+### Simulation design
+
 ```julia
 nsub = 1
 dosemg1 = 10    # mg
@@ -124,36 +127,38 @@ pop3 = Population(map(i -> Subject(id=i,evs=e3),3:3))
 pop = Population(vcat(pop1,pop2,pop3));
 ```
 
-We simulated three dose (10, 30, 100 mg) and dose unit are converted into nmol.
+We simulated three doses (10, 30, 100 mg) and dose unit are converted into nmol.
 
-?(Can I shorten this dosage regimen code?)
+### Simulation
 
-## Simulation
 ```julia
 using Random
 Random.seed!(123456)
 sim_tmdd_full = simobs(tmdd_full, pop, parameter, obstimes=0.1:0.1:tlast);
 ```
-## Plot
+
+### Plot
 ```julia
 plot(sim_tmdd_full, title="")
 yaxis!(:log10)
+xlabel!("Time (day)")
+ylabel!("Free drug concentration (nM)")
 ```
 
-# QSS model
+## QSS model
 
 The QSS model assumes that the binding rate is balanced by the sum of the
 dissociation and internalization rates.
-KSS = (KOFF + KINT)/KON
-Total number of parameters reduced from 7 to 6.
 
-Total number of compartments are reduced from 3 to 2.
+KSS = (KOFF + KINT)/KON
+
+Total number of parameters reduced from 7 to 6 and
+total number of compartments are reduced from 3 to 2.
+
 Compartments are defined by total drug (Ltot) and total receptor (Rtot)
 and free drug concentration is calculated by Ltot, Rtot and other parameters
 
-
-
-## Model
+### Model file
 
 ```julia
 tmdd_qss = @model begin
@@ -181,18 +186,13 @@ tmdd_qss = @model begin
     end
 
     @vars begin
-        CONC = 0.5*(Ltot/VC-Rtot-(KINT+KOFF)/KON)+0.5*sqrt((Ltot/VC-Rtot-(KINT+KOFF)/KON)^2+4*(KINT+KOFF)/KON*Ltot/VC)  # Free Drug Concentration
-
-        #KSS = (KOFF+KINT)/KON
-        #CONC = 0.5*(Ltot/VC-Rtot-KSS)+0.5*sqrt((Ltot/VC-Rtot-KSS)^2+4*KSS*Ltot/VC)
+        KSS = (KOFF+KINT)/KON
+        CONC = 0.5*(Ltot/VC-Rtot-KSS)+0.5*sqrt((Ltot/VC-Rtot-KSS)^2+4*KSS*Ltot/VC)  # Free Drug Concentration
     end
 
     @dynamics begin
-        Ltot' = -KEL*CONC*VC - KINT*Rtot*CONC*VC/((KINT+KOFF)/KON+CONC)         # Total Drug Amount
-        Rtot' = KSYN - KDEG*Rtot - (KINT-KDEG)*CONC*Rtot/((KINT+KOFF)/KON+CONC) # Total Receptor Concentration
-
-        #Ltot' = -KEL*CONC*VC - KINT*Rtot*CONC*VC/(KSS+CONC)
-        #Rtot' = KSYN - KDEG*Rtot - (KINT-KDEG)*CONC*Rtot/(KSS+CONC)
+        Ltot' = -KEL*CONC*VC - KINT*Rtot*CONC*VC/(KSS+CONC)         # Total Drug Amount
+        Rtot' = KSYN - KDEG*Rtot - (KINT-KDEG)*CONC*Rtot/(KSS+CONC) # Total Receptor Concentration
     end
 
     @derived begin
@@ -212,34 +212,30 @@ sim_tmdd_qss = simobs(tmdd_qss, pop, parameter, obstimes=0.1:0.1:tlast);
 ```
 ## Plot
 ```julia
-plot(sim_tmdd_qss, title="")
+plot(sim_tmdd_qss, obsnames=[:CONC])
 yaxis!(:log10)
+xlabel!("Time (day)")
+ylabel!("Free drug concentration (nM)")
 ```
+## Example
 
-# Example
+This example is from [Li, H. et al, (2015)](https://doi.org/10.1002/prp2.98).
 
-This example is from
-Li, H. et al, (2015).
-Prediction of clinical pharmacokinetics of AMG 181, a human anti-α4β7
-monoclonal antibody for treating inflammatory bowel diseases.
-Pharmacology Research & Perspectives, 3(1), e00098.
-https://doi.org/10.1002/prp2.98
+The purpose of this study was to predict human PK based on monkey PK
+using two compartment disposition and Quasi-equlibrium approximation model.
+Monkey PK parameters are scaled to human by allometric scaling.
+We reproduced final simulated human PK profiles in figure 6(B) of the literature as below.
+![Figure 6(B)](amg181.png)
 
-The author used monkey PK data and modeled using two compartment disposition and
-Quasi-equlibrium approximation model.
-Then monkey PK parameters are scaled to human by allometric scaling.
-We reproduced final simulated human PK profiles in figure 6(B).
-4 subcutaneous and multiple doses (7, 21, 70 210 mg)
-
-The difference of model compared to our example of QSS model
-- One periperal compartment
+The differences of model compared to our QSS example model are
+- One more periperal compartment
 - Depot compartment for SC absorption
-- Constant Rtot assumption (So called Wagner model) so no differential eqaution for Rtot.
-- The unit of concentratino as ug/mL.
+- Constant Rtot assumption (So called Wagner model), so no compartment for Rtot.
+- The unit of concentratino as μg/mL.
 
-We utilized parameter values in Table 3.
+We utilized parameter values in Table 3 of the literature.
 
-## Model
+### Model file
 ```julia
 exmod = @model begin
     @param begin
@@ -287,8 +283,8 @@ end;
 ```julia
 θ_ex = [
       2.9,    # VC   Central volume (L)
-      0.144,   # CL  Clearance (L/day)
-      0.846,      # KA   Absorption rate constant (1/day)
+      0.144,  # CL  Clearance (L/day)
+      0.846,  # KA   Absorption rate constant (1/day)
       0.013,  # KD   Dissociation constant (nM)
       9.18,   # R0   Receptor concentraion (nM)
       0.0215, # KINT Internalization constant (1/day)
@@ -299,7 +295,10 @@ end;
 parameter = (θ = θ_ex,
              Ω = PDMat(diagm(0 => [0.0001])),
              σ_prop = 0.01)
+```
+### Simulation design
 
+```julia
 dosemg1 = 7
 dosemg2 = 21
 dosemg3 = 70
@@ -310,26 +309,28 @@ dose3 = dosemg3*1e-3/150000*1e9
 dose4 = dosemg4*1e-3/150000*1e9
 tlast = 364
 
-e1 = DosageRegimen(dose1, addl=2, ii=28)
-e2 = DosageRegimen(dose2, addl=2, ii=28)
-e3 = DosageRegimen(dose3, addl=2, ii=28)
-e4 = DosageRegimen(dose4, addl=2, ii=28)
+e1, e2, e3, e4 = DosageRegimen.([dose1, dose2, dose3, dose4], addl=2, ii=28)
 
 pop1 = Population(map(i -> Subject(id=i,evs=e1),1:1))
 pop2 = Population(map(i -> Subject(id=i,evs=e2),2:2))
 pop3 = Population(map(i -> Subject(id=i,evs=e3),3:3))
 pop4 = Population(map(i -> Subject(id=i,evs=e4),4:4))
 pop = Population(vcat(pop1,pop2,pop3, pop4))
+```
 
+### Simulation
+```julia
 using Random
 Random.seed!(123456)
 sim_ex = simobs(exmod, pop, parameter, obstimes=0.1:0.1:tlast, tspan=(0.0,tlast), parallel_type=PuMaS.Serial);
 ```
 
-## Plot
+### Plot
 ```julia
-plot(sim_ex, title="")
+plot(sim_ex, obsnames=[:LCONC_ug], title = "")
 yaxis!(:log10)
+xticks!(0:28:tlast)
+ylims!((0.0001, 1000))
+xlabel!("Time (day)")
+ylabel!("AMG 181 concentration (μg/mL)")
 ```
-
-?(I don't know how to select only one figure for concentration unit as ug/ml)
