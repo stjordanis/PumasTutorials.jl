@@ -1,0 +1,289 @@
+---
+title: PKtutorial
+author: Hechuan Wang
+date: March 31st, 2019
+---
+
+```julia
+using PuMaS, LinearAlgebra, Plots, CSV
+```
+
+# Introduction
+
+In this tutorial, we will cover the fundamentals of setting up population PK
+models to simulate with PuMaS.
+
+Model Examples:
+
+FO, ZO, FO+ZO, Erlang, transit
+
+# 1 compartment model with FO absorption
+
+## The model
+
+Below is a PuMaS model that specifies a 1-compartment oral absorption model.
+Details of the model setting up are provided.
+
+
+```julia
+model = @model begin
+
+  @param begin
+    θ ∈ VectorDomain(3)
+    Ω ∈ PSDDomain(3)
+    σ_prop ∈ RealDomain(init=0.1)
+  end
+
+  @random begin
+    η ~ MvNormal(Ω)
+  end
+
+  @covariates Wt
+
+  @pre begin
+    CL = θ[1]*(Wt/70)^0.75*exp(η[1])
+    V  = θ[2]*(Wt/70)*exp(η[2])
+    Ka = θ[3]*exp(η[3])
+  end
+
+  @dynamics begin
+    Depot'   = -Ka*Depot
+    Central' =  Ka*Depot - Central*CL/V
+  end
+
+  @vars begin
+    conc = Central/V
+  end
+
+  @derived begin
+    dv ~ @.Normal(conc,sqrt(conc^2*σ_prop + eps()))
+  end
+
+end
+
+```
+
+## Setting up parameters
+
+```julia
+p = (
+  θ = [5,20,1],
+  Ω = PDMat(diagm(0 => [0.04,0.04,0.04])),
+  σ_prop = 0.01
+  )
+```
+
+## Single dose regimen
+
+```julia
+ev = DosageRegimen(100, time=0)
+first(ev.data)
+```
+
+## Multiple dose regimen
+
+#md = DosageRegimen(100, ii=24, addl=6)
+
+#s3 = Subject(id=3, evs=md, cvs=(Wt=70))
+
+#Subject
+
+## Building one subject
+
+```julia
+s1 = Subject(id=1,evs=ev,cvs=(Wt=70))
+
+```
+
+s1.events
+s1.covariates
+
+## Simulate one subject
+
+obs = simobs(model, s1, p, obstimes=0:0.1:24)
+plot(obs)
+
+## Building populations
+
+#s2 = Subject(id=2, evs=ev, csv(Wt=70))
+
+#twosubjs = Population([s1, s2])
+
+## Covariates
+
+choose_covariates() = (Wt=70)
+
+cvs = [choose_covariates() for i in 1:10]
+
+DataFrames(cvs)
+
+pop_with_covariates = Population(map(i->
+  Subject(id = i, evs=ev, cvs=choose_covariates()), 1:10))
+
+
+
+obs = simobs(model, s3, p, obstimes0:0.1:240)
+
+# 2 compartment model with ZO absorption
+
+
+```julia
+model = @model begin
+  @param begin
+    θ ∈ VectorDomain(3)
+    Ω ∈ PSDDomain(3)
+    σ_prop ∈ RealDomain(init=0.1)
+  end
+
+  @random begin
+    η ~ MvNormal(Ω)
+  end
+
+  @covariates Wt
+
+  @pre begin
+    CL = θ[1]*(Wt/70)^0.75*exp(η[1])
+    V  = θ[2]*(Wt/70)*exp(η[2])
+    K0 = θ[3]*exp(η[3])
+  end
+
+  @dynamics begin
+    Depot'   = -K0
+    Central' =  K0 - Central*CL/V
+  end
+
+  @vars begin
+    conc = Central/V
+  end
+
+  @derived begin
+    dv ~ @.Normal(conc,sqrt(conc^2*σ_prop + eps()))
+  end
+
+end
+```
+
+# 3 compartment model with ZO+FO absorption
+
+
+```julia
+model = @model begin
+
+  @param begin
+    θ ∈ VectorDomain(5)
+    Ω ∈ PSDDomain(2)
+    σ_prop ∈ RealDomain(init=0.1)
+  end
+
+  @random begin
+    η ~ MvNormal(Ω)
+  end
+
+  @covariates Wt amt
+
+  @pre begin
+    CL = θ[1]*(Wt/70)^0.75*exp(η[1])
+    V  = θ[2]*(Wt/70)*exp(η[2])
+    Ka = θ[3]
+    duration = [0, θ[4]]
+    bioav = [1-θ[5], θ[5]]
+  end
+
+  @dynamics begin
+    Depot'   = -Ka*Depot
+    Central' =  Ka*Depot  - Central*CL/V
+  end
+
+  @vars begin
+    conc = Central/V
+  end
+
+  @derived begin
+    dv ~ @.Normal(conc,sqrt(conc^2*σ_prop + eps()))
+  end
+
+end
+```
+
+# 4 compartment model with Erlang absorption
+
+```julia
+model = @model begin
+  @param begin
+    θ ∈ VectorDomain(3)
+    Ω ∈ PSDDomain(3)
+    σ_prop ∈ RealDomain(init=0.1)
+  end
+
+  @random begin
+    η ~ MvNormal(Ω)
+  end
+
+  @covariates Wt amt
+
+  @pre begin
+    CL = θ[1]*(Wt/70)^0.75*exp(η[1])
+    V  = θ[2]*(Wt/70)*exp(η[2])
+    Ktr = θ[3]*exp(η[3])
+    K  = CL/V
+    N = 5 # number of compartments
+  end
+
+  @dynamics begin
+    Central' = Ktr*amt*((Ktr*t)^N/factorial(N))*exp(-Ktr*t)-Central*K
+  end
+
+  @vars begin
+    conc = Central/V
+  end
+
+  @derived begin
+    dv ~ @.Normal(conc,sqrt(conc^2*σ_prop + eps()))
+  end
+
+end
+```
+
+# 5 compartment model with Transit absorption for single dose
+
+```julia
+model = @model begin
+  @param begin
+    θ ∈ VectorDomain(6)
+    Ω ∈ PSDDomain(6)
+    σ_prop ∈ RealDomain(init=0.1)
+  end
+
+  @random begin
+    η ~ MvNormal(Ω)
+  end
+
+  @covariates Wt amt
+
+  @pre begin
+    CL = θ[1]*(Wt/70)^0.75*exp(η[1])
+    V  = θ[2]*(Wt/70)*exp(η[2])
+    BIO = θ[3]*exp(η[3]) # bioavailability
+    Ka = θ[4]*exp(η[4])
+    MTT =θ[5]*exp(η[5])
+    NN = θ[6]*exp(η[6])
+    K  = CL/V
+    Ktr = (NN+1)/MTT
+    LNFAC=log(2.5066)+(NN+0.5)*log(NN)-NN
+  end
+
+  @dynamics begin
+    Transit' = exp(log(BIO*amt+.00001)+log(Ktr)+NN*log(Ktr*t+0.00001)-Ktr*t-LNFAC)-Ka*Transit
+    Central' = Ka*Transit-Central*K
+  end
+
+  @vars begin
+    conc = Central/V
+  end
+
+  @derived begin
+    dv ~ @.Normal(conc,sqrt(conc^2*σ_prop + eps()))
+  end
+
+end
+```
