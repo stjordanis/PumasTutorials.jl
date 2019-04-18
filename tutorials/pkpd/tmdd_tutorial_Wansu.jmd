@@ -11,32 +11,48 @@ using PuMaS, DataFrames, LinearAlgebra, Plots
 # Introduction
 
 The objectives of this tutorial is to implement a target-mediated drug dispostion
- (TMDD) model in PuMaS. TMDD...
- - Concept is introduced by [Levy (1994)](https://www.ncbi.nlm.nih.gov/pubmed/7924119)
- - Full TMDD model is introduced by [Mager and Jusko (2001)](https://www.ncbi.nlm.nih.gov/pubmed/11999290)
- - Approximations of TMDD model by [Gibiansky (2008)](https://www.ncbi.nlm.nih.gov/pubmed/19005743)
- - Nice tutorials
-     - [Tutorial on TMDD Models in CPTPSP 2015](https://www.ncbi.nlm.nih.gov/pubmed/26225261)
-     - [TMDD model library by Monolix](http://mlxtran.lixoft.com/libraries/target-mediated-drug-disposition-tmdd-model-library/)
-     - [Modeling Drugs with TMDD by Leonid Gibianksy](http://www.quantpharm.com/pdf_files/TMDD_Talk_PAGE_2011.pdf)
+(TMDD) model in PuMaS. TMDD is the phenomenon in which a drug binds with high
+affinity to its pharmacological target site (such as a receptor) to such an
+extent that this affects its pharmacokinetic characteristics.
+
+ TMDD concepts is is introduced by [Levy (1994)](https://www.ncbi.nlm.nih.gov/pubmed/7924119)
+ and one-compartment full TMDD model was proposed by [Mager and Jusko (2001)](https://www.ncbi.nlm.nih.gov/pubmed/11999290).
+ Approximated model of full TMDD model such as Quasi-steady-state (QSS) model was proposed by [Gibiansky (2008)](https://www.ncbi.nlm.nih.gov/pubmed/19005743)
+
+ The followings are nice tutorials for the concept of TMDD and example codes are available.
+- [Tutorial on TMDD Models in CPTPSP 2015](https://www.ncbi.nlm.nih.gov/pubmed/26225261)
+- [TMDD model library by Monolix](http://mlxtran.lixoft.com/libraries/target-mediated-drug-disposition-tmdd-model-library/)
+- [Modeling Drugs with TMDD by Leonid Gibianksy](http://www.quantpharm.com/pdf_files/TMDD_Talk_PAGE_2011.pdf)
 
 # Model
 
 ## Full Model
+First, we want to implement one-compartment IV infusion full TMDD model.
+Model structure is as following. (add figure)
 
-- One-compartment IV infusion Full TMDD model structure (figure)
-- 7 Parameters : VC, KEL, KON, KOFF, KSYN, KDEG, KINT
-- 3 Compartments : L (Ligand or Drug), R (Receptor or Target), P (Complex)
-- Assumption of the model
-    - The drug-target binding is a simple one-to-one binding process and
-    occurs only in the centaral compartment
-    - Recyling of the target does not occur in the elimination process of the
-    drug-target complex
-    - Target production and degradation rate are constand and do not depend on the
-    drug  or target concentration
-- Point to consider
-    - All equations are in molar form with different molar weights
-    - Dose and concentration sholud be converted to molar units
+In this model, there are 3 compartments and 7 parameters.
+
+- Compartments
+    - L : Ligand or Drug
+    - R : Receptor or Target
+    - P : Complex
+- Parameters
+    - VC : Central volume (volume)
+    - KEL : Elimination rate constant (1/time)
+    - KON : Associate rate (1/concentration/time)
+    - KOFF : Dissociatation rate (1/time)
+    - KSYN : Target synthesis rate (conc/time)
+    - KDEG : Target degradation rate (1/time)
+    - KINT : Internalization rate (1/time)
+
+The major assumptions of the model are as followings :
+- The drug-target binding is a simple one-to-one binding process and occurs only in the centaral compartment
+- Recyling of the target does not occur in the elimination process of the drug-target complex
+- Target production and degradation rate are constant and do not depend on the drug or target concentration
+
+In TMDD model, you should consider the followings:
+- All equations are in molar form with different molar weights
+- Dose and concentration sholud be converted to molar units
 
 ### Model file
 
@@ -76,18 +92,21 @@ tmdd_full = @model begin
     end
 
     @derived begin
+        DV ~ @.Normal(LCONC, sqrt(LCONC^2 * σ_prop))
     end
 end;
 ```
-In this model, 7 parameters are defined in @pre.
-Initial value of receptor compartment (R) is defined by KSYN/KDEG in @init.
-L is defined by amount and R and P are defined by concentration.
-Ligand concentration (LCONC) is defined by L/VC in @vars
+In this model, 7 parameters are defined in `@pre`.
+Initial value of receptor compartment (`R`) is defined by `KSYN/KDEG` in `@init`.
+`L` is defined as amount and `R` and `P` are defined as concentration.
+Ligand concentration (`LCONC`) is defined by `L/VC` in `@vars`.
+Ligand concentration considering residual variability is derived in `@derived`.
+In this example, proportional error model is applied.
 
 ### Setting up parameters
 
 ```julia
-θ_full = [
+fixeffs = [
       3,       # VC, Central volume (L)
       0.025,   # KEL, Elimination rate constant (1/day)
       10,      # KON, Associate rate (1/(nmol/L)/day)
@@ -97,18 +116,15 @@ Ligand concentration (LCONC) is defined by L/VC in @vars
       0.2      # KINT, Internalization rate (1/day)
       ]
 
-parameter = (θ = θ_full,
+parameter = (θ = fixeffs,
              Ω = PDMat(diagm(0 => [0.0001])),
              σ_prop = 0.01);
 ```
-7 fixed effect parameter values are assigned in θ_full
-In this model, we simulated using only population parameters.
-?(How to fix random effect as 0?)
+7 fixed effect parameter values are assigned in `fixeffs`
 
 ### Simulation design
 
 ```julia
-nsub = 1
 dosemg1 = 10    # mg
 dosemg2 = 30    # mg
 dosemg3 = 100   # mg
@@ -127,7 +143,9 @@ pop3 = Population(map(i -> Subject(id=i,evs=e3),3:3))
 pop = Population(vcat(pop1,pop2,pop3));
 ```
 
-We simulated three doses (10, 30, 100 mg) and dose unit are converted into nmol.
+We simulated three doses (10, 30, 100 mg) and dose unit are converted into nmol
+by considering typical molecular weight of monoclonal antibody as 150,000.
+We also simulated until 96 days (`tlast`).
 
 ### Simulation
 
@@ -139,7 +157,15 @@ sim_tmdd_full = simobs(tmdd_full, pop, parameter, obstimes=0.1:0.1:tlast);
 
 ### Plot
 ```julia
-plot(sim_tmdd_full, title="")
+plot(sim_tmdd_full, title = "Full model")
+yaxis!(:log10)
+xlabel!("Time (day)")
+ylabel!("Free drug concentration (nM)")
+```
+If you want to plot only `LCONC`, select your column name of the simualted result.
+
+```julia
+plot(sim_tmdd_full, obsnames=[:LCONC], title = "Full model")
 yaxis!(:log10)
 xlabel!("Time (day)")
 ylabel!("Free drug concentration (nM)")
@@ -148,15 +174,16 @@ ylabel!("Free drug concentration (nM)")
 ## QSS model
 
 The QSS model assumes that the binding rate is balanced by the sum of the
-dissociation and internalization rates.
+dissociation (`KOFF`) and internalization rates (`KINT`).
 
 KSS = (KOFF + KINT)/KON
 
 Total number of parameters reduced from 7 to 6 and
 total number of compartments are reduced from 3 to 2.
 
-Compartments are defined by total drug (Ltot) and total receptor (Rtot)
-and free drug concentration is calculated by Ltot, Rtot and other parameters
+Compartments are defined by total ligand (Ltot) amount,
+total receptor (Rtot) concentration and
+free ligand concentration (CONC) is calculated by Ltot, Rtot and other parameters.
 
 ### Model file
 
@@ -185,14 +212,14 @@ tmdd_qss = @model begin
         Rtot = KSYN/KDEG
     end
 
-    @vars begin
-        KSS = (KOFF+KINT)/KON
-        CONC = 0.5*(Ltot/VC-Rtot-KSS)+0.5*sqrt((Ltot/VC-Rtot-KSS)^2+4*KSS*Ltot/VC)  # Free Drug Concentration
-    end
-
     @dynamics begin
         Ltot' = -KEL*CONC*VC - KINT*Rtot*CONC*VC/(KSS+CONC)         # Total Drug Amount
         Rtot' = KSYN - KDEG*Rtot - (KINT-KDEG)*CONC*Rtot/(KSS+CONC) # Total Receptor Concentration
+    end
+
+    @vars begin
+        KSS = (KOFF+KINT)/KON
+        CONC = 0.5*(Ltot/VC-Rtot-KSS)+0.5*sqrt((Ltot/VC-Rtot-KSS)^2+4*KSS*Ltot/VC)  # Free Drug Concentration
     end
 
     @derived begin
@@ -200,19 +227,18 @@ tmdd_qss = @model begin
 end;
 ```
 
-?(I defined KSS in @vars and used it in @dynamics, but some error when plotting)
-We can use KSS value directly, but in this example, KSS is derived by full model parameters
+We can use KSS value directly, but in this example, `KSS` is derived by using
+`KOFF`, `KINT` and `KON`.
 
-
-## Setting up parameters
+### Setting up parameters
 ```julia
 using Random
 Random.seed!(123456)
 sim_tmdd_qss = simobs(tmdd_qss, pop, parameter, obstimes=0.1:0.1:tlast);
 ```
-## Plot
+### Plot
 ```julia
-plot(sim_tmdd_qss, obsnames=[:CONC])
+plot(sim_tmdd_qss, obsnames=[:CONC], title = "QSS model")
 yaxis!(:log10)
 xlabel!("Time (day)")
 ylabel!("Free drug concentration (nM)")
@@ -228,10 +254,12 @@ We reproduced final simulated human PK profiles in figure 6(B) of the literature
 ![Figure 6(B)](amg181.png)
 
 The differences of model compared to our QSS example model are
-- One more periperal compartment
-- Depot compartment for SC absorption
-- Constant Rtot assumption (So called Wagner model), so no compartment for Rtot.
+- Periperal compartment
+- Depot compartment for subcutaneous absorption
+- Constant Rtot assumption (So called Wagner model), so there is no compartment for Rtot.
 - The unit of concentratino as μg/mL.
+
+For Wagner model, please refer to [Wagner model](http://mlxtran.lixoft.com/libraries/wagner-tmdd-model/).
 
 We utilized parameter values in Table 3 of the literature.
 
@@ -279,7 +307,7 @@ exmod = @model begin
     end
 end;
 ```
-## Setting up parameters
+### Setting up parameters
 ```julia
 θ_ex = [
       2.9,    # VC   Central volume (L)
@@ -294,7 +322,7 @@ end;
 
 parameter = (θ = θ_ex,
              Ω = PDMat(diagm(0 => [0.0001])),
-             σ_prop = 0.01)
+             σ_prop = 0.01);
 ```
 ### Simulation design
 
@@ -315,14 +343,14 @@ pop1 = Population(map(i -> Subject(id=i,evs=e1),1:1))
 pop2 = Population(map(i -> Subject(id=i,evs=e2),2:2))
 pop3 = Population(map(i -> Subject(id=i,evs=e3),3:3))
 pop4 = Population(map(i -> Subject(id=i,evs=e4),4:4))
-pop = Population(vcat(pop1,pop2,pop3, pop4))
+pop = Population(vcat(pop1,pop2,pop3, pop4));
 ```
 
 ### Simulation
 ```julia
 using Random
 Random.seed!(123456)
-sim_ex = simobs(exmod, pop, parameter, obstimes=0.1:0.1:tlast, tspan=(0.0,tlast), parallel_type=PuMaS.Serial);
+sim_ex = simobs(exmod, pop, parameter, obstimes=0.1:0.1:tlast, tspan=(0.0,tlast));
 ```
 
 ### Plot
