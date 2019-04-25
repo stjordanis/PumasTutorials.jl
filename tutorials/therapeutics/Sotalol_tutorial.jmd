@@ -115,7 +115,7 @@ sotalol_PKPD_model = @model begin
     @pre begin
         bioav = [1,θ[1]]
         Ka = θ[2]*exp(η[1])
-        lags = [0, θ[3]]
+        lags = [θ[3], 0]
         CL = θ[4]*(BW/70)^0.75*(0.5)^CKI*exp(η[2])
         Vc  = θ[5]*(BW/70)*exp(η[3])
         Q  = θ[6]*(BW/70)^0.75
@@ -144,27 +144,6 @@ sotalol_PKPD_model = @model begin
 end
 ```
 
-
-```julia
-parameters_PK = ( θ = [1.0667, #bioav
-                            0.605, #Ka
-                            5, #alag1
-                            12, #CL
-                            77.1, #Vc
-                            9.22, #Q
-                            52.3, #Vp
-                            405, #E0
-                            0.0158 #Slope
-                            ],
-                    Ω = PDMat(diagm(0 => [0.4692, 0.0198, 0.0713, 0.0025, 0.034])),
-                    σ_prop_PK = 0,
-                    σ_prop_PD = 0)
-```
-
-```julia
-sim2=simobs(sotalol_PKPD_model, s2, eta=(η = zeros(5),), parameters_PK)
-plot(sim2)
-```
 #Plots shows the title population simulation eventhough it is an individual simulation.
 #cannot control or visualize what is outputed in sim. (total black box)
 
@@ -188,8 +167,7 @@ parameters_PKPD = ( θ = [1.0667, #bioav
                             405, #E0
                             0.0158 #Slope
                             ],
-                    Ω = PDMat(diagm(0 => [1E-16, 0.4692, 1E-16, 0.0198, 0.0713, 1E-16, 1E-16, 0.0025, 0.034])),
-                    #Ω = PDMat(diagm(0 => [1E-16, 1E-16, 1E-16, 1E-16, 1E-16, 1E-16, 1E-16, 1E-16, 1E-16])),
+                    Ω = PDMat(diagm(0 => [0.4692, 0.0198, 0.0713, 0.0025, 0.034])),
                     σ_prop_PK = 0.06, # made it smaller because it was ridiculously high 0.2285 (%CV of 47.8),
                     σ_prop_PD = 19.1
                     )

@@ -68,6 +68,7 @@ reg_PO_160_CKI = DosageRegimen(160, cmt=1, time=0, ii=24, addl=5, rate=0)
 
 #Creation of 12 typical subjects (1 subject per dosing regimen)
 ##evs and cvs are argument names for events and covariates.
+```julia
 s1 = Subject(id=1, evs=reg_IVPO_80, cvs=(BW = 70, CKI=0, dose=["iv1","po","po"], reg="IV_PO_80mg"))
 s2 = Subject(id=2, evs=reg_PO_80, cvs = (BW = 70, CKI=0))
 s3 = Subject(id=3, evs=reg_IVPO_120, cvs=(BW = 70, CKI=0, dose=["iv1","iv2","po","po"]))
@@ -81,10 +82,11 @@ s9 = Subject(id=9, evs=reg_IVPO_120_CKI, cvs=(BW = 70, CKI=1, dose=["iv1","iv2",
 s10 = Subject(id=10, evs=reg_PO_120_CKI, cvs=(BW = 70, CKI=1))
 s11 = Subject(id=11, evs=reg_IVPO_160_CKI, cvs=(BW = 70, CKI=1, dose=["iv1","iv2","iv3","po","po"]))
 s12 = Subject(id=12, evs=reg_PO_160_CKI, cvs=(BW = 70, CKI=1))
-
+```
 #Creation of one big dataset by merging the 12 typical subjects (1 subject per dosing regimen)
+```julia
 mypop=Population([s1,s2,s3,s4,s5,s6, s7,s8,s9,s10,s11,s12])
-
+```
 #mypop1=Population([s1])
 #mypop2=Population([s2])
 
@@ -96,74 +98,12 @@ mypop=Population([s1,s2,s3,s4,s5,s6, s7,s8,s9,s10,s11,s12])
 ## what should I do if I want to specify K20 or Kel=CL/Vc. shoud it be done in @vars ?
 
 ##PK model
-
-sotalol_PKmodel = @model begin
-
-    @param   begin
-        θ ∈ VectorDomain(7, lower=zeros(7), init=ones(7))
-        σ_prop ∈ RealDomain(init=0.1)
-    end
-
-    @random begin
-      η ~ MvNormal(Matrix{Float64}(I, 7, 7))
-    end
-
-    @pre begin
-        bioav = [1, θ[1]]#*exp(η[1])]
-        Ka = θ[2]#*exp(η[2])
-        lags = [θ[3],0]#*exp(η[3])]
-        CL = θ[4]*(BW/70)^0.75*(0.5)^CKI#*exp(η[4])
-        Vc  = θ[5]*(BW/70)#*exp(η[5])
-        Q  = θ[6]*(BW/70)^0.75#*exp(η[6])
-        Vp  = θ[7]*(BW/70)#*exp(η[7])
-    end
-
-    @covariates BW CKI
-
-    @dynamics begin
-        Depot'   = -Ka*Depot
-        Central' =  Ka*Depot - (CL/Vc)*Central - (Q/Vc)*Central + (Q/Vp)*Peripheral
-        Peripheral' = (Q/Vc)*Central - (Q/Vp)*Peripheral
-    end
-
-    @derived begin
-        CP = @. (Central / (Vc/1000))
-        DV = @. Normal(CP, sqrt(CP^2*σ_prop))
-    end
-
-end
-
-
-parameters_PK = ( θ = [1.0667, #bioav
-                        0.605, #Ka
-                        0.231, #alag1
-                        12, #CL
-                        77.1, #Vc
-                        9.22, #Q
-                        52.3 #Vp
-                        ],
-                    #Ω = [0,0,0,0,0,0,0],
-                    σ_prop = 0)
-
-
-sim2=simobs(sotalol_PKmodel, s2, parameters_PK)
-plot(sim2)
-
-#Plots shows the title population simulation eventhough it is an individual simulation.
-#cannot control or visualize what is outputed in sim. (total black box)
-
-##PK/PD model
-
-## Why do I need +eps( ) in the DV calculation
-## How to specify 2 different residual errors
-## Because σ_prop is not specified as variance from a matrix, do I need to specify a lower boundary
-## can we define or update BW in parameters_PK ?
-
+```julia
 sotalol_PKPD_model = @model begin
 
     @param   begin
         θ ∈ VectorDomain(9, lower=zeros(9), init=ones(9))
-        Ω ∈ PSDDomain(9)
+        Ω ∈ PSDDomain(5)
         σ_prop_PK ∈ RealDomain(init=0.1)
         σ_prop_PD ∈ RealDomain(init=0.1)
     end
@@ -173,16 +113,16 @@ sotalol_PKPD_model = @model begin
     end
 
     @pre begin
-        bioav = [1,θ[1]*exp(η[1])]
-        Ka = θ[2]*exp(η[2])
-        lags = [θ[3]*exp(η[3]),0]
-        CL = θ[4]*(BW/70)^0.75*(0.5)^CKI*exp(η[4])
-        Vc  = θ[5]*(BW/70)*exp(η[5])
-        Q  = θ[6]*(BW/70)^0.75*exp(η[6])
-        Vp  = θ[7]*(BW/70)*exp(η[7])
+        bioav = [1,θ[1]]
+        Ka = θ[2]*exp(η[1])
+        lags = [θ[3], 0]
+        CL = θ[4]*(BW/70)^0.75*(0.5)^CKI*exp(η[2])
+        Vc  = θ[5]*(BW/70)*exp(η[3])
+        Q  = θ[6]*(BW/70)^0.75
+        Vp  = θ[7]*(BW/70)
 
-        E0 = θ[8]*exp(η[8])
-        Slope = θ[9]*exp(η[9])
+        E0 = θ[8]*exp(η[4])
+        Slope = θ[9]*exp(η[5])
     end
 
     @covariates BW CKI
@@ -202,8 +142,19 @@ sotalol_PKPD_model = @model begin
     end
 
 end
+```
 
+#Plots shows the title population simulation eventhough it is an individual simulation.
+#cannot control or visualize what is outputed in sim. (total black box)
 
+##PK/PD model
+
+## Why do I need +eps( ) in the DV calculation
+## How to specify 2 different residual errors
+## Because σ_prop is not specified as variance from a matrix, do I need to specify a lower boundary
+## can we define or update BW in parameters_PK ?
+
+```julia
 parameters_PKPD = ( θ = [1.0667, #bioav
                             0.605, #Ka
                             0.231, #alag1
@@ -214,26 +165,29 @@ parameters_PKPD = ( θ = [1.0667, #bioav
                             405, #E0
                             0.0158 #Slope
                             ],
-                    Ω = PDMat(diagm(0 => [1E-16, 0.4692, 1E-16, 0.0198, 0.0713, 1E-16, 1E-16, 0.0025, 0.034])),
-                    #Ω = PDMat(diagm(0 => [1E-16, 1E-16, 1E-16, 1E-16, 1E-16, 1E-16, 1E-16, 1E-16, 1E-16])),
+                    Ω = PDMat(diagm(0 => [0.4692, 0.0198, 0.0713, 0.0025, 0.034])),
                     σ_prop_PK = 0.06, # made it smaller because it was ridiculously high 0.2285 (%CV of 47.8),
                     σ_prop_PD = 19.1
                     )
+```
 
-
-sim1=simobs(sotalol_PKPD_model, s1, parameters_PKPD)
+```julia
+randeffs = (η = zeros(9),)
+sim1=simobs(sotalol_PKPD_model, s2, parameters_PKPD, randeffs)
 plot(sim1)
+```
 
+```julia
 sim=simobs(sotalol_PKPD_model, mypop, parameters_PKPD)
 #sim=simobs(sotalol_PKPD_model, mypop, parameters_PKPD, obstimes=0:24)
 plot(sim)
-
-##randeffs = (η = Diagonal([0, 0, 0, 0, 0, 0, 0]),)
+```
 
 #Creation of a population of 1000 subject per dosing regimen
 ##evs and cvs are argument names for events and covariates.
 # to round you have to specify the argument digit=s if the number of digits is different from 0,  round(8.315, digits=1)
 
+```julia
 pop1 = Population(map(i -> Subject(id=i, evs=reg_IVPO_80, cvs=(BW = round.(rand(Normal(70, 10))), CKI=0, dose=["iv1","po","po"])), 1:1000))
 pop2 = Population(map(i -> Subject(id=i, evs=reg_PO_80, cvs = (BW = round.(rand(Normal(70, 10))), CKI=0)), 1001:2000))
 pop3 = Population(map(i -> Subject(id=i, evs=reg_IVPO_120, cvs=(BW = round.(rand(Normal(70, 10))), CKI=0, dose=["iv1","iv2","po","po"])), 2001:3000))
@@ -247,15 +201,16 @@ pop9 = Population(map(i -> Subject(id=i, evs=reg_IVPO_120_CKI, cvs=(BW = round.(
 pop10 = Population(map(i -> Subject(id=i, evs=reg_PO_120_CKI, cvs=(BW = round.(rand(Normal(70, 10))), CKI=1)), 9001:10000))
 pop11 = Population(map(i -> Subject(id=i, evs=reg_IVPO_160_CKI, cvs=(BW = round.(rand(Normal(70, 10))), CKI=1, dose=["iv1","iv2","iv3","po","po"])), 10001:11000))
 pop12 = Population(map(i -> Subject(id=i, evs=reg_PO_160_CKI, cvs=(BW =round.(rand(Normal(70, 10))), CKI=1)), 11001:12000))
+```
 
 #Creation of one big dataset by merging the 12 typical subjects (1 subject per dosing regimen)
 #merging different populations is different than merging different subjects
 #what vcat means ?
+
+```julia
 mybigpop=Population(vcat(pop1,pop2,pop3,pop4,pop5,pop6, pop7,pop8,pop9,pop10,pop11,pop12))
 
 sim_pop=simobs(sotalol_PKPD_model, mybigpop, parameters_PKPD)
 
 plot(sim_pop)
-
-
--
+```
