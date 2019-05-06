@@ -362,6 +362,7 @@ plot(sim)
 #FIXME DosageRegimen should allow rate value of -2 to allow modeling durations
 # rate = 0 allows modeling durations in pumas. Rate=-2 is nonmem convention
 ev = DosageRegimen(100, rate = -2, cmt = 2, addl=3,ii=12)
+ev = DosageRegimen(100, rate = -2, cmt = 2)
 ev16 =  generate_population(ev)
 
 p = (  θ = [1.5,  #Ka
@@ -470,6 +471,7 @@ seconddose = DosageRegimen(0, time = 50, evid = 3, cmt = 2)
 thirddose = DosageRegimen(120, time = 54, ii = 16, addl = 2)
 ev = DosageRegimen(firstdose,seconddose,thirddose)
 #ev = DosageRegimen(DosageRegimen(firstdose,seconddose),thirddose)
+ev = DosageRegimen(DosageRegimen(firstdose,seconddose),thirddose)
 ev19 =  generate_population(ev)
 
 p = (  θ = [1.5,  #Ka
