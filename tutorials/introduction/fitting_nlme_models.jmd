@@ -55,7 +55,11 @@ theopmodel_focei = @model begin
 
 
 ```julia
+<<<<<<< HEAD
 param = (θ₁ = 2.77,   #Ka MEAN ABSORPTION RATE CONSTANT for SEX = 1(1/HR)
+=======
+fixeffs = (θ₁ = 2.77,   #Ka MEAN ABSORPTION RATE CONSTANT for SEX = 1(1/HR)
+>>>>>>> sim_est_pkpd
         θ₂ = 0.0781, #K MEAN ELIMINATION RATE CONSTANT (1/HR)
         θ₃ = 0.0363, #SLP  SLOPE OF CLEARANCE VS WEIGHT RELATIONSHIP (LITERS/HR/KG)
         θ₄ = 1.5,    #Ka MEAN ABSORPTION RATE CONSTANT for SEX=0 (1/HR)
@@ -67,6 +71,7 @@ param = (θ₁ = 2.77,   #Ka MEAN ABSORPTION RATE CONSTANT for SEX = 1(1/HR)
 ```
 
 ```julia
+<<<<<<< HEAD
 o = fit(theopmodel_focei, theopp, param, PuMaS.FOCEI())
 o
 predsdf = DataFrame(predict(o))
@@ -76,4 +81,11 @@ se = stderror(o)
 vcov(o)
 PuMaS.FIM(o)
 
+=======
+o = fit(theopmodel_focei, theopp, fixeffs, PuMaS.FOCEI())
+
+x_optim = o.fixeffs
+
+cwres(theopmodel_focei, theopp[1], x_optim)
+>>>>>>> sim_est_pkpd
 ```
