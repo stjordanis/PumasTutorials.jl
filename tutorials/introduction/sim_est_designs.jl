@@ -40,9 +40,14 @@ m_diffeq = @model begin
 
     @derived begin
         cp = @. 1000*(Central / V)
-        cp2 = cp*0.01
+        #cp2 = cp*0.01
     end
 end
+
+foo1 = DosageRegimen([100,600],evid=[1,4],time=[0,6], ss=1)
+foo = Subject(id=1,evs=foo1,cvs=(isPM="yes",Wt=70))
+sim = simobs(m_diffeq, foo, p; abstol=1e-14, reltol=1e-14)
+plot(sim)
 
 # Bolus with additional
 ev = DosageRegimen(100, ii=24, addl=3)

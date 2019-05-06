@@ -68,14 +68,9 @@ param = (θ₁ = 2.77,   #Ka MEAN ABSORPTION RATE CONSTANT for SEX = 1(1/HR)
 
 ```julia
 o = fit(theopmodel_focei, theopp, param, PuMaS.FOCEI())
-preds = predict(o)
- time = [s.time for s in o.data.subjects]
-plot(time[1],preds.population[1],ylabel="prediction",xlabel="time")
-scatter!(time[1],o.data.subjects[1].observations.dv,ylabel="prediction",xlabel="time")
-#scatter!(preds.time[1],o.data.subjects[1].observations,ylabel="prediction",xlabel="time")
-
-resids = residuals(o)
-scatter(ores.time,ores.individual,ylabel="residuals",xlabel="time")
+o
+predsdf = DataFrame(predict(o))
+resids = DataFrame(wresiduals(o))
 estimates = o.param
 se = stderror(o)
 vcov(o)
