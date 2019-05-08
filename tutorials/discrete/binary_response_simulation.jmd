@@ -1,0 +1,49 @@
+---
+title: Simulation of Binary Responses
+author: Vijay Ivaturi
+date: May 15, 2019
+---
+
+# Introduction
+
+```
+using PuMaS, Test, CSV, Distributions, Random, LabelledArrays, StatsFuns
+
+
+# Read the data# Read the data
+data = process_nmtran(CSV.read("pain_remed.csv"),dvs=[:dv],
+[:arm, :dose, :conc, :painord,:remed];time=:time,
+event_data=false)
+
+
+mdsl = @model begin
+    @param begin
+        θ ∈ VectorDomain(2,init=[0.001, 0.0001])
+        Ω ∈ PSDDomain(1)
+    end
+
+    @random begin
+        η ~ MvNormal(Ω)
+    end
+
+    @covariates arm dose
+
+    @pre begin
+        rx = dose > 0 ? 1 : 0
+        INT = θ[1]
+        LNPTRT = θ[2]*rx
+        LOGIT = INT + LNPTRT + η[1]
+    end
+
+    @derived begin
+        dv ~ Bernoulli(logistic(LOGIT))
+    end
+
+end
+
+x0 = init_param(mdsl)
+y0 = init_random(mdsl, x0)
+
+sim = simobs(mdsl,data,x0,y0)
+
+```
