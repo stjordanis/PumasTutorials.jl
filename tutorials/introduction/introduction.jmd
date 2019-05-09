@@ -254,7 +254,7 @@ initial values similarly:
 
 ```julia
 randeffs = (η = rand(11),)
-sim = simobs(model, subject, fixeffs, randeffs)
+sim = simobs(model, subject, params, randeffs)
 plot(sim)
 ```
 
@@ -264,7 +264,7 @@ argument `obstimes`. For example, let's save at every `0.1` hours and run the
 simulation for 19 hours:
 
 ```julia
-sim = simobs(model, subject, fixeffs, randeffs, obstimes = 0:0.1:19)
+sim = simobs(model, subject, params, randeffs, obstimes = 0:0.1:19)
 plot(sim)
 ```
 
@@ -272,7 +272,7 @@ If you would like to do a mean simulation, then set the random effects to zero
 
 ```julia
 randeffs = (η = zeros(11),)
-sim = simobs(model, subject, fixeffs, randeffs)
+sim = simobs(model, subject, params, randeffs)
 plot(sim)
 ```
 

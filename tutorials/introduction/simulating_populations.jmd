@@ -1,7 +1,7 @@
 ---
 title : Defining and Simulating Populations
 author : Vijay Ivaturi, Chris Rackauckas
-date:  February 10, 2019
+date:  May 10, 2019
 ---
 
 ```julia
@@ -36,7 +36,7 @@ model = @model begin
   @covariates isPM Wt
 
   @pre begin
-    TVCL = isPM == 1 ? θ[1] : θ[4]
+    TVCL = isPM == "yes" ? θ[1] : θ[4]
     CL = θ[1]*(Wt/70)^0.75*exp(η[1])
     V = θ[2]*(Wt/70)^0.75*exp(η[2])
     Ka = θ[3]*exp(η[3])
@@ -52,7 +52,7 @@ model = @model begin
   end
 
   @derived begin
-    dv ~ @.Normal(conc,sqrt(conc^2*σ_prop+ eps()))
+    dv ~ @.Normal(conc,sqrt(conc^2*σ_prop))
   end
 
 end
@@ -66,7 +66,7 @@ variances. So, 0.04 variance on Ω_11 suggests a 20% coefficient of variation. S
 proportional residual error.
 
 ```julia
-fixeffs = (
+params = (
   θ = [0.4,20,1.1,2],
   Ω = PDMat(diagm(0 => [0.04,0.04,0.04])),
   σ_prop = 0.04
@@ -87,10 +87,10 @@ first(ev.data)
 As you can see above, we provided a single 100 mg dose. `DosageRegimen` provides some defaults when
 it creates the dataset, `time=0`, `evid=1`, `cmt=1`, `rate=0`, `ii=0` & `addl=0`. We can also provide
 units to the `amt` and any other variable that is derived from `amt`, e.g. `rate`, will have associated units.
-Handling of units will be covered in a different tutorial.
+Handling of units is currently experimental only and not available for testing.
 
 Note that `ev` is of type `DosageRegimen`. Specified like above,
-`DosageRegimen` is one of the four fundamental building block of a `Subject` (more on `Subject` below).
+`DosageRegimen` is one of the fundamental building block of a `Subject` (more on `Subject` below).
 
 ### Building Subjects
 
@@ -135,7 +135,7 @@ Using this one subject, `s1`, let us simulate a simple concentration time
 profile using the model above:
 
 ```julia
-obs = simobs(model,s1,fixeffs,obstimes=0:0.1:120)
+obs = simobs(model,s1,params,obstimes=0:0.1:120)
 plot(obs)
 ```
 
@@ -154,6 +154,13 @@ essentially a collection of subjects.
 twosubjs =  Population([s1,s2])
 ```
 
+A `Poplation` can be passed into a `DataFrame` for easy viewing, although it may not
+be really useful from a processing perspective.
+
+```julia
+DataFrame(twosubjs)
+```
+
 Let's see the details of the first and the second subject
 
 ```julia
@@ -166,7 +173,7 @@ twosubjs.subjects[2]
 Now, we can simulate this `Population` of 2 subjects as below
 
 ```julia
-obs = simobs(model,twosubjs,fixeffs,obstimes=0:0.1:120)
+obs = simobs(model,twosubjs,params,obstimes=0:0.1:120)
 ```
 
 When using `simobs` on more than one subject, i.e., on a `Population`, the
@@ -188,7 +195,7 @@ The second covariate is a continuous covariate where body weight `Wt` impacts
 both `CL` and `V`. Let us now specify covariates to a population of 10 subjects.
 
 ```julia
-choose_covariates() = (isPM = rand([1, 0]),
+choose_covariates() = (isPM = rand(["yes", "no"]),
                     Wt = rand(55:80))
 ```
 `choose_covariates` will randomly choose a `isPM` and an `Wt` between 55-80 kgs
@@ -212,12 +219,21 @@ pop_with_covariates = Population(map(i -> Subject(id=i,evs=ev,cvs=choose_covaria
 Simulate into the population
 
 ```julia
-obs = simobs(model,pop_with_covariates,fixeffs,obstimes=0:0.1:120)
+obs = simobs(model,pop_with_covariates,params,obstimes=0:0.1:120)
 ```
 
 and visualize the output
 
 ```julia
+plot(obs)
+```
+
+If one is interested in just looking at the mean effects of the covariates, then
+it is easy to silence the random effects, by setting them to zero
+
+```julia
+randeffs = (η = zeros(3),)
+obs = simobs(model,pop_with_covariates,params,randeffs,obstimes=0:0.1:120)
 plot(obs)
 ```
 
@@ -242,7 +258,7 @@ s3 = Subject(id=3,evs=md, cvs=(isPM=0,Wt=70))
 and see the results:
 
 ```julia
-obs = simobs(model, s3, fixeffs,obstimes=0:0.1:240)
+obs = simobs(model, s3, params,obstimes=0:0.1:240)
 plot(obs)
 ```
 
@@ -261,7 +277,7 @@ Let's see if this result matches our intuition:
 
 ```julia
 s4 = Subject(id=4, evs=ldmd, cvs=(isPM=0,Wt=70))
-obs = simobs(model, s4, fixeffs,obstimes=0:0.1:120)
+obs = simobs(model, s4, params,obstimes=0:0.1:120)
 plot(obs, ylims=(0,50))
 ```
 
@@ -272,7 +288,7 @@ regimens into a single regimen. For example:
 e1 = DosageRegimen(500,cmt=1, time=0, addl=0,ii=0)
 e2 = DosageRegimen(100,cmt=1, time=24, addl=6,ii=24)
 evs = DosageRegimen(e1,e2)
-obs = simobs(model, s4, fixeffs,obstimes=0:0.1:120)
+obs = simobs(model, s4, params,obstimes=0:0.1:120)
 plot(obs, ylims=(0,50))
 ```
 
@@ -296,7 +312,7 @@ pop = Population(vcat(pop1,pop2,pop3))
 ```
 
 ```julia
-obs = simobs(model,pop,fixeffs,obstimes=0:0.1:120)
+obs = simobs(model,pop,params,obstimes=0:0.1:120)
 plot(obs)
 ```
 
@@ -315,7 +331,18 @@ Now let's simulate a subject undergoing this treatment strategy:
 
 ```julia
 s5 = Subject(id=5, evs=inf, cvs=(isPM=0,Wt=70))
-obs = simobs(model, s5, fixeffs, obstimes=0:0.1:120)
+obs = simobs(model, s5, params, obstimes=0:0.1:120)
+plot(obs)
+```
+
+Infusions can also be defined via the `duration` parameter
+
+```julia
+e1 = DosageRegimen(100, rate = 25, time=0)
+e2 = DosageRegimen(100, duration = 4, time=24)
+durinf = DosageRegimen(e1,e2)
+s6 = Subject(id=6, evs=inf, cvs=(isPM=0,Wt=70))
+obs = simobs(model, s6, params, obstimes=0:0.1:120)
 plot(obs)
 ```
 
