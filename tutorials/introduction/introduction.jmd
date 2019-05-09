@@ -1,7 +1,7 @@
 ---
 title: Introduction to PuMaS
-author: Chris Rackauckas
-date: March 3, 2019
+author: Chris Rackauckas & Vijay Ivaturi
+date: May 14, 2019
 ---
 
 # Introduction
@@ -23,13 +23,7 @@ the subsequent tutorials and documentation.
 
 ## Installation
 
-Because PuMaS is still unregistered, you will need to give the Git repository
-in order to add the package. To do this, use the command
-`]add https://github.com/UMCTM/PuMaS.jl`. Doing it this way, PuMaS and its
-dependencies will install automatically. If one cannot authenticate for this
-command (since the repository is currently private!), then first clone the
-repository how you please, use `]dev path/to/package`, then then do `]build PuMaS`.
-Using the build command will download and install the dependencies.
+Installation instructions for PuMaS is available [here](www.pumas.ai/downloads)
 
 ## Getting Started
 
@@ -53,8 +47,8 @@ end
 ```
 
 Next we define our random effects. The random effects are defined by a distribution
-from Distributions.jl. For more information on defining distributions, please
-see the Distributions.jl documentation. For this tutorial, we wish to have a
+from [Distributions.jl](). For more information on defining distributions, please
+see the Distributions.jl [documentation](). For this tutorial, we wish to have a
 multivariate normal of 11 uncorrelated random effects, so we utilize the syntax:
 
 ```{julia;eval=false}
@@ -73,7 +67,7 @@ give them a name as follows:
 
 ```{julia;eval=false}
 @pre begin
-    Ka1     = θ[1]
+    Ka     = θ[1]
     CL      = θ[2]*exp(η[1])
     Vc      = θ[3]*exp(η[2])
     Q       = θ[4]*exp(η[3])
@@ -95,7 +89,7 @@ have a zero for its starting value. We wish to only set the starting value for
 
 ```{julia;eval=false}
 @init begin
-    Resp = θ[6]/θ[7]
+    Resp = Kin/Kout
 end
 ```
 
@@ -105,8 +99,8 @@ we use:
 
 ```{julia;eval=false}
 @dynamics begin
-    Ev1'    = -Ka1*Ev1
-    Cent'   =  Ka1*Ev1 - (CL+Vmax/(Km+(Cent/Vc))+Q)*(Cent/Vc)  + Q*(Periph/Vp)
+    Ev'    =  -Ka*Ev
+    Cent'   =  Ka*Ev - (CL+Vmax/(Km+(Cent/Vc))+Q)*(Cent/Vc)  + Q*(Periph/Vp)
     Periph' =  Q*(Cent/Vc)  - Q*(Periph/Vp)
     Resp'   =  Kin*(1-(IMAX*(Cent/Vc)^γ/(IC50^γ+(Cent/Vc)^γ)))  - Kout*Resp
 end
@@ -117,8 +111,8 @@ output values using the following:
 
 ```{julia;eval=false}
 @derived begin
-    ev1    = Ev1
-    cp     = Cent / θ[3]
+    ev1    = Ev
+    cp     = Cent / Vc
     periph = Periph
     resp   = Resp
 end
@@ -139,7 +133,7 @@ model = @model begin
     end
 
     @pre begin
-        Ka1     = θ[1]
+        Ka      = θ[1]
         CL      = θ[2]*exp(η[1])
         Vc      = θ[3]*exp(η[2])
         Q       = θ[4]*exp(η[3])
@@ -154,19 +148,19 @@ model = @model begin
     end
 
     @init begin
-        Resp = θ[6]/θ[7]
+        Resp = Kin/Kout
     end
 
     @dynamics begin
-        Ev1'    = -Ka1*Ev1
-        Cent'   =  Ka1*Ev1 - (CL+Vmax/(Km+(Cent/Vc))+Q)*(Cent/Vc)  + Q*(Periph/Vp)
+        Ev'     = -Ka*Ev
+        Cent'   =  Ka*Ev - (CL+Vmax/(Km+(Cent/Vc))+Q)*(Cent/Vc)  + Q*(Periph/Vp)
         Periph' =  Q*(Cent/Vc)  - Q*(Periph/Vp)
         Resp'   =  Kin*(1-(IMAX*(Cent/Vc)^γ/(IC50^γ+(Cent/Vc)^γ)))  - Kout*Resp
     end
 
     @derived begin
-        ev1    = Ev1
-        cp     = Cent / θ[3]
+        ev    = Ev
+        cp     = Cent / Vc
         periph = Periph
         resp   = Resp
     end
@@ -178,9 +172,9 @@ end
 Now let's build a subject to simulate the model with. A subject defines three
 components:
 
-1. The dosage regimen
+1. The dosage regimen defined by events
 2. The covariates of the indvidual
-3. Observations associated with the individual.
+3. Observations and the corresponding times associated with the individual.
 
 Our model did not make use of covariates so we will ignore (2) for now, and
 (3) is only necessary for fitting parameters to data which will not be covered
@@ -218,8 +212,8 @@ initialized values, then we pass them in. Let's simulate subject 1 with a set
 of chosen parameters:
 
 ```julia
-fixeffs = (θ = [
-          1, # Ka1  Absorption rate constant 1 (1/time)
+params = (θ = [
+          1, # Ka  Absorption rate constant 1 (1/time)
           1, # CL   Clearance (volume/time)
           20, # Vc   Central volume (volume)
           2, # Q    Inter-compartmental clearance (volume/time)
@@ -233,7 +227,7 @@ fixeffs = (θ = [
           2  # Km   Michaelis constant (mass/volume)
           ],)
 
-sim = simobs(model, subject, fixeffs)
+sim = simobs(model, subject, params)
 ```
 
 We can then plot the simulated observations by using the `plot` command:
@@ -253,7 +247,7 @@ plot(sim,
 ```
 
 Notice that in our model we said that there was a single parameter `θ` so our
-input parameter is a named tuple with just the name `θ`. When we only give
+input parameter is a [named tuple]() with just the name `θ`. When we only give
 the parameters, the random effects are automatically sampled from their
 distributions. If we wish to prescribe a value for the random effects, we pass
 initial values similarly:
@@ -271,6 +265,14 @@ simulation for 19 hours:
 
 ```julia
 sim = simobs(model, subject, fixeffs, randeffs, obstimes = 0:0.1:19)
+plot(sim)
+```
+
+If you would like to do a mean simulation, then set the random effects to zero
+
+```julia
+randeffs = (η = zeros(11),)
+sim = simobs(model, subject, fixeffs, randeffs)
 plot(sim)
 ```
 
@@ -293,11 +295,11 @@ DataFrame(sim)
 ```
 
 From there, any Julia tools can be used to analyze these arrays and DataFrames.
-For example, if we wish the plot the result of `ev1` over time, we'd use the
+For example, if we wish the plot the result of `cp` over time, we'd use the
 following:
 
 ```julia
-plot(sim.times,sim[:ev1])
+plot(sim.times,sim[:cp])
 ```
 
 Using these commands, a Julia program can be written to post-process the
@@ -306,7 +308,7 @@ program however you like!
 ## Conclusion
 
 This tutorial covered basic workflow for how to build a model and simulate
-results from it. The subsequent models will go into more detail in the components,
+results from it. The subsequent tutorials will go into more detail in the components,
 such as:
 
 1. More detailed treatment of specifying populations, dosage regimens, and covariates.
