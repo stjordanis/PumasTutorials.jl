@@ -1,7 +1,7 @@
 ---
 title: PKtutorial
 author: Hechuan Wang
-date: April 15th, 2019
+date: April 27th, 2019
 ---
 
 ```julia
@@ -13,8 +13,8 @@ Pkg.build("GR")
 
 
 In this tutorial, we will cover the fundamentals of setting up a 1-compartment
-model with first-order absorption for PuMaS simulation. Here we use Lenalidomide
-population PK model reported by Connarn et al. as an example.
+model with zero-order absorption for PuMaS simulation. Here we use Intramuscular Quinine
+population PK model reported by Hendriksen et al. as an example in Tanzanian children with a median body weight of 11kg and a median age of 2.4 yrs.
 
 ## The model
 
@@ -24,11 +24,10 @@ There are between-subject variability on all the parameters.
 
 ```julia
 model = @model begin
-
   @param begin
     θ ∈ VectorDomain(3)
     Ω ∈ PSDDomain(3)
-    σ_prop ∈ RealDomain(init=0.00001)
+    σ_prop ∈ RealDomain(init=0.1)
   end
 
   @random begin
@@ -38,15 +37,15 @@ model = @model begin
   @covariates Wt
 
   @pre begin
-    CL = θ[1]*(Wt/70)^0.75*exp(η[1])
-    V  = θ[2]*(Wt/70)*exp(η[2])
-    Ka = θ[3]*exp(η[3])
-    lags = [0.246,0] # hrs
+    CL = θ[1]*(Wt/11)^0.75*exp(η[1])
+    V  = θ[2]*(Wt/11)*exp(η[2])
+    duration = [0, θ[3]]
+    #K0 = θ[3]*exp(η[3])
   end
 
   @dynamics begin
-    Depot'   = -Ka*Depot
-    Central' =  Ka*Depot - Central*CL/V
+    #Depot'   = -K0
+    Central' =  - Central*CL/V
   end
 
   @vars begin
@@ -64,16 +63,16 @@ end
 ## Setting up parameters
 
 Next we provide the initial estimates of the parameters to simulate from.
-The fixed effects are provided in the θ vector (CL, V, Ka) and the between-subject variability
+The fixed effects are provided in the θ vector (CL, V, Duration for the central compartment) and the between-subject variability
 parameteres are provided in the Ω vector as variances. So, 0.0176 variance on
-Ω_11 suggests a 13% coefficient of variation. Similarly, σ_prop has a 49%
+Ω_11 suggests a 13% coefficient of variation. Similarly, σ_prop has a 30.7%
 proportional residual error.
 
 ```julia
 p = (
-  θ = [18, 79, 8.34],
-  Ω = PDMat(diagm(0 => [0.0176,0.0299,2.13])),
-  σ_prop = 0.49
+  θ = [0.792, 13.7, 1.42],
+  Ω = PDMat(diagm(0 => [0.0163,0.0309])),
+  σ_prop = 0.307
   )
 ```
 
@@ -82,21 +81,21 @@ p = (
 `DosageRegimen()` is the function that lets you construct a dosing regimen.
 The first argument of the `DosageRegimen` is `amt` and is not a named argument.
 All subsequent arguments need to be named. In this dosing regimen,
-a single dose of 25 mg lenalidomide is administered at `time=0`.
+a single dose of 10 mg/kg Quinine (median weight 11kg) is administered at `time=0`.
 
 ```julia
-ev = DosageRegimen(25, time=0) ## mg
+ev = DosageRegimen(110, time=0) ## mg
 first(ev.data)
 ```
 
 ## Building one subject
 
-A subject weighing 70 kg is administered above dosing regimen.
+A child weighing 11 kg is administered above dosing regimen.
 His concentration-time profile will be simulated.
 
 
 ```julia
-s1 = Subject(id=1,evs=ev,cvs=(Wt=70))
+s1 = Subject(id=1,evs=ev,cvs=(Wt=11))
 
 ```
 
@@ -111,7 +110,7 @@ Using this one subject, `s1`, we can simulate a simple concentration time
 profile using the model above and plot the concentration-time profile for 24 hours.
 
 ```julia
-randeffs = (η = zeros(3),)
+#randeffs = (η = zeros(3),)
 
 obs = simobs(model, s1, p, obstimes=0:0.1:24, randeffs)
 

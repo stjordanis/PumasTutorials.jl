@@ -1,7 +1,7 @@
 ---
 title: PKtutorial
 author: Hechuan Wang
-date: April 15th, 2019
+date: April 27th, 2019
 ---
 
 ```julia
@@ -13,8 +13,10 @@ Pkg.build("GR")
 
 
 In this tutorial, we will cover the fundamentals of setting up a 1-compartment
-model with first-order absorption for PuMaS simulation. Here we use Lenalidomide
-population PK model reported by Connarn et al. as an example.
+model with transit compartment absorption for PuMaS simulation. Here we use Amiloride
+population PK model reported by Savic et al. as an example.
+
+(hard-coded transit compartments)
 
 ## The model
 
@@ -24,29 +26,33 @@ There are between-subject variability on all the parameters.
 
 ```julia
 model = @model begin
-
   @param begin
-    θ ∈ VectorDomain(3)
+    θ ∈ VectorDomain(6)
     Ω ∈ PSDDomain(3)
-    σ_prop ∈ RealDomain(init=0.00001)
+    σ_prop ∈ RealDomain(init=0.1)
   end
 
   @random begin
     η ~ MvNormal(Ω)
   end
 
-  @covariates Wt
+  @covariates Wt amt
 
   @pre begin
     CL = θ[1]*(Wt/70)^0.75*exp(η[1])
     V  = θ[2]*(Wt/70)*exp(η[2])
-    Ka = θ[3]*exp(η[3])
-    lags = [0.246,0] # hrs
+    BIO = θ[3] # the dose was corrected by bioavailability already
+    Ka = θ[4]
+    MTT =θ[5]*exp(η[3])
+    NN = θ[6]
+    K  = CL/V
+    Ktr = (NN+1)/MTT
+    LNFAC=log(2.5066)+(NN+0.5)*log(NN)-NN
   end
 
   @dynamics begin
-    Depot'   = -Ka*Depot
-    Central' =  Ka*Depot - Central*CL/V
+    Absorption' = exp(log(BIO*amt+.00001)+log(Ktr)+NN*log(Ktr*t+0.00001)-Ktr*t-LNFAC)-Ka*Absorption
+    Central' = Ka*Absorption-Central*K
   end
 
   @vars begin
@@ -59,21 +65,22 @@ model = @model begin
 
 end
 
+
 ```
 
 ## Setting up parameters
 
 Next we provide the initial estimates of the parameters to simulate from.
-The fixed effects are provided in the θ vector (CL, V, Ka) and the between-subject variability
-parameteres are provided in the Ω vector as variances. So, 0.0176 variance on
-Ω_11 suggests a 13% coefficient of variation. Similarly, σ_prop has a 49%
+The fixed effects are provided in the θ vector (CL, V, Ka, N, MTT and Bioavailability) and
+the between-subject variability parameteres are provided in the Ω vector as variances.
+So, 0.0361 variance on Ω_11 suggests a 19% coefficient of variation on CL. Similarly, σ_prop has a 7.5%
 proportional residual error.
 
 ```julia
 p = (
-  θ = [18, 79, 8.34],
-  Ω = PDMat(diagm(0 => [0.0176,0.0299,2.13])),
-  σ_prop = 0.49
+  θ = [0.354, 487, 1, 1.77, 1.03, 8.15],
+  Ω = PDMat(diagm(0 => [0.0361,0.16,0.27])),
+  σ_prop = 0.075
   )
 ```
 
@@ -85,7 +92,7 @@ All subsequent arguments need to be named. In this dosing regimen,
 a single dose of 25 mg lenalidomide is administered at `time=0`.
 
 ```julia
-ev = DosageRegimen(25, time=0) ## mg
+ev = DosageRegimen(5, time=0) ## mg
 first(ev.data)
 ```
 
@@ -96,7 +103,7 @@ His concentration-time profile will be simulated.
 
 
 ```julia
-s1 = Subject(id=1,evs=ev,cvs=(Wt=70))
+s1 = Subject(id=1,evs=ev,cvs=(Wt=70, amt=5))
 
 ```
 
