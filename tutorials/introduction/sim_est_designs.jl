@@ -1,6 +1,4 @@
-using PuMaS
-using Plots
-using LinearAlgebra
+using PuMaS, Plots, LinearAlgebra
 
 choose_covariates() = (isPM = rand(["yes", "no"]),
                     Wt = rand(55:80))
@@ -40,14 +38,10 @@ m_diffeq = @model begin
 
     @derived begin
         cp = @. 1000*(Central / V)
-        #cp2 = cp*0.01
+        dv ~ @. Normal(cp, sqrt(cp^2*σ_prop))
     end
 end
 
-foo1 = DosageRegimen([100,600],evid=[1,4],time=[0,6], ss=1)
-foo = Subject(id=1,evs=foo1,cvs=(isPM="yes",Wt=70))
-sim = simobs(m_diffeq, foo, p; abstol=1e-14, reltol=1e-14)
-plot(sim)
 
 # Bolus with additional
 ev = DosageRegimen(100, ii=24, addl=3)
@@ -56,18 +50,22 @@ ev1 =  generate_population(ev)
 p = (  θ = [1.5,  #Ka
            1.1,  #CL
            20.0,  #V
-           0, # lags2
+           eps(), # lags2
            1, #Bioav
            0.5, # isPM CL
-           0 # duration
+           eps() # duration
            ],
       Ω = PDMat(diagm(0 => [0.04,0.04])),
       σ_prop = 0.04
   )
 
 
-sim = simobs(m_diffeq, ev1, p; abstol=1e-14, reltol=1e-14)
-plot(sim)
+sim1 = simobs(m_diffeq, ev1, p; abstol=1e-14, reltol=1e-14)
+plot(sim1)
+vpcdf = vpc(m_diffeq,ev1,p,200)
+simdf1 = DataFrame(sim1)
+data1 = read_pumas(simdf1,cvs=[:isPM,:Wt])
+res1 = fit(m_diffeq,data1,p,PuMaS.FOCEI())
 
 # Bolus with lag time and bioav lag2=12.13, bioav=2.23
 # FIXME BUG IN lags when more than one event #364
@@ -87,8 +85,11 @@ p = (  θ = [1.5,  #Ka
   )
 
 
-sim = simobs(m_diffeq, ev2, p; abstol=1e-14, reltol=1e-14)
-plot(sim)
+sim2 = simobs(m_diffeq, ev2, p; abstol=1e-14, reltol=1e-14)
+plot(sim2)
+simdf2 = DataFrame(sim2)
+data2 = read_pumas(simdf2,cvs=[:isPM,:Wt])
+res2 = fit(m_diffeq,data2,p,PuMaS.FOCEI())
 
 # Infusion with additional
 ev = DosageRegimen(100, ii = 24, addl = 3, rate = 100/10, cmt = 2)
