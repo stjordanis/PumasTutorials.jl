@@ -5,3 +5,59 @@ date: May 15, 2019
 ---
 
 # Introduction
+```
+using PuMaS
+import StatsFuns.logistic
+
+
+# Read the data# Read the data
+data = read_pumas(example_nmtran_data("pain_remed"),
+    cvs = [:arm, :dose, :conc, :painord,:remed],event_data=false)
+
+ordinal_model = @model begin
+    @param begin
+        b1 = RealDomain(init=2.90692)
+        b2 = RealDomain(init=-2.97771, lower=-1000000, upper=1)
+        b3 = RealDomain(init=-2.7541, lower=-1000000, upper=1)
+        slope = RealDomain(init=0.01)
+        Ω ∈ VectorDomain(1)
+    end
+
+    @random begin
+        η ~ MvNormal(Ω)
+    end
+
+    @covariates arm dose conc
+
+    @pre begin
+    effect = slope*conc
+    #Logit of cumulative probabilities
+    lge0 = b1+η[1]+effect
+    lge1 = lge0+b2
+    lge2 = lge1+b3
+
+    #Probabilities of >=0 and >=1 and >=2
+    pge0 = exp(lge0)/(1+exp(lge0))
+    pge1 = exp(lge1)/(1+exp(lge1))
+    pge2 = exp(lge2)/(1+exp(lge2))
+
+    #Probabilities of Y=0,1,2,3
+    p0 = 1-pge0
+    p1 = pge0-pge1
+    p2 = pge1-pge2
+    p3 = pge2
+
+    end
+
+    @derived begin
+        dv ~ Categorical([p0,p1,p2,p3])
+    end
+
+end
+
+param = init_param(ordinal_model)
+res = fit(ordinal_model,data,param,PuMaS.LaplaceI())
+
+sim = simobs(binary_model,data,res.param)
+simdf = DataFrame(sim, include_events=false)
+```

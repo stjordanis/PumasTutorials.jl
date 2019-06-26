@@ -1,7 +1,49 @@
 ---
-title: Simulation of Binary Responses
+title: Simulation of Time to event Responses
 author: Vijay Ivaturi
 date: May 15, 2019
 ---
 
 # Introduction
+
+```
+using PuMaS, CSV
+import StatsFuns.logistic
+
+
+# Read the data# Read the data
+data = read_pumas(CSV.read("time_remed.csv"),dvs=[:remedstatus],time=:remedtime,
+    cvs = [:dose],event_data=false)
+
+
+tte_model = @model begin
+    @param begin
+        basehaz ∈ RealDomain(init=0.0001)
+    end
+
+    @random begin
+        η ~ MvNormal(Ω)
+    end
+
+    @covariates  dose
+
+    @pre begin
+        base = basehaz + η[1]
+    end
+
+    @derived begin
+
+        dv ~ ...
+    end
+
+end
+
+param = (
+    bashaz = 0.001,
+    Ω = [1.0]
+    )
+res = fit(tte_model,data,param,PuMaS.LaplaceI())
+
+sim = simobs(tte_model,data,res.param)
+simdf = DataFrame(sim, include_events=false)
+```
