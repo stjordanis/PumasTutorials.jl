@@ -1,5 +1,6 @@
 using PuMaS, Plots, LinearAlgebra
-
+using Random
+Random.seed!(1234)
 choose_covariates() = (isPM = rand(["yes", "no"]),
                     Wt = rand(55:80))
 
@@ -11,7 +12,7 @@ end
 m_diffeq = @model begin
     @param   begin
         θ ∈ VectorDomain(7, lower=zeros(7), init=ones(7))
-        Ω ∈ PSDDomain(2)
+        Ω ∈ PDiagDomain(2)
         σ_prop ∈ RealDomain(init=0.1)
     end
 
@@ -31,10 +32,11 @@ m_diffeq = @model begin
 
     @covariates isPM Wt
 
-    @dynamics begin
-        Depot'   = -Ka*Depot
-        Central' =  Ka*Depot - (CL/V)*Central
-    end
+      @dynamics ImmediateAbsorptionModel
+    # @dynamics begin
+    #     Depot'   = -Ka*Depot
+    #     Central' =  Ka*Depot - (CL/V)*Central
+    # end
 
     @derived begin
         cp = @. 1000*(Central / V)
@@ -55,17 +57,18 @@ p = (  θ = [1.5,  #Ka
            0.5, # isPM CL
            eps() # duration
            ],
-      Ω = PDMat(diagm(0 => [0.04,0.04])),
+      Ω = Diagonal([0.04,0.04]),
       σ_prop = 0.04
   )
 
 
 sim1 = simobs(m_diffeq, ev1, p; abstol=1e-14, reltol=1e-14)
-plot(sim1)
-vpcdf = vpc(m_diffeq,ev1,p,200)
 simdf1 = DataFrame(sim1)
 data1 = read_pumas(simdf1,cvs=[:isPM,:Wt])
 res1 = fit(m_diffeq,data1,p,PuMaS.FOCEI())
+plot(sim1)
+# vpcdf = vpc(m_diffeq,ev1,p,200)
+# vpcdf |> plot
 
 # Bolus with lag time and bioav lag2=12.13, bioav=2.23
 # FIXME BUG IN lags when more than one event #364
