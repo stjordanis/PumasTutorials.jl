@@ -1,5 +1,5 @@
 
-using PuMaS
+using Pumas
 
 
 @param begin
@@ -150,6 +150,6 @@ DataFrame(sim)
 plot(sim.times,sim[:ev1])
 
 
-using PuMaSTutorials
-PuMaSTutorials.tutorial_footer(WEAVE_ARGS[:folder],WEAVE_ARGS[:file])
+using PumasTutorials
+PumasTutorials.tutorial_footer(WEAVE_ARGS[:folder],WEAVE_ARGS[:file])
 

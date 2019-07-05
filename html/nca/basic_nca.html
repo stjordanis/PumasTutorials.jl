@@ -664,24 +664,24 @@ div.title {text-align: center;}
           <h1>Introduction</h1>
 <p>This is an introduction to <code>NCA.jl</code>, a software for noncompartmental analysis &#40;NCA&#41;. In this tutorial we will show how to use <code>NCA.jl</code> to analysis data.</p>
 <h2>Installation</h2>
-<p>Currently, <code>NCA.jl</code> is a submodule in <code>PuMaS.jl</code>, so you only need to install <code>PuMaS.jl</code>, and everything will be ready to go.</p>
+<p>Currently, <code>NCA.jl</code> is a submodule in <code>Pumas.jl</code>, so you only need to install <code>Pumas.jl</code>, and everything will be ready to go.</p>
 <h2>Getting Started</h2>
 <p>To load the package, use</p>
 
 
 <pre class='hljl'>
-<span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>PuMaS</span><span class='hljl-oB'>.</span><span class='hljl-n'>NCA</span>
+<span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>Pumas</span><span class='hljl-oB'>.</span><span class='hljl-n'>NCA</span>
 </pre>
 
 
 
-<p>First, let&#39;s load the example NCA data inside <code>PuMaS.jl</code>. This data have <span class="math">$24$</span> individuals, and each of them has <span class="math">$16$</span> data points.</p>
+<p>First, let&#39;s load the example NCA data inside <code>Pumas.jl</code>. This data have <span class="math">$24$</span> individuals, and each of them has <span class="math">$16$</span> data points.</p>
 
 
 <pre class='hljl'>
-<span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>PuMaS</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span><span class='hljl-t'>
+<span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>Pumas</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span><span class='hljl-t'>
 
-</span><span class='hljl-n'>file</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>PuMaS</span><span class='hljl-oB'>.</span><span class='hljl-nf'>example_nmtran_data</span><span class='hljl-p'>(</span><span class='hljl-s'>&quot;nca_test_data/dapa_IV&quot;</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-n'>file</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>Pumas</span><span class='hljl-oB'>.</span><span class='hljl-nf'>example_nmtran_data</span><span class='hljl-p'>(</span><span class='hljl-s'>&quot;nca_test_data/dapa_IV&quot;</span><span class='hljl-p'>)</span><span class='hljl-t'>
 </span><span class='hljl-n'>data</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span><span class='hljl-oB'>.</span><span class='hljl-nf'>read</span><span class='hljl-p'>(</span><span class='hljl-n'>file</span><span class='hljl-p'>)</span>
 </pre>
 
@@ -1042,7 +1042,7 @@ au, :cavg, :mat&#41;
 
 
 <pre class='hljl'>
-<span class='hljl-n'>multiple_doses_file</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>PuMaS</span><span class='hljl-oB'>.</span><span class='hljl-nf'>example_nmtran_data</span><span class='hljl-p'>(</span><span class='hljl-s'>&quot;nca_test_data/dapa_IV_ORAL&quot;</span><span class='hljl-p'>)</span><span class='hljl-t'>
+<span class='hljl-n'>multiple_doses_file</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>Pumas</span><span class='hljl-oB'>.</span><span class='hljl-nf'>example_nmtran_data</span><span class='hljl-p'>(</span><span class='hljl-s'>&quot;nca_test_data/dapa_IV_ORAL&quot;</span><span class='hljl-p'>)</span><span class='hljl-t'>
 </span><span class='hljl-n'>mdata</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span><span class='hljl-oB'>.</span><span class='hljl-nf'>read</span><span class='hljl-p'>(</span><span class='hljl-n'>multiple_doses_file</span><span class='hljl-p'>)</span><span class='hljl-t'>
 
 </span><span class='hljl-n'>timeu</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-so'>u&quot;hr&quot;</span><span class='hljl-t'>

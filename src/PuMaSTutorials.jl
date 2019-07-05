@@ -1,4 +1,4 @@
-module PuMaSTutorials
+module PumasTutorials
 
 using Weave, Pkg, InteractiveUtils, IJulia
 
@@ -61,14 +61,14 @@ function tutorial_footer(folder=nothing, file=nothing)
     display("text/markdown", """
     ## Appendix
 
-     These tutorials are part of the PuMaSTutorials.jl repository, found at: <https://github.com/JuliaDiffEq/DiffEqTutorials.jl>
+     These tutorials are part of the PumasTutorials.jl repository, found at: <https://github.com/JuliaDiffEq/DiffEqTutorials.jl>
     """)
     if folder !== nothing && file !== nothing
         display("text/markdown", """
         To locally run this tutorial, do the following commands:
         ```
-        using PuMaSTutorials
-        PuMaSTutorials.weave_file("$folder","$file")
+        using PumasTutorials
+        PumasTutorials.weave_file("$folder","$file")
         ```
         """)
     end

@@ -1,10 +1,10 @@
 
-using PuMaS.NCA
+using Pumas.NCA
 
 
-using PuMaS, CSV
+using Pumas, CSV
 
-file = PuMaS.example_nmtran_data("nca_test_data/dapa_IV")
+file = Pumas.example_nmtran_data("nca_test_data/dapa_IV")
 data = CSV.read(file)
 
 
@@ -97,7 +97,7 @@ report = NCAReport(pop)
 NCA.to_dataframe(report)
 
 
-multiple_doses_file = PuMaS.example_nmtran_data("nca_test_data/dapa_IV_ORAL")
+multiple_doses_file = Pumas.example_nmtran_data("nca_test_data/dapa_IV_ORAL")
 mdata = CSV.read(multiple_doses_file)
 
 timeu = u"hr"

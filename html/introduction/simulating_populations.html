@@ -664,15 +664,15 @@ div.title {text-align: center;}
           
 
 <pre class='hljl'>
-<span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>PuMaS</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>DataFrames</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>LinearAlgebra</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>Plots</span>
+<span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>Pumas</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>DataFrames</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>LinearAlgebra</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>Plots</span>
 </pre>
 
 
 
 <h1>Introduction</h1>
-<p>In this tutorial, we will cover the fundamentals of generating populations to simulate with PuMaS. We will demonstrate how to specify dosage regimens and covariates, and then how to piece these together to form a population to simulate.</p>
+<p>In this tutorial, we will cover the fundamentals of generating populations to simulate with Pumas. We will demonstrate how to specify dosage regimens and covariates, and then how to piece these together to form a population to simulate.</p>
 <h2>The model</h2>
-<p>Below is a PuMaS model that specifies a 1-compartment oral absorption system with between-subject variability on all the parameters. Details of the model specification are provided in the introduction tutorial.</p>
+<p>Below is a Pumas model that specifies a 1-compartment oral absorption system with between-subject variability on all the parameters. Details of the model specification are provided in the introduction tutorial.</p>
 
 
 <pre class='hljl'>
@@ -783,7 +783,7 @@ NamedTuple&#123;&#40;&#41;,Tuple&#123;&#125;&#125;&#91;&#93;
 covariates
 &#40;isPM &#61; 0, Wt &#61; 70&#41;
 events
-PuMaS.Event&#123;Float64,Float64,Float64,Float64,Float64,Float64&#125;&#91;Dose event
+Pumas.Event&#123;Float64,Float64,Float64,Float64,Float64,Float64&#125;&#91;Dose event
   dose amount &#61; 100.0
   dose time &#61; 0.0
   compartment &#61; 1
@@ -800,11 +800,11 @@ Int64&#91;&#93;
 <ul>
 <li><p><code>id</code>: an unique identifier</p>
 </li>
-<li><p><code>obs</code>: observations, represented by <code>PuMaS.Observation&#91;&#93;</code></p>
+<li><p><code>obs</code>: observations, represented by <code>Pumas.Observation&#91;&#93;</code></p>
 </li>
 <li><p><code>cvs</code>: covariates</p>
 </li>
-<li><p><code>evs</code>: events, represented by <code>PuMaS.Event&#91;&#93;</code></p>
+<li><p><code>evs</code>: events, represented by <code>Pumas.Event&#91;&#93;</code></p>
 </li>
 </ul>
 <p>In the example above, we only provided the <code>id</code>, <code>evs</code>, and the <code>cvs</code>. Since  <code>obs</code> were not provided, they are represented by an empty array. Lets take a closer at the events for this subject 1.</p>
@@ -816,7 +816,7 @@ Int64&#91;&#93;
 
 
 <pre class="output">
-1-element Array&#123;PuMaS.Event&#123;Float64,Float64,Float64,Float64,Float64,Float64
+1-element Array&#123;Pumas.Event&#123;Float64,Float64,Float64,Float64,Float64,Float64
 &#125;,1&#125;:
  Dose event
   dose amount &#61; 100.0
@@ -881,9 +881,9 @@ Subject
 
 
 <pre class="output">
-2-element PuMaS.Population&#123;PuMaS.Subject&#123;StructArrays.StructArray&#123;NamedTupl
+2-element Pumas.Population&#123;Pumas.Subject&#123;StructArrays.StructArray&#123;NamedTupl
 e&#123;&#40;&#41;,Tuple&#123;&#125;&#125;,1,NamedTuple&#123;&#40;&#41;,Tuple&#123;&#125;&#125;&#125;,NamedTuple&#123;&#40;:isPM, :Wt&#41;,Tuple&#123;Int64
-,Int64&#125;&#125;,Array&#123;PuMaS.Event&#123;Float64,Float64,Float64,Float64,Float64,Float64&#125;
+,Int64&#125;&#125;,Array&#123;Pumas.Event&#123;Float64,Float64,Float64,Float64,Float64,Float64&#125;
 ,1&#125;,Int64&#125;&#125;:
  Subject
   ID: 1
@@ -940,14 +940,14 @@ Subject
 
 
 <pre class="output">
-PuMaS.SimulatedPopulation&#123;Array&#123;PuMaS.SimulatedObservations&#123;PuMaS.Subject&#123;S
+Pumas.SimulatedPopulation&#123;Array&#123;Pumas.SimulatedObservations&#123;Pumas.Subject&#123;S
 tructArrays.StructArray&#123;NamedTuple&#123;&#40;&#41;,Tuple&#123;&#125;&#125;,1,NamedTuple&#123;&#40;&#41;,Tuple&#123;&#125;&#125;&#125;,Na
-medTuple&#123;&#40;:isPM, :Wt&#41;,Tuple&#123;Int64,Int64&#125;&#125;,Array&#123;PuMaS.Event&#123;Float64,Float64
+medTuple&#123;&#40;:isPM, :Wt&#41;,Tuple&#123;Int64,Int64&#125;&#125;,Array&#123;Pumas.Event&#123;Float64,Float64
 ,Float64,Float64,Float64,Float64&#125;,1&#125;,Int64&#125;,StepRangeLen&#123;Float64,Base.Twice
 Precision&#123;Float64&#125;,Base.TwicePrecision&#123;Float64&#125;&#125;,NamedTuple&#123;&#40;:conc, :dv&#41;,Tu
-ple&#123;Array&#123;Float64,1&#125;,Array&#123;Float64,1&#125;&#125;&#125;&#125;,1&#125;&#125;&#40;PuMaS.SimulatedObservations&#123;Pu
+ple&#123;Array&#123;Float64,1&#125;,Array&#123;Float64,1&#125;&#125;&#125;&#125;,1&#125;&#125;&#40;Pumas.SimulatedObservations&#123;Pu
 MaS.Subject&#123;StructArrays.StructArray&#123;NamedTuple&#123;&#40;&#41;,Tuple&#123;&#125;&#125;,1,NamedTuple&#123;&#40;&#41;
-,Tuple&#123;&#125;&#125;&#125;,NamedTuple&#123;&#40;:isPM, :Wt&#41;,Tuple&#123;Int64,Int64&#125;&#125;,Array&#123;PuMaS.Event&#123;Fl
+,Tuple&#123;&#125;&#125;&#125;,NamedTuple&#123;&#40;:isPM, :Wt&#41;,Tuple&#123;Int64,Int64&#125;&#125;,Array&#123;Pumas.Event&#123;Fl
 oat64,Float64,Float64,Float64,Float64,Float64&#125;,1&#125;,Int64&#125;,StepRangeLen&#123;Float
 64,Base.TwicePrecision&#123;Float64&#125;,Base.TwicePrecision&#123;Float64&#125;&#125;,NamedTuple&#123;&#40;:
 conc, :dv&#41;,Tuple&#123;Array&#123;Float64,1&#125;,Array&#123;Float64,1&#125;&#125;&#125;&#125;&#91;SimulatedObservations
@@ -1032,9 +1032,9 @@ choose_covariates &#40;generic function with 1 method&#41;
 
 
 <pre class="output">
-10-element PuMaS.Population&#123;PuMaS.Subject&#123;StructArrays.StructArray&#123;NamedTup
+10-element Pumas.Population&#123;Pumas.Subject&#123;StructArrays.StructArray&#123;NamedTup
 le&#123;&#40;&#41;,Tuple&#123;&#125;&#125;,1,NamedTuple&#123;&#40;&#41;,Tuple&#123;&#125;&#125;&#125;,NamedTuple&#123;&#40;:isPM, :Wt&#41;,Tuple&#123;Int6
-4,Int64&#125;&#125;,Array&#123;PuMaS.Event&#123;Float64,Float64,Float64,Float64,Float64,Float64
+4,Int64&#125;&#125;,Array&#123;Pumas.Event&#123;Float64,Float64,Float64,Float64,Float64,Float64
 &#125;,1&#125;,Int64&#125;&#125;:
  Subject
   ID: 1
@@ -1107,14 +1107,14 @@ le&#123;&#40;&#41;,Tuple&#123;&#125;&#125;,1,NamedTuple&#123;&#40;&#41;,Tuple&#1
 
 
 <pre class="output">
-PuMaS.SimulatedPopulation&#123;Array&#123;PuMaS.SimulatedObservations&#123;PuMaS.Subject&#123;S
+Pumas.SimulatedPopulation&#123;Array&#123;Pumas.SimulatedObservations&#123;Pumas.Subject&#123;S
 tructArrays.StructArray&#123;NamedTuple&#123;&#40;&#41;,Tuple&#123;&#125;&#125;,1,NamedTuple&#123;&#40;&#41;,Tuple&#123;&#125;&#125;&#125;,Na
-medTuple&#123;&#40;:isPM, :Wt&#41;,Tuple&#123;Int64,Int64&#125;&#125;,Array&#123;PuMaS.Event&#123;Float64,Float64
+medTuple&#123;&#40;:isPM, :Wt&#41;,Tuple&#123;Int64,Int64&#125;&#125;,Array&#123;Pumas.Event&#123;Float64,Float64
 ,Float64,Float64,Float64,Float64&#125;,1&#125;,Int64&#125;,StepRangeLen&#123;Float64,Base.Twice
 Precision&#123;Float64&#125;,Base.TwicePrecision&#123;Float64&#125;&#125;,NamedTuple&#123;&#40;:conc, :dv&#41;,Tu
-ple&#123;Array&#123;Float64,1&#125;,Array&#123;Float64,1&#125;&#125;&#125;&#125;,1&#125;&#125;&#40;PuMaS.SimulatedObservations&#123;Pu
+ple&#123;Array&#123;Float64,1&#125;,Array&#123;Float64,1&#125;&#125;&#125;&#125;,1&#125;&#125;&#40;Pumas.SimulatedObservations&#123;Pu
 MaS.Subject&#123;StructArrays.StructArray&#123;NamedTuple&#123;&#40;&#41;,Tuple&#123;&#125;&#125;,1,NamedTuple&#123;&#40;&#41;
-,Tuple&#123;&#125;&#125;&#125;,NamedTuple&#123;&#40;:isPM, :Wt&#41;,Tuple&#123;Int64,Int64&#125;&#125;,Array&#123;PuMaS.Event&#123;Fl
+,Tuple&#123;&#125;&#125;&#125;,NamedTuple&#123;&#40;:isPM, :Wt&#41;,Tuple&#123;Int64,Int64&#125;&#125;,Array&#123;Pumas.Event&#123;Fl
 oat64,Float64,Float64,Float64,Float64,Float64&#125;,1&#125;,Int64&#125;,StepRangeLen&#123;Float
 64,Base.TwicePrecision&#123;Float64&#125;,Base.TwicePrecision&#123;Float64&#125;&#125;,NamedTuple&#123;&#40;:
 conc, :dv&#41;,Tuple&#123;Array&#123;Float64,1&#125;,Array&#123;Float64,1&#125;&#125;&#125;&#125;&#91;SimulatedObservations
@@ -1291,7 +1291,7 @@ cision&#123;Float64&#125;&#125;,NamedTuple&#123;&#40;:conc, :dv&#41;,Tuple&#123;
 
 
 <pre class="output">
-PuMaS.DosageRegimen&#40;1×8 DataFrames.DataFrame
+Pumas.DosageRegimen&#40;1×8 DataFrames.DataFrame
 │ Row │ time    │ cmt   │ amt     │ evid │ ii      │ addl  │ rate    │ ss  
  │
 │     │ Float64 │ Int64 │ Float64 │ Int8 │ Float64 │ Int64 │ Float64 │ Int8
@@ -1341,7 +1341,7 @@ Subject
 
 
 <pre class="output">
-PuMaS.DosageRegimen&#40;2×8 DataFrames.DataFrame
+Pumas.DosageRegimen&#40;2×8 DataFrames.DataFrame
 │ Row │ time    │ cmt   │ amt     │ evid │ ii      │ addl  │ rate    │ ss  
  │
 │     │ Float64 │ Int64 │ Float64 │ Int8 │ Float64 │ Int64 │ Float64 │ Int8
@@ -1393,7 +1393,7 @@ PuMaS.DosageRegimen&#40;2×8 DataFrames.DataFrame
 
 
 <pre class="output">
-PuMaS.DosageRegimen&#40;1×8 DataFrames.DataFrame
+Pumas.DosageRegimen&#40;1×8 DataFrames.DataFrame
 │ Row │ time    │ cmt   │ amt     │ evid │ ii      │ addl  │ rate    │ ss  
  │
 │     │ Float64 │ Int64 │ Float64 │ Int8 │ Float64 │ Int64 │ Float64 │ Int8
@@ -1415,9 +1415,9 @@ PuMaS.DosageRegimen&#40;1×8 DataFrames.DataFrame
 
 
 <pre class="output">
-10-element PuMaS.Population&#123;PuMaS.Subject&#123;StructArrays.StructArray&#123;NamedTup
+10-element Pumas.Population&#123;Pumas.Subject&#123;StructArrays.StructArray&#123;NamedTup
 le&#123;&#40;&#41;,Tuple&#123;&#125;&#125;,1,NamedTuple&#123;&#40;&#41;,Tuple&#123;&#125;&#125;&#125;,NamedTuple&#123;&#40;:isPM, :Wt&#41;,Tuple&#123;Int6
-4,Int64&#125;&#125;,Array&#123;PuMaS.Event&#123;Float64,Float64,Float64,Float64,Float64,Float64
+4,Int64&#125;&#125;,Array&#123;Pumas.Event&#123;Float64,Float64,Float64,Float64,Float64,Float64
 &#125;,1&#125;,Int64&#125;&#125;:
  Subject
   ID: 1
@@ -1500,7 +1500,7 @@ le&#123;&#40;&#41;,Tuple&#123;&#125;&#125;,1,NamedTuple&#123;&#40;&#41;,Tuple&#1
 
 
 <pre class="output">
-PuMaS.DosageRegimen&#40;1×8 DataFrames.DataFrame
+Pumas.DosageRegimen&#40;1×8 DataFrames.DataFrame
 │ Row │ time    │ cmt   │ amt     │ evid │ ii      │ addl  │ rate    │ ss  
  │
 │     │ Float64 │ Int64 │ Float64 │ Int8 │ Float64 │ Int64 │ Float64 │ Int8
