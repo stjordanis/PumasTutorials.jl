@@ -11,24 +11,24 @@ In this tutorial we will show how to use `NCA.jl` to analysis data.
 
 ## Installation
 
-Currently, `NCA.jl` is a submodule in `PuMaS.jl`, so you only need to install
-`PuMaS.jl`, and everything will be ready to go.
+Currently, `NCA.jl` is a submodule in `Pumas.jl`, so you only need to install
+`Pumas.jl`, and everything will be ready to go.
 
 ## Getting Started
 
 To load the package, use
 
 ```julia
-using PuMaS.NCA
+using Pumas.NCA
 ```
 
-First, let's load the example NCA data inside `PuMaS.jl`. This data have $24$
+First, let's load the example NCA data inside `Pumas.jl`. This data have $24$
 individuals, and each of them has $16$ data points.
 
 ```julia
-using PuMaS, CSV
+using Pumas, CSV
 
-file = PuMaS.example_nmtran_data("nca_test_data/dapa_IV")
+file = Pumas.example_nmtran_data("nca_test_data/dapa_IV")
 data = CSV.read(file)
 ```
 
@@ -255,7 +255,7 @@ The interface of doing NCA with multiple doses is the same as doing single dose
 NCA. To load the data with multiple doses, one can do
 
 ```julia
-multiple_doses_file = PuMaS.example_nmtran_data("nca_test_data/dapa_IV_ORAL")
+multiple_doses_file = Pumas.example_nmtran_data("nca_test_data/dapa_IV_ORAL")
 mdata = CSV.read(multiple_doses_file)
 
 timeu = u"hr"

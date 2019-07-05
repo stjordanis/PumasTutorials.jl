@@ -1,5 +1,5 @@
 
-using PuMaS, DataFrames, LinearAlgebra, Plots
+using Pumas, DataFrames, LinearAlgebra, Plots
 
 
 model = @model begin

@@ -1,5 +1,5 @@
 ---
-title: PBPK in PuMaS, A Model for ACAT
+title: PBPK in Pumas, A Model for ACAT
 author: Vaibhav Dixit and Chris Rackauckas
 date: 6th November 2018
 ---
@@ -9,7 +9,7 @@ date: 6th November 2018
 # Code
 
 ```julia
-using PuMaS, LinearAlgebra, DiffEqSensitivity, Distributions, Optim, QuadGK
+using Pumas, LinearAlgebra, DiffEqSensitivity, Distributions, Optim, QuadGK
 
 pbpkmodel = @model begin
     @param begin
