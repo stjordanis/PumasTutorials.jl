@@ -5,7 +5,7 @@ date: April 27th, 2019
 ---
 
 ```julia
-using PuMaS, LinearAlgebra, Plots, CSV
+using Pumas, LinearAlgebra, Plots, CSV
 using Pkg
 Pkg.build("GR")
 
@@ -44,15 +44,15 @@ model = @model begin
     Ktr = θ[3]*exp(η[3])
     Q  = θ[4]*(Wt/70)^0.75*exp(η[4])
     V2  = θ[5]*(Wt/70)
-    K  = CL/V
+    K  = CL/V1
     K21 = Q/V2
     K12 = Q/V1
     N = 5 # number of compartments
   end
 
   @dynamics begin
-    Central' = Ktr*amt*((Ktr*t)^N/factorial(N))*exp(-Ktr*t) - Central*K + K21*Periph' -K12*Central'
-    Periph' = - K21*Periph' + K12*Central'
+    Central' = Ktr*amt*((Ktr*t)^N/factorial(N))*exp(-Ktr*t) - Central*K + K21*Periph -K12*Central
+    Periph' = - K21*Periph + K12*Central
   end
 
   @vars begin
@@ -65,16 +65,7 @@ model = @model begin
 
 end
 
-model = @model begin
-  @param begin
-    θ ∈ VectorDomain(3)
-    Ω ∈ PSDDomain(3)
-    σ_prop ∈ RealDomain(init=0.1)
-  end
 
-  @random begin
-    η ~ MvNormal(Ω)
-  end
 
 
 ```
@@ -91,7 +82,7 @@ proportional residual error.
 p = (
   θ = [26.3, 75.9, 7.31, 23.9, 43.1],
   Ω = PDMat(diagm(0 => [0.09,0.22,0.10,0.52])),
-  σ_prop = 0.048
+  σ_prop = 0
   )
 ```
 
@@ -114,7 +105,7 @@ His concentration-time profile will be simulated.
 
 
 ```julia
-s1 = Subject(id=1,evs=ev,cvs=(Wt=70))
+s1 = Subject(id=1,evs=ev,cvs=(Wt=70,amt=25))
 
 ```
 
@@ -129,12 +120,12 @@ Using this one subject, `s1`, we can simulate a simple concentration time
 profile using the model above and plot the concentration-time profile for 24 hours.
 
 ```julia
-randeffs = (η = zeros(3),)
+randeffs = (η = zeros(4),)
 
-obs = simobs(model, s1, p, obstimes=0:0.1:24, randeffs)
+obs = simobs(model, s1, p, obstimes=0.1:0.1:24, randeffs)
 
 #obs = DataFrame(obs)
 
-plot(obs.times, obs[:conc])#, yscale=:log, ylims=(0.001,Inf))
+plot(obs)#, yscale=:log, ylims=(0.001,Inf))
 
 ```

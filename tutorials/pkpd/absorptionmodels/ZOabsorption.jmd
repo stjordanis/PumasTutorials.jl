@@ -5,7 +5,7 @@ date: April 27th, 2019
 ---
 
 ```julia
-using PuMaS, LinearAlgebra, Plots, CSV
+using Pumas, LinearAlgebra, Plots, CSV, Queryverse
 using Pkg
 Pkg.build("GR")
 
@@ -72,7 +72,7 @@ proportional residual error.
 p = (
   θ = [0.792, 13.7, 1.42],
   Ω = PDMat(diagm(0 => [0.0163,0.0309])),
-  σ_prop = 0.307
+  σ_prop = 0
   )
 ```
 
@@ -95,7 +95,7 @@ His concentration-time profile will be simulated.
 
 
 ```julia
-s1 = Subject(id=1,evs=ev,cvs=(Wt=11))
+s1 = Subject(id=1,evs=ev,cvs=(Wt=11,))
 
 ```
 
@@ -116,6 +116,6 @@ obs = simobs(model, s1, p, obstimes=0:0.1:24, randeffs)
 
 #obs = DataFrame(obs)
 
-plot(obs.times, obs[:conc])#, yscale=:log, ylims=(0.001,Inf))
+plot(obs)#, yscale=:log, ylims=(0.001,Inf))
 
 ```

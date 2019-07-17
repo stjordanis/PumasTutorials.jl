@@ -5,7 +5,7 @@ date: April 27th, 2019
 ---
 
 ```julia
-using PuMaS, LinearAlgebra, Plots, CSV
+using Pumas, LinearAlgebra, Plots, CSV
 using Pkg
 Pkg.build("GR")
 
@@ -36,7 +36,7 @@ model = @model begin
     η ~ MvNormal(Ω)
   end
 
-  @covariates Wt amt
+  @covariates Wt
 
   @pre begin
     CL = θ[1]*(Wt/70)^0.75*exp(η[1])
@@ -75,7 +75,7 @@ parameteres are provided in the Ω vector as variances.
 p = (
   θ = [0.84, 0.72, 20.4, 0.5, 0.64, 1],
   Ω = PDMat(diagm(0 => [0.348, 0.705])),
-  σ_prop = 0.10
+  σ_prop = 0
   )
 ```
 
@@ -98,7 +98,7 @@ His concentration-time profile will be simulated.
 
 
 ```julia
-s1 = Subject(id=1,evs=ev,cvs=(Wt=0.3))
+s1 = Subject(id=1,evs=ev,cvs=(Wt=0.3,))
 
 ```
 
@@ -119,6 +119,6 @@ obs = simobs(model, s1, p, obstimes=0:0.1:24, randeffs)
 
 #obs = DataFrame(obs)
 
-plot(obs.times, obs[:conc])#, yscale=:log, ylims=(0.001,Inf))
+plot(obs)#, yscale=:log, ylims=(0.001,Inf))
 
 ```
