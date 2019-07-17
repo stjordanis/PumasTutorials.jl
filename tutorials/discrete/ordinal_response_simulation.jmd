@@ -16,10 +16,17 @@ data = read_pumas(example_nmtran_data("pain_remed"),
 
 ordinal_model = @model begin
     @param begin
+<<<<<<< HEAD
         b1 ∈ RealDomain(init=2.90692)
         b2 ∈ RealDomain(init=-2.97771, lower=-1000000, upper=1)
         b3 ∈ RealDomain(init=-2.7541, lower=-1000000, upper=1)
         slope ∈ RealDomain(init=0.01)
+=======
+        b1 = RealDomain(init=2.90692)
+        b2 = RealDomain(init=-2.97771, lower=-1000000, upper=1)
+        b3 = RealDomain(init=-2.7541, lower=-1000000, upper=1)
+        slope = RealDomain(init=0.01)
+>>>>>>> discrete
         Ω ∈ VectorDomain(1)
     end
 
@@ -56,7 +63,10 @@ ordinal_model = @model begin
 end
 
 param = init_param(ordinal_model)
+<<<<<<< HEAD
 sim = simobs(ordinal_model,data,param, parallel_type=PuMaS.Serial)
+=======
+>>>>>>> discrete
 res = fit(ordinal_model,data,param,PuMaS.LaplaceI())
 
 sim = simobs(binary_model,data,res.param)
