@@ -90,6 +90,7 @@ and simulate some outputs:
 ```julia
 sim = simobs(binary_model,data,res.param)
 simdf = DataFrame(sim, include_events=false)
+first(simdf,6) # Print only the first 6 rows
 ```
 
 Note that now our simulation output for `dv` is true/false values pulled with

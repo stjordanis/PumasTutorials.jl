@@ -212,7 +212,7 @@ pop_with_covariates = Population(map(i -> Subject(id=i,evs=ev,cvs=choose_covaria
 Simulate into the population
 
 ```julia
-obs = simobs(model,pop_with_covariates,fixeffs,obstimes=0:0.1:120)
+obs = simobs(model,pop_with_covariates,fixeffs,obstimes=0:0.1:120);
 ```
 
 and visualize the output

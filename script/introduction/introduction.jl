@@ -148,7 +148,8 @@ plot(sim)
 sim[:cp]
 
 
-DataFrame(sim)
+df = DataFrame(sim)
+first(df,6) # Print only the first 6: the DataFrame is huge!
 
 
 plot(sim.times,sim[:ev1])

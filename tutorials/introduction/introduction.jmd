@@ -291,7 +291,8 @@ is the array of `cp` values at the associated time points. We can turn this
 into a DataFrame via using the `DataFrame` command:
 
 ```julia
-DataFrame(sim)
+df = DataFrame(sim)
+first(df,6) # Print only the first 6: the DataFrame is huge!
 ```
 
 From there, any Julia tools can be used to analyze these arrays and DataFrames.

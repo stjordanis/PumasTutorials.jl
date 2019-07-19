@@ -98,7 +98,7 @@ DataFrame(cvs)
 pop_with_covariates = Population(map(i -> Subject(id=i,evs=ev,cvs=choose_covariates()),1:10))
 
 
-obs = simobs(model,pop_with_covariates,fixeffs,obstimes=0:0.1:120)
+obs = simobs(model,pop_with_covariates,fixeffs,obstimes=0:0.1:120);
 
 
 plot(obs)

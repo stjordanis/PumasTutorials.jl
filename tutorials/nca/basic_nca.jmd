@@ -29,7 +29,7 @@ individuals, and each of them has $16$ data points.
 using Pumas, CSV
 
 file = Pumas.example_nmtran_data("nca_test_data/dapa_IV")
-data = CSV.read(file)
+data = CSV.read(file);
 ```
 
 here is what the dataset looks like
@@ -250,7 +250,8 @@ The `NCAReport` object holds all quantities, and one can call
 `NCA.to_dataframe` to get a `DataFrame` object.
 
 ```julia
-NCA.to_dataframe(report)
+reportdf = NCA.to_dataframe(report)
+first(reportdf,6) # Print only the first 6 rows
 ```
 
 # Multiple doses
@@ -294,5 +295,6 @@ going to let the first dose be the reference dose.
 
 ```julia
 rep = NCAReport(mpop, ithdose=1)
-NCA.to_dataframe(rep)
+reportdf = NCA.to_dataframe(rep)
+first(reportdf,6) # Print only the first 6 rows
 ```

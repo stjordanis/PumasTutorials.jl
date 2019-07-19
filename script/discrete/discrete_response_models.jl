@@ -47,6 +47,7 @@ res = fit(binary_model,data,param,Pumas.LaplaceI())
 
 sim = simobs(binary_model,data,res.param)
 simdf = DataFrame(sim, include_events=false)
+first(simdf,6) # Print only the first 6 rows
 
 
 pop = Population(map(i -> Subject(id=i,cvs=(dose = i.*10,),time=[0.0]),1:10))

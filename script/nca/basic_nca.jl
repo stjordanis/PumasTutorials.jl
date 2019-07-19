@@ -5,7 +5,7 @@ using Pumas.NCA
 using Pumas, CSV
 
 file = Pumas.example_nmtran_data("nca_test_data/dapa_IV")
-data = CSV.read(file)
+data = CSV.read(file);
 
 
 first(data, 6) # take first 6 rows
@@ -98,7 +98,8 @@ plot(pop, linear=false)
 report = NCAReport(pop)
 
 
-NCA.to_dataframe(report)
+reportdf = NCA.to_dataframe(report)
+first(reportdf,6) # Print only the first 6 rows
 
 
 multiple_doses_file = Pumas.example_nmtran_data("nca_test_data/dapa_IV_ORAL")
@@ -123,5 +124,6 @@ NCA.auc(mpop)
 
 
 rep = NCAReport(mpop, ithdose=1)
-NCA.to_dataframe(rep)
+reportdf = NCA.to_dataframe(rep)
+first(reportdf,6) # Print only the first 6 rows
 
