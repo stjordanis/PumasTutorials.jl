@@ -1,0 +1,24 @@
+---
+title: Pumas.jl Workshop Exercises
+author: Chris Rackauckas
+---
+
+These exercises teach common workflows which involve Pumas.jl. This exercise
+worksheet is meant to be a living document leading new users through a deep dive
+of the Pumas.jl feature set. If you further suggestions or want to contribute
+new problems, please open an issue or PR at the PumasTutorials.jl repository.
+
+The exercises are described as follows:
+
+- 1
+- 2
+- 3
+- 4
+
+# Problem 1:
+
+# Problem 2:
+
+# Problem 3:
+
+# Problem 4:
