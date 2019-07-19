@@ -299,3 +299,8 @@ rep = NCAReport(mpop, ithdose=1)
 reportdf = NCA.to_dataframe(rep)
 first(reportdf,6) # Print only the first 6 rows
 ```
+
+```julia{echo=false,skip="notebook"}
+using PumasTutorials
+PumasTutorials.tutorial_footer(WEAVE_ARGS[:folder],WEAVE_ARGS[:file])
+```

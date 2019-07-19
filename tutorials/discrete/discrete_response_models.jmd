@@ -140,3 +140,8 @@ simdf = DataFrame(sim, include_events=false)
 ```
 
 Here `dv` is an integer output probabilistically dependent on the dose.
+
+```julia{echo=false,skip="notebook"}
+using PumasTutorials
+PumasTutorials.tutorial_footer(WEAVE_ARGS[:folder],WEAVE_ARGS[:file])
+```

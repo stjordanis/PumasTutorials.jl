@@ -79,3 +79,7 @@ end
 sim = simobs(poisson_model,pop)
 simdf = DataFrame(sim, include_events=false)
 
+
+using PumasTutorials
+PumasTutorials.tutorial_footer(WEAVE_ARGS[:folder],WEAVE_ARGS[:file])
+

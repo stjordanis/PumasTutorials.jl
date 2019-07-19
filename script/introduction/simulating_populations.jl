@@ -151,3 +151,7 @@ s5 = Subject(id=5, evs=inf, cvs=(isPM=0,Wt=70))
 obs = simobs(model, s5, fixeffs, obstimes=0:0.1:120)
 plot(obs)
 
+
+using PumasTutorials
+PumasTutorials.tutorial_footer(WEAVE_ARGS[:folder],WEAVE_ARGS[:file])
+

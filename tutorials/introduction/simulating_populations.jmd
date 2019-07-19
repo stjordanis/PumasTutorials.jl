@@ -331,3 +331,8 @@ but we can also make use of constructs like for loops.
 This tutorial shows the tools for generating populations of infinite complexity,
 defining covariates and dosage regimens on the fly and simulating the results
 of the model.
+
+```julia{echo=false,skip="notebook"}
+using PumasTutorials
+PumasTutorials.tutorial_footer(WEAVE_ARGS[:folder],WEAVE_ARGS[:file])
+```
