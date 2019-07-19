@@ -287,7 +287,8 @@ plot(mpop)
 To compute AUC and $\lambda z$:
 
 ```julia
-NCA.auc(mpop)
+df = NCA.auc(mpop)
+first(df,6) # Print only the first 6 rows
 ```
 
 To get a summary, we need to provide a reference dose. In this example, we are

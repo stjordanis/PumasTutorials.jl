@@ -120,7 +120,8 @@ mpop = read_nca(mdata, timeu=timeu, concu=concu, amtu=amtu)
 plot(mpop)
 
 
-NCA.auc(mpop)
+df = NCA.auc(mpop)
+first(df,6) # Print only the first 6 rows
 
 
 rep = NCAReport(mpop, ithdose=1)
