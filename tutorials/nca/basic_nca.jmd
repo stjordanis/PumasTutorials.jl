@@ -60,18 +60,22 @@ and it defaults to `:linear`. This is a simple interface, however it is not
 efficient if you want to compute many quantities. The recommended way is to
 create an `NCASubject` or an `NCAPopulation` object first and then call the
 respective NCA diagnostic on the data object. To parse data to an
-`NCAPopulation` object one can call the `parse_ncadata` function and give
-column names of `id`, `time`, `conc` (concentration), `amt` (dosage),
-`formulation`, `iv` (IV bolus name). Note that, by default, the lower limit of
-quantization (LLQ) is $0$, and concentrations that are below LLQ (BLQ) are
-dropped. Also, we can add units by providing `timeu`, `concu`, and `amtu`.
+`NCAPopulation` object one can call the `read_nca` function and assign the
+corresponding data to column names: `id`, `time`, `conc` (concentration), `amt`
+(dosage), and `route`. Note that, by default, the lower limit of quantization
+(LLQ) is $0$, and concentrations that are below LLQ (BLQ) are dropped. Also, we
+can add units by providing `timeu`, `concu`, and `amtu`.
 
 ```julia
 timeu = u"hr"
 concu = u"mg/L"
 amtu  = u"mg"
-pop = parse_ncadata(data, id=:ID, time=:TIME, conc=:CObs, amt=:AMT_IV, formulation=:Formulation, iv="IV",
-  llq=0concu, timeu=timeu, concu=concu, amtu=amtu)
+data.id = data.ID
+data.time = data.TIME
+data.conc = data.CObs
+data.amt = data.AMT_IV
+data.route = "iv"
+pop = read_nca(data, llq=0concu, timeu=timeu, concu=concu, amtu=amtu)
 ```
 
 Here, each element of `pop` has the type `NCASubject`. It is a lazy data
@@ -158,7 +162,7 @@ By default, $\lambda z$ calculation checks last $10$ or less data points, one
 can change it by providing the keyword `threshold`, e.g.
 
 ```julia
-NCA.lambdaz(pop[1], threshold=2)
+NCA.lambdaz(pop[1], threshold=3)
 ```
 
 One can also specify the exact data points by passing their indices
@@ -249,7 +253,7 @@ The `NCAReport` object holds all quantities, and one can call
 NCA.to_dataframe(report)
 ```
 
-# Multiple dose
+# Multiple doses
 
 The interface of doing NCA with multiple doses is the same as doing single dose
 NCA. To load the data with multiple doses, one can do
@@ -261,9 +265,17 @@ mdata = CSV.read(multiple_doses_file)
 timeu = u"hr"
 concu = u"mg/L"
 amtu  = u"mg"
-mpop = parse_ncadata(mdata, time=:TIME, conc=:COBS, amt=:AMT, formulation=:FORMULATION, occasion=:OCC,
-                                     iv="IV", timeu=timeu, concu=concu, amtu=amtu)
+mdata.id = mdata.ID
+mdata.time = mdata.TIME
+mdata.conc = mdata.COBS
+mdata.amt = mdata.AMT
+mdata.route = replace(mdata.FORMULATION, "IV"=>"iv", "ORAL"=>"ev")
+mdata.occasion = mdata.OCC
+mpop = read_nca(mdata, timeu=timeu, concu=concu, amtu=amtu)
 ```
+
+Note that to read multiple doses files, in addition to single dose inputs, one
+also needs to provide the `occasion` column.
 
 To plot:
 
