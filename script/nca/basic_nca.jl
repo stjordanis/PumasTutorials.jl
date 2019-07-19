@@ -20,8 +20,12 @@ NCA.auc(data[:CObs][1:16], data[:TIME][1:16], method=:linuplogdown)
 timeu = u"hr"
 concu = u"mg/L"
 amtu  = u"mg"
-pop = parse_ncadata(data, id=:ID, time=:TIME, conc=:CObs, amt=:AMT_IV, formulation=:Formulation, iv="IV",
-  llq=0concu, timeu=timeu, concu=concu, amtu=amtu)
+data.id = data.ID
+data.time = data.TIME
+data.conc = data.CObs
+data.amt = data.AMT_IV
+data.route = "iv"
+pop = read_nca(data, llq=0concu, timeu=timeu, concu=concu, amtu=amtu)
 
 
 NCA.auc(pop)
@@ -56,7 +60,7 @@ NCA.lambdaztimefirst(pop)
 NCA.lambdaznpoints(pop)
 
 
-NCA.lambdaz(pop[1], threshold=2)
+NCA.lambdaz(pop[1], threshold=3)
 
 
 NCA.lambdaz(pop[1], idxs=[10, 15, 16])
@@ -103,8 +107,13 @@ mdata = CSV.read(multiple_doses_file)
 timeu = u"hr"
 concu = u"mg/L"
 amtu  = u"mg"
-mpop = parse_ncadata(mdata, time=:TIME, conc=:COBS, amt=:AMT, formulation=:FORMULATION, occasion=:OCC,
-                                     iv="IV", timeu=timeu, concu=concu, amtu=amtu)
+mdata.id = mdata.ID
+mdata.time = mdata.TIME
+mdata.conc = mdata.COBS
+mdata.amt = mdata.AMT
+mdata.route = replace(mdata.FORMULATION, "IV"=>"iv", "ORAL"=>"ev")
+mdata.occasion = mdata.OCC
+mpop = read_nca(mdata, timeu=timeu, concu=concu, amtu=amtu)
 
 
 plot(mpop)
