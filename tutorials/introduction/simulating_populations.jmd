@@ -68,7 +68,7 @@ proportional residual error.
 ```julia
 fixeffs = (
   θ = [0.4,20,1.1,2],
-  Ω = PDMat(diagm(0 => [0.04,0.04,0.04])),
+  Ω = diagm(0 => [0.04,0.04,0.04]),
   σ_prop = 0.04
   )
 ```
@@ -157,11 +157,11 @@ twosubjs =  Population([s1,s2])
 Let's see the details of the first and the second subject
 
 ```julia
-twosubjs.subjects[1]
+twosubjs[1]
 ```
 
 ```julia
-twosubjs.subjects[2]
+twosubjs[2]
 ```
 Now, we can simulate this `Population` of 2 subjects as below
 
