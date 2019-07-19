@@ -9,8 +9,7 @@ To run the tutorials interactively via Jupyter notebooks, install the package
 and open the tutorials like:
 
 ```julia
-using Pkg
-pkg"add https://github.com/UMCTM/PumasTutorials.jl"
+using Pkg; Pkg.add("PumasTutorials") # Run the first time to add the package
 using PumasTutorials
 PumasTutorials.open_notebooks()
 ```
@@ -20,9 +19,9 @@ PumasTutorials.open_notebooks()
 - Introduction
   - [Introduction to Pumas](https://github.com/UMCTM/PumasTutorials.jl/blob/master/pdf/introduction/introduction.pdf)
   - [Generating and Simulating Populations](https://github.com/UMCTM/PumasTutorials.jl/blob/master/pdf/introduction/simulating_populations.pdf)
-
   - [Introduction to Noncompartmental Analysis (NCA)](https://github.com/UMCTM/PumasTutorials.jl/blob/master/pdf/nca/basic_nca.pdf)
 - Models
+  - [Discrete Response Models]()
   - [PBPK in Pumas, A Model for ACAT](https://github.com/UMCTM/PumasTutorials.jl/blob/master/pdf/pbpk/pbpk_acat.pdf)
 
 # Developer Documentation
