@@ -17,12 +17,11 @@ PumasTutorials.open_notebooks()
 ## Table of Contents
 
 - Introduction
-  - [Introduction to Pumas](https://github.com/UMCTM/PumasTutorials.jl/blob/master/pdf/introduction/introduction.pdf)
-  - [Generating and Simulating Populations](https://github.com/UMCTM/PumasTutorials.jl/blob/master/pdf/introduction/simulating_populations.pdf)
-  - [Introduction to Noncompartmental Analysis (NCA)](https://github.com/UMCTM/PumasTutorials.jl/blob/master/pdf/nca/basic_nca.pdf)
+  - [Introduction to Pumas](https://tutorials.pumas.ai/html/introduction/introduction.html)
+  - [Generating and Simulating Populations](https://tutorials.pumas.ai/html/introduction/simulating_populations.html)
+  - [Introduction to Noncompartmental Analysis (NCA)](https://tutorials.pumas.ai/html/nca/basic_nca.html)
 - Models
-  - [Discrete Response Models]()
-  - [PBPK in Pumas, A Model for ACAT](https://github.com/UMCTM/PumasTutorials.jl/blob/master/pdf/pbpk/pbpk_acat.pdf)
+  - [Discrete Response Models](https://tutorials.pumas.ai/html/discrete/discrete_response_models.html)
 
 # Developer Documentation
 
