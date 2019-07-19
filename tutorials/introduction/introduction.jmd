@@ -1,15 +1,15 @@
 ---
-title: Introduction to PuMaS
+title: Introduction to Pumas
 author: Chris Rackauckas
-date: March 3, 2019
+date: July 19, 2019
 ---
 
 # Introduction
 
-This is an introduction to PuMaS, a software for pharmacometric modeling and
+This is an introduction to Pumas, a software for pharmacometric modeling and
 simulation.
 
-The basic workflow of PuMaS is:
+The basic workflow of Pumas is:
 
 1. Build a model.
 2. Define subjects or populations to simulate or estimate.
@@ -23,20 +23,22 @@ the subsequent tutorials and documentation.
 
 ## Installation
 
-Because PuMaS is still unregistered, you will need to give the Git repository
-in order to add the package. To do this, use the command
-`]add https://github.com/UMCTM/PuMaS.jl`. Doing it this way, PuMaS and its
-dependencies will install automatically. If one cannot authenticate for this
-command (since the repository is currently private!), then first clone the
-repository how you please, use `]dev path/to/package`, then then do `]build PuMaS`.
-Using the build command will download and install the dependencies.
+To install Pumas, first install [JuliaPro](https://juliacomputing.com/products/juliapro.html).
+Then use the command:
+
+```{julia;eval=false}
+using Pkg
+Pkg.add("Pumas")
+```
+
+Doing it this way, Pumas and its dependencies will install automatically.
 
 ## Getting Started
 
 To load the package, use
 
 ```julia
-using PuMaS
+using Pumas
 ```
 
 ## Using the Model Macro
@@ -313,6 +315,6 @@ such as:
 2. Reading in dosage regimens and observations from NMTRAN data.
 
 ```julia{echo=false,skip="notebook"}
-using PuMaSTutorials
-PuMaSTutorials.tutorial_footer(WEAVE_ARGS[:folder],WEAVE_ARGS[:file])
+using PumasTutorials
+PumasTutorials.tutorial_footer(WEAVE_ARGS[:folder],WEAVE_ARGS[:file])
 ```

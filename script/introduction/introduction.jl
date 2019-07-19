@@ -1,5 +1,9 @@
 
-using PuMaS
+using Pkg
+Pkg.add("Pumas")
+
+
+using Pumas
 
 
 @param begin
@@ -105,7 +109,7 @@ regimen = DosageRegimen([15,15,15,15], time=[0,4,8,12])
 subject = Subject(id=1,evs=regimen)
 
 
-p = (θ = [
+fixeffs = (θ = [
           1, # Ka1  Absorption rate constant 1 (1/time)
           1, # CL   Clearance (volume/time)
           20, # Vc   Central volume (volume)
@@ -120,7 +124,7 @@ p = (θ = [
           2  # Km   Michaelis constant (mass/volume)
           ],)
 
-sim = simobs(model, subject, p)
+sim = simobs(model, subject, fixeffs)
 
 
 using Plots
@@ -132,12 +136,12 @@ plot(sim,
      legend=false, lw=2)
 
 
-rfx = (η = rand(11),)
-sim = simobs(model, subject, p, rfx)
+randeffs = (η = rand(11),)
+sim = simobs(model, subject, fixeffs, randeffs)
 plot(sim)
 
 
-sim = simobs(model, subject, p, rfx, obstimes = 0:0.1:19)
+sim = simobs(model, subject, fixeffs, randeffs, obstimes = 0:0.1:19)
 plot(sim)
 
 
@@ -150,6 +154,6 @@ DataFrame(sim)
 plot(sim.times,sim[:ev1])
 
 
-using PuMaSTutorials
-PuMaSTutorials.tutorial_footer(WEAVE_ARGS[:folder],WEAVE_ARGS[:file])
+using PumasTutorials
+PumasTutorials.tutorial_footer(WEAVE_ARGS[:folder],WEAVE_ARGS[:file])
 

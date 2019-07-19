@@ -1,23 +1,23 @@
 ---
 title : Defining and Simulating Populations
 author : Vijay Ivaturi, Chris Rackauckas
-date:  February 10, 2019
+date:  July 19, 2019
 ---
 
 ```julia
-using PuMaS, DataFrames, LinearAlgebra, Plots
+using Pumas, DataFrames, LinearAlgebra, Plots
 ```
 
 # Introduction
 
 In this tutorial, we will cover the fundamentals of generating populations
-to simulate with PuMaS. We will demonstrate how to specify dosage regimens and
+to simulate with Pumas. We will demonstrate how to specify dosage regimens and
 covariates, and then how to piece these together to form a population to
 simulate.
 
 ## The model
 
-Below is a PuMaS model that specifies a 1-compartment oral absorption system
+Below is a Pumas model that specifies a 1-compartment oral absorption system
 with between-subject variability on all the parameters. Details of the model
 specification are provided in the introduction tutorial.
 
@@ -68,7 +68,7 @@ proportional residual error.
 ```julia
 fixeffs = (
   θ = [0.4,20,1.1,2],
-  Ω = PDMat(diagm(0 => [0.04,0.04,0.04])),
+  Ω = diagm(0 => [0.04,0.04,0.04]),
   σ_prop = 0.04
   )
 ```
@@ -109,9 +109,9 @@ end
 Note that each `Subject` is an individual composed of:
 
   - `id`: an unique identifier
-  - `obs`: observations, represented by `PuMaS.Observation[]`
+  - `obs`: observations, represented by `Pumas.Observation[]`
   - `cvs`: covariates
-  - `evs`: events, represented by `PuMaS.Event[]`
+  - `evs`: events, represented by `Pumas.Event[]`
 
 In the example above, we only provided the `id`, `evs`, and the `cvs`. Since  `obs` were not
 provided, they are represented by an empty array. Lets take a closer at the events for this
@@ -157,11 +157,11 @@ twosubjs =  Population([s1,s2])
 Let's see the details of the first and the second subject
 
 ```julia
-twosubjs.subjects[1]
+twosubjs[1]
 ```
 
 ```julia
-twosubjs.subjects[2]
+twosubjs[2]
 ```
 Now, we can simulate this `Population` of 2 subjects as below
 
