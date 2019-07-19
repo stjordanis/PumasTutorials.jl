@@ -1,4 +1,8 @@
 
+using Pkg
+Pkg.add("Pumas")
+
+
 using Pumas
 
 

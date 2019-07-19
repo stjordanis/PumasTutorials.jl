@@ -1,7 +1,7 @@
 ---
 title: Introduction to Pumas
 author: Chris Rackauckas
-date: March 3, 2019
+date: July 19, 2019
 ---
 
 # Introduction
@@ -23,13 +23,15 @@ the subsequent tutorials and documentation.
 
 ## Installation
 
-Because Pumas is still unregistered, you will need to give the Git repository
-in order to add the package. To do this, use the command
-`]add https://github.com/UMCTM/Pumas.jl`. Doing it this way, Pumas and its
-dependencies will install automatically. If one cannot authenticate for this
-command (since the repository is currently private!), then first clone the
-repository how you please, use `]dev path/to/package`, then then do `]build Pumas`.
-Using the build command will download and install the dependencies.
+To install Pumas, first install [JuliaPro](https://juliacomputing.com/products/juliapro.html).
+Then use the command:
+
+```{julia;eval=false}
+using Pkg
+Pkg.add("Pumas")
+```
+
+Doing it this way, Pumas and its dependencies will install automatically.
 
 ## Getting Started
 
