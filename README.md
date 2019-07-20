@@ -49,6 +49,12 @@ To generate all of the notebooks, do:
 PumasTutorials.weave_all()
 ```
 
+or to generate all in a folder, use
+
+```julia
+PumasTutorials.weave_folder("introduction")
+```
+
 If you add new tutorials which require new packages, simply updating your local
 environment will change the project and manifest files. When this occurs, the
 updated environment files should be included in the PR.
