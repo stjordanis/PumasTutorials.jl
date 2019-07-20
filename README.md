@@ -22,6 +22,7 @@ PumasTutorials.open_notebooks()
   - [Introduction to Noncompartmental Analysis (NCA)](https://tutorials.pumas.ai/html/nca/basic_nca.html)
 - Models
   - [Discrete Response Models](https://tutorials.pumas.ai/html/discrete/discrete_response_models.html)
+  - [Indirect Response Models](https://tutorials.pumas.ai/html/pkpd/indirect_response_models.html)
 
 # Developer Documentation
 
