@@ -1,37 +1,7 @@
----
-title: Indirect Response Models
-author: Shamir Kalaria
-date: July 18, 2019
----
 
-# Introduction
-
-This is an introduction to how to excute individual and population level simulations
-for indirect response models driven by continuous PK. For the following simulation,
-we have chosen use an oral drug formulation that is intended to
-
-* inhibit the production of a potential biomarker - `irm1`
-* inhibit of degredation of a potential biomarker - `irm2`
-* stimulate the production of a potential biomarker - `irm3`
-* stimulate the degredation of a potential biomarker - `irm4`
-
-## Getting Started
-
-```julia
 using Pumas, LinearAlgebra, Plots
-```
 
-## Model Code
 
-The following provides specifics to the model code:
-  - One compartment pharmacokinetic model was used to drive pharmacodynamics
-  - `Cp` is defined in "derived" and represents the plasma concentration in the central compartment
-  - `IMAX`/`EMAX` parameter was fixed to 1 for maximal inhibition/simulation
-  - Random effects on `Ka1`, `CL`, `Vc`, `Kin`, `Kout`, and `IC50`, `EC50` were assumed to follow a log-normal distribution
-
-## `irm1`
-
-```julia; results="hidden"
 irm1 = @model begin
     @param begin
         θ ∈ VectorDomain(6)
@@ -72,15 +42,8 @@ irm1 = @model begin
         resp   = Resp
     end
 end
-```
 
-## Specified Parameters
 
-The initial estimates of the parameters to simulate from. The fixed effects are provided
-in the θ vector and the between-subject variability parameteres are provided in the Ω vector as
-variances. A variance of 0.04 suggests a 20% coefficient of variation.
-
-```julia
 param = (θ = [
           0.5, # Ka  Absorption rate constant 1 (1/time)
           5, # CL   Clearance (volume/time)
@@ -91,32 +54,16 @@ param = (θ = [
           1, # IMAX Maximum inhibition
           ],
     Ω = Diagonal([0.04,0.04,0.04,0.04,0.04]));
-```
 
-## Simulation
-For the purpose of this tutorial, a simulation of a single subject receiving a single oral dose is shown below:
-  - `regimen1` provides the single oral dose at `time=0` into the gut compartment (`cmt=1`)
-  - `subject1` provides a single subject receiving regimen1
 
-```julia
 regimen1 = DosageRegimen(1500, time=0,cmt=1)
 subject1 = Subject(id=1,evs=regimen1)
-```
 
-The simobs function will call in the model object `irm1`, subject characteristics, parameters.
-For this simulation, a 100 hour simulation legnth was selected, with observations at every 0.1 hours.
-The `plot()` function can be used to visualize the simulation output.
 
-```julia
 sim = simobs(irm1,subject1,param,obstimes=0:0.1:100)
 plot(sim, obsnames=[:cp,:resp])
-```
 
-You can now try out the other indirect response models by changing the `@dynamics`.
 
-## `irm2`
-
-```julia
 irm2 = @model begin
     @param begin
         θ ∈ VectorDomain(6)
@@ -157,19 +104,12 @@ irm2 = @model begin
         resp   = Resp
     end
 end
-```
 
 
-```julia
 sim = simobs(irm2,subject1,param,obstimes=0:0.1:100)
 plot(sim, obsnames=[:cp,:resp])
-```
 
-## `irm3`
 
-Change IMAX and IC50 to EMAX and EC50 in the `@param` block and the subsequent equations
-
-```julia
 irm3 = @model begin
     @param begin
         θ ∈ VectorDomain(6)
@@ -210,18 +150,12 @@ irm3 = @model begin
         resp   = Resp
     end
 end
-```
 
-```julia
+
 sim = simobs(irm3,subject1,param,obstimes=0:0.1:100)
 plot(sim, obsnames=[:cp,:resp])
-```
 
-![irm3](https://user-images.githubusercontent.com/1425562/61530217-78c68780-a9f1-11e9-8ab3-f0bfcdc516ac.png)
 
-## `irm4`
-
-```julia
 irm4 = @model begin
     @param begin
         θ ∈ VectorDomain(6)
@@ -262,14 +196,12 @@ irm4 = @model begin
         resp   = Resp
     end
 end
-```
 
-```julia
+
 sim = simobs(irm4,subject1,param,obstimes=0:0.1:100)
 plot(sim, obsnames=[:cp,:resp])
-```
 
-```julia{echo=false,skip="notebook"}
+
 using PumasTutorials
 PumasTutorials.tutorial_footer(WEAVE_ARGS[:folder],WEAVE_ARGS[:file])
-```
+
