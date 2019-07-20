@@ -5,7 +5,7 @@ date:  July 19, 2019
 ---
 
 ```julia
-using Pumas, CSV
+using Pumas, CSV, Plots
 ```
 
 # Introduction
@@ -21,7 +21,7 @@ with Pumas using an example dataset in which a crossover IV/oral study was condu
 * Single 2000 mg IV dose to the same 24 subjects
 * Blood samples for pharmacokinetic analysis were collected every 30 minutes
 
-### `Csv.read()`
+### `CSV.read()`
 
 Let's start reading the dataset. By using the `missingstring` option we are specifying how the
 missing values are labeled in our dataset.
