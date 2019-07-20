@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<HTML lang = "en">
+<HEAD>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>PuMaS NCA Tutorial - Single dose ORAL administration 2 analytes</title>
+  
+
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      TeX: { equationNumbers: { autoNumber: "AMS" } }
+    });
+  </script>
+
+  <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+  </script>
+
+  
+<style>
+pre.hljl {
+    border: 1px solid #ccc;
+    margin: 5px;
+    padding: 5px;
+    overflow-x: auto;
+    color: rgb(68,68,68); background-color: rgb(251,251,251); }
+pre.hljl > span.hljl-t { }
+pre.hljl > span.hljl-w { }
+pre.hljl > span.hljl-e { }
+pre.hljl > span.hljl-eB { }
+pre.hljl > span.hljl-o { }
+pre.hljl > span.hljl-k { color: rgb(148,91,176); font-weight: bold; }
+pre.hljl > span.hljl-kc { color: rgb(59,151,46); font-style: italic; }
+pre.hljl > span.hljl-kd { color: rgb(214,102,97); font-style: italic; }
+pre.hljl > span.hljl-kn { color: rgb(148,91,176); font-weight: bold; }
+pre.hljl > span.hljl-kp { color: rgb(148,91,176); font-weight: bold; }
+pre.hljl > span.hljl-kr { color: rgb(148,91,176); font-weight: bold; }
+pre.hljl > span.hljl-kt { color: rgb(148,91,176); font-weight: bold; }
+pre.hljl > span.hljl-n { }
+pre.hljl > span.hljl-na { }
+pre.hljl > span.hljl-nb { }
+pre.hljl > span.hljl-nbp { }
+pre.hljl > span.hljl-nc { }
+pre.hljl > span.hljl-ncB { }
+pre.hljl > span.hljl-nd { color: rgb(214,102,97); }
+pre.hljl > span.hljl-ne { }
+pre.hljl > span.hljl-neB { }
+pre.hljl > span.hljl-nf { color: rgb(66,102,213); }
+pre.hljl > span.hljl-nfm { color: rgb(66,102,213); }
+pre.hljl > span.hljl-np { }
+pre.hljl > span.hljl-nl { }
+pre.hljl > span.hljl-nn { }
+pre.hljl > span.hljl-no { }
+pre.hljl > span.hljl-nt { }
+pre.hljl > span.hljl-nv { }
+pre.hljl > span.hljl-nvc { }
+pre.hljl > span.hljl-nvg { }
+pre.hljl > span.hljl-nvi { }
+pre.hljl > span.hljl-nvm { }
+pre.hljl > span.hljl-l { }
+pre.hljl > span.hljl-ld { color: rgb(148,91,176); font-style: italic; }
+pre.hljl > span.hljl-s { color: rgb(201,61,57); }
+pre.hljl > span.hljl-sa { color: rgb(201,61,57); }
+pre.hljl > span.hljl-sb { color: rgb(201,61,57); }
+pre.hljl > span.hljl-sc { color: rgb(201,61,57); }
+pre.hljl > span.hljl-sd { color: rgb(201,61,57); }
+pre.hljl > span.hljl-sdB { color: rgb(201,61,57); }
+pre.hljl > span.hljl-sdC { color: rgb(201,61,57); }
+pre.hljl > span.hljl-se { color: rgb(59,151,46); }
+pre.hljl > span.hljl-sh { color: rgb(201,61,57); }
+pre.hljl > span.hljl-si { }
+pre.hljl > span.hljl-so { color: rgb(201,61,57); }
+pre.hljl > span.hljl-sr { color: rgb(201,61,57); }
+pre.hljl > span.hljl-ss { color: rgb(201,61,57); }
+pre.hljl > span.hljl-ssB { color: rgb(201,61,57); }
+pre.hljl > span.hljl-nB { color: rgb(59,151,46); }
+pre.hljl > span.hljl-nbB { color: rgb(59,151,46); }
+pre.hljl > span.hljl-nfB { color: rgb(59,151,46); }
+pre.hljl > span.hljl-nh { color: rgb(59,151,46); }
+pre.hljl > span.hljl-ni { color: rgb(59,151,46); }
+pre.hljl > span.hljl-nil { color: rgb(59,151,46); }
+pre.hljl > span.hljl-noB { color: rgb(59,151,46); }
+pre.hljl > span.hljl-oB { color: rgb(102,102,102); font-weight: bold; }
+pre.hljl > span.hljl-ow { color: rgb(102,102,102); font-weight: bold; }
+pre.hljl > span.hljl-p { }
+pre.hljl > span.hljl-c { color: rgb(153,153,119); font-style: italic; }
+pre.hljl > span.hljl-ch { color: rgb(153,153,119); font-style: italic; }
+pre.hljl > span.hljl-cm { color: rgb(153,153,119); font-style: italic; }
+pre.hljl > span.hljl-cp { color: rgb(153,153,119); font-style: italic; }
+pre.hljl > span.hljl-cpB { color: rgb(153,153,119); font-style: italic; }
+pre.hljl > span.hljl-cs { color: rgb(153,153,119); font-style: italic; }
+pre.hljl > span.hljl-csB { color: rgb(153,153,119); font-style: italic; }
+pre.hljl > span.hljl-g { }
+pre.hljl > span.hljl-gd { }
+pre.hljl > span.hljl-ge { }
+pre.hljl > span.hljl-geB { }
+pre.hljl > span.hljl-gh { }
+pre.hljl > span.hljl-gi { }
+pre.hljl > span.hljl-go { }
+pre.hljl > span.hljl-gp { }
+pre.hljl > span.hljl-gs { }
+pre.hljl > span.hljl-gsB { }
+pre.hljl > span.hljl-gt { }
+</style>
+
+
+
+  <style type="text/css">
+  @font-face {
+  font-style: normal;
+  font-weight: 300;
+}
+@font-face {
+  font-style: normal;
+  font-weight: 400;
+}
+@font-face {
+  font-style: normal;
+  font-weight: 600;
+}
+html {
+  font-family: sans-serif; /* 1 */
+  -ms-text-size-adjust: 100%; /* 2 */
+  -webkit-text-size-adjust: 100%; /* 2 */
+}
+body {
+  margin: 0;
+}
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+main,
+menu,
+nav,
+section,
+summary {
+  display: block;
+}
+audio,
+canvas,
+progress,
+video {
+  display: inline-block; /* 1 */
+  vertical-align: baseline; /* 2 */
+}
+audio:not([controls]) {
+  display: none;
+  height: 0;
+}
+[hidden],
+template {
+  display: none;
+}
+a:active,
+a:hover {
+  outline: 0;
+}
+abbr[title] {
+  border-bottom: 1px dotted;
+}
+b,
+strong {
+  font-weight: bold;
+}
+dfn {
+  font-style: italic;
+}
+h1 {
+  font-size: 2em;
+  margin: 0.67em 0;
+}
+mark {
+  background: #ff0;
+  color: #000;
+}
+small {
+  font-size: 80%;
+}
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+sup {
+  top: -0.5em;
+}
+sub {
+  bottom: -0.25em;
+}
+img {
+  border: 0;
+}
+svg:not(:root) {
+  overflow: hidden;
+}
+figure {
+  margin: 1em 40px;
+}
+hr {
+  -moz-box-sizing: content-box;
+  box-sizing: content-box;
+  height: 0;
+}
+pre {
+  overflow: auto;
+}
+code,
+kbd,
+pre,
+samp {
+  font-family: monospace, monospace;
+  font-size: 1em;
+}
+button,
+input,
+optgroup,
+select,
+textarea {
+  color: inherit; /* 1 */
+  font: inherit; /* 2 */
+  margin: 0; /* 3 */
+}
+button {
+  overflow: visible;
+}
+button,
+select {
+  text-transform: none;
+}
+button,
+html input[type="button"], /* 1 */
+input[type="reset"],
+input[type="submit"] {
+  -webkit-appearance: button; /* 2 */
+  cursor: pointer; /* 3 */
+}
+button[disabled],
+html input[disabled] {
+  cursor: default;
+}
+button::-moz-focus-inner,
+input::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+input {
+  line-height: normal;
+}
+input[type="checkbox"],
+input[type="radio"] {
+  box-sizing: border-box; /* 1 */
+  padding: 0; /* 2 */
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  height: auto;
+}
+input[type="search"] {
+  -webkit-appearance: textfield; /* 1 */
+  -moz-box-sizing: content-box;
+  -webkit-box-sizing: content-box; /* 2 */
+  box-sizing: content-box;
+}
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+fieldset {
+  border: 1px solid #c0c0c0;
+  margin: 0 2px;
+  padding: 0.35em 0.625em 0.75em;
+}
+legend {
+  border: 0; /* 1 */
+  padding: 0; /* 2 */
+}
+textarea {
+  overflow: auto;
+}
+optgroup {
+  font-weight: bold;
+}
+table {
+  font-family: monospace, monospace;
+  font-size : 0.8em;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+td,
+th {
+  padding: 0;
+}
+thead th {
+    border-bottom: 1px solid black;
+    background-color: white;
+}
+tr:nth-child(odd){
+  background-color: rgb(248,248,248);
+}
+
+
+/*
+* Skeleton V2.0.4
+* Copyright 2014, Dave Gamache
+* www.getskeleton.com
+* Free to use under the MIT license.
+* http://www.opensource.org/licenses/mit-license.php
+* 12/29/2014
+*/
+.container {
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 20px;
+  box-sizing: border-box; }
+.column,
+.columns {
+  width: 100%;
+  float: left;
+  box-sizing: border-box; }
+@media (min-width: 400px) {
+  .container {
+    width: 85%;
+    padding: 0; }
+}
+@media (min-width: 550px) {
+  .container {
+    width: 80%; }
+  .column,
+  .columns {
+    margin-left: 4%; }
+  .column:first-child,
+  .columns:first-child {
+    margin-left: 0; }
+
+  .one.column,
+  .one.columns                    { width: 4.66666666667%; }
+  .two.columns                    { width: 13.3333333333%; }
+  .three.columns                  { width: 22%;            }
+  .four.columns                   { width: 30.6666666667%; }
+  .five.columns                   { width: 39.3333333333%; }
+  .six.columns                    { width: 48%;            }
+  .seven.columns                  { width: 56.6666666667%; }
+  .eight.columns                  { width: 65.3333333333%; }
+  .nine.columns                   { width: 74.0%;          }
+  .ten.columns                    { width: 82.6666666667%; }
+  .eleven.columns                 { width: 91.3333333333%; }
+  .twelve.columns                 { width: 100%; margin-left: 0; }
+
+  .one-third.column               { width: 30.6666666667%; }
+  .two-thirds.column              { width: 65.3333333333%; }
+
+  .one-half.column                { width: 48%; }
+
+  /* Offsets */
+  .offset-by-one.column,
+  .offset-by-one.columns          { margin-left: 8.66666666667%; }
+  .offset-by-two.column,
+  .offset-by-two.columns          { margin-left: 17.3333333333%; }
+  .offset-by-three.column,
+  .offset-by-three.columns        { margin-left: 26%;            }
+  .offset-by-four.column,
+  .offset-by-four.columns         { margin-left: 34.6666666667%; }
+  .offset-by-five.column,
+  .offset-by-five.columns         { margin-left: 43.3333333333%; }
+  .offset-by-six.column,
+  .offset-by-six.columns          { margin-left: 52%;            }
+  .offset-by-seven.column,
+  .offset-by-seven.columns        { margin-left: 60.6666666667%; }
+  .offset-by-eight.column,
+  .offset-by-eight.columns        { margin-left: 69.3333333333%; }
+  .offset-by-nine.column,
+  .offset-by-nine.columns         { margin-left: 78.0%;          }
+  .offset-by-ten.column,
+  .offset-by-ten.columns          { margin-left: 86.6666666667%; }
+  .offset-by-eleven.column,
+  .offset-by-eleven.columns       { margin-left: 95.3333333333%; }
+
+  .offset-by-one-third.column,
+  .offset-by-one-third.columns    { margin-left: 34.6666666667%; }
+  .offset-by-two-thirds.column,
+  .offset-by-two-thirds.columns   { margin-left: 69.3333333333%; }
+
+  .offset-by-one-half.column,
+  .offset-by-one-half.columns     { margin-left: 52%; }
+
+}
+html {
+  font-size: 62.5%; }
+body {
+  font-size: 1.5em; /* currently ems cause chrome bug misinterpreting rems on body element */
+  line-height: 1.6;
+  font-weight: 400;
+  font-family: "Raleway", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #222; }
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  margin-bottom: 2rem;
+  font-weight: 300; }
+h1 { font-size: 3.6rem; line-height: 1.2;  letter-spacing: -.1rem;}
+h2 { font-size: 3.4rem; line-height: 1.25; letter-spacing: -.1rem; }
+h3 { font-size: 3.2rem; line-height: 1.3;  letter-spacing: -.1rem; }
+h4 { font-size: 2.8rem; line-height: 1.35; letter-spacing: -.08rem; }
+h5 { font-size: 2.4rem; line-height: 1.5;  letter-spacing: -.05rem; }
+h6 { font-size: 1.5rem; line-height: 1.6;  letter-spacing: 0; }
+
+p {
+  margin-top: 0; }
+a {
+  color: #1EAEDB; }
+a:hover {
+  color: #0FA0CE; }
+.button,
+button,
+input[type="submit"],
+input[type="reset"],
+input[type="button"] {
+  display: inline-block;
+  height: 38px;
+  padding: 0 30px;
+  color: #555;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 38px;
+  letter-spacing: .1rem;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  background-color: transparent;
+  border-radius: 4px;
+  border: 1px solid #bbb;
+  cursor: pointer;
+  box-sizing: border-box; }
+.button:hover,
+button:hover,
+input[type="submit"]:hover,
+input[type="reset"]:hover,
+input[type="button"]:hover,
+.button:focus,
+button:focus,
+input[type="submit"]:focus,
+input[type="reset"]:focus,
+input[type="button"]:focus {
+  color: #333;
+  border-color: #888;
+  outline: 0; }
+.button.button-primary,
+button.button-primary,
+input[type="submit"].button-primary,
+input[type="reset"].button-primary,
+input[type="button"].button-primary {
+  color: #FFF;
+  background-color: #33C3F0;
+  border-color: #33C3F0; }
+.button.button-primary:hover,
+button.button-primary:hover,
+input[type="submit"].button-primary:hover,
+input[type="reset"].button-primary:hover,
+input[type="button"].button-primary:hover,
+.button.button-primary:focus,
+button.button-primary:focus,
+input[type="submit"].button-primary:focus,
+input[type="reset"].button-primary:focus,
+input[type="button"].button-primary:focus {
+  color: #FFF;
+  background-color: #1EAEDB;
+  border-color: #1EAEDB; }
+input[type="email"],
+input[type="number"],
+input[type="search"],
+input[type="text"],
+input[type="tel"],
+input[type="url"],
+input[type="password"],
+textarea,
+select {
+  height: 38px;
+  padding: 6px 10px; /* The 6px vertically centers text on FF, ignored by Webkit */
+  background-color: #fff;
+  border: 1px solid #D1D1D1;
+  border-radius: 4px;
+  box-shadow: none;
+  box-sizing: border-box; }
+/* Removes awkward default styles on some inputs for iOS */
+input[type="email"],
+input[type="number"],
+input[type="search"],
+input[type="text"],
+input[type="tel"],
+input[type="url"],
+input[type="password"],
+textarea {
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none; }
+textarea {
+  min-height: 65px;
+  padding-top: 6px;
+  padding-bottom: 6px; }
+input[type="email"]:focus,
+input[type="number"]:focus,
+input[type="search"]:focus,
+input[type="text"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+input[type="password"]:focus,
+textarea:focus,
+select:focus {
+  border: 1px solid #33C3F0;
+  outline: 0; }
+label,
+legend {
+  display: block;
+  margin-bottom: .5rem;
+  font-weight: 600; }
+fieldset {
+  padding: 0;
+  border-width: 0; }
+input[type="checkbox"],
+input[type="radio"] {
+  display: inline; }
+label > .label-body {
+  display: inline-block;
+  margin-left: .5rem;
+  font-weight: normal; }
+ul {
+  list-style: circle; }
+ol {
+  list-style: decimal; }
+ul ul,
+ul ol,
+ol ol,
+ol ul {
+  margin: 1.5rem 0 1.5rem 3rem;
+  font-size: 90%; }
+li > p {margin : 0;}
+th,
+td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #E1E1E1; }
+th:first-child,
+td:first-child {
+  padding-left: 0; }
+th:last-child,
+td:last-child {
+  padding-right: 0; }
+button,
+.button {
+  margin-bottom: 1rem; }
+input,
+textarea,
+select,
+fieldset {
+  margin-bottom: 1.5rem; }
+pre,
+blockquote,
+dl,
+figure,
+table,
+p,
+ul,
+ol,
+form {
+  margin-bottom: 1.0rem; }
+.u-full-width {
+  width: 100%;
+  box-sizing: border-box; }
+.u-max-full-width {
+  max-width: 100%;
+  box-sizing: border-box; }
+.u-pull-right {
+  float: right; }
+.u-pull-left {
+  float: left; }
+hr {
+  margin-top: 3rem;
+  margin-bottom: 3.5rem;
+  border-width: 0;
+  border-top: 1px solid #E1E1E1; }
+.container:after,
+.row:after,
+.u-cf {
+  content: "";
+  display: table;
+  clear: both; }
+
+pre {
+  display: block;
+  padding: 9.5px;
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.42857143;
+  word-break: break-all;
+  word-wrap: break-word;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+pre.hljl {
+  margin: 0 0 10px;
+  display: block;
+  background: #f5f5f5;
+  border-radius: 4px;
+  padding : 5px;
+}
+
+pre.output {
+  background: #ffffff;
+}
+
+pre.code {
+  background: #ffffff;
+}
+
+pre.julia-error {
+  color : red
+}
+
+code,
+kbd,
+pre,
+samp {
+  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+  font-size: 13px;
+}
+
+
+@media (min-width: 400px) {}
+@media (min-width: 550px) {}
+@media (min-width: 750px) {}
+@media (min-width: 1000px) {}
+@media (min-width: 1200px) {}
+
+h1.title {margin-top : 20px}
+img {max-width : 100%}
+div.title {text-align: center;}
+
+  </style>
+
+
+
+</HEAD>
+  <BODY>
+    <div class ="container">
+      <div class = "row">
+        <div class = "col-md-12 twelve columns">
+
+          <div class="title">
+            <h1 class="title">PuMaS NCA Tutorial - Single dose ORAL administration 2 analytes</h1>
+            <h5>Beatriz Guglieri Lopez</h5>
+            <h5>April 15, 2019</h5>
+          </div>
+
+          
+
+<pre class='hljl'>
+<span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>PuMaS</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span>
+</pre>
+
+
+
+<h1>Introduction</h1>
+<p>In this tutorial, we will cover the fundamentals of performing an NCA analysis with PuMaS of an example dataset in which a single oral dose was administered and the concentration of two analytes &#40;parent and metabolite&#41; was measured.</p>
+<h1>The dataset</h1>
+<p>A single oral dose of 2000 mg was administered to 24 different subjects. Samples were collected every 30 minutes.</p>
+<p>Let&#39;s start reading the dataset. By using the <code>missingstring</code> option we are specifying how the missing values are labeled in our dataset.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>data</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span><span class='hljl-oB'>.</span><span class='hljl-nf'>read</span><span class='hljl-p'>(</span><span class='hljl-s'>&quot;./data/SD_oral_2analytes.csv&quot;</span><span class='hljl-p'>,</span><span class='hljl-n'>missingstring</span><span class='hljl-oB'>=</span><span class='hljl-s'>&quot;NA&quot;</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-n'>data</span>
+</pre>
+
+
+
+<table class="data-frame"><thead><tr><th></th><th>ID</th><th>time</th><th>DV</th><th>Analyte</th><th>BLQ</th><th>DOSE</th><th>Formulation</th></tr><tr><th></th><th>Int64⍰</th><th>Float64⍰</th><th>Float64⍰</th><th>String⍰</th><th>Int64⍰</th><th>Int64⍰</th><th>String⍰</th></tr></thead><tbody><p>2,352 rows × 7 columns</p><tr><th>1</th><td>1</td><td>0.0</td><td>0.0</td><td>Metabolite</td><td>0</td><td>2000</td><td>oral</td></tr><tr><th>2</th><td>1</td><td>0.5</td><td>1.11442</td><td>Metabolite</td><td>0</td><td>0</td><td>oral</td></tr><tr><th>3</th><td>1</td><td>1.0</td><td>3.49949</td><td>Metabolite</td><td>0</td><td>0</td><td>oral</td></tr><tr><th>4</th><td>1</td><td>1.5</td><td>5.9182</td><td>Metabolite</td><td>0</td><td>0</td><td>oral</td></tr><tr><th>5</th><td>1</td><td>2.0</td><td>8.03443</td><td>Metabolite</td><td>0</td><td>0</td><td>oral</td></tr><tr><th>6</th><td>1</td><td>2.5</td><td>10.0394</td><td>Metabolite</td><td>0</td><td>0</td><td>oral</td></tr><tr><th>7</th><td>1</td><td>3.0</td><td>11.91</td><td>Metabolite</td><td>0</td><td>0</td><td>oral</td></tr><tr><th>8</th><td>1</td><td>3.5</td><td>11.3661</td><td>Metabolite</td><td>0</td><td>0</td><td>oral</td></tr><tr><th>9</th><td>1</td><td>4.0</td><td>12.3477</td><td>Metabolite</td><td>0</td><td>0</td><td>oral</td></tr><tr><th>10</th><td>1</td><td>4.5</td><td>12.7279</td><td>Metabolite</td><td>0</td><td>0</td><td>oral</td></tr><tr><th>11</th><td>1</td><td>5.0</td><td>13.9526</td><td>Metabolite</td><td>0</td><td>0</td><td>oral</td></tr><tr><th>12</th><td>1</td><td>5.5</td><td>12.4201</td><td>Metabolite</td><td>0</td><td>0</td><td>oral</td></tr><tr><th>13</th><td>1</td><td>6.0</td><td>12.4581</td><td>Metabolite</td><td>0</td><td>0</td><td>oral</td></tr><tr><th>14</th><td>1</td><td>6.5</td><td>11.1976</td><td>Metabolite</td><td>0</td><td>0</td><td>oral</td></tr><tr><th>15</th><td>1</td><td>7.0</td><td>12.1283</td><td>Metabolite</td><td>0</td><td>0</td><td>oral</td></tr><tr><th>16</th><td>1</td><td>7.5</td><td>11.6406</td><td>Metabolite</td><td>0</td><td>0</td><td>oral</td></tr><tr><th>17</th><td>1</td><td>8.0</td><td>10.7723</td><td>Metabolite</td><td>0</td><td>0</td><td>oral</td></tr><tr><th>18</th><td>1</td><td>8.5</td><td>9.1473</td><td>Metabolite</td><td>0</td><td>0</td><td>oral</td></tr><tr><th>19</th><td>1</td><td>9.0</td><td>8.8975</td><td>Metabolite</td><td>0</td><td>0</td><td>oral</td></tr><tr><th>20</th><td>1</td><td>9.5</td><td>8.19033</td><td>Metabolite</td><td>0</td><td>0</td><td>oral</td></tr><tr><th>21</th><td>1</td><td>10.0</td><td>8.01955</td><td>Metabolite</td><td>0</td><td>0</td><td>oral</td></tr><tr><th>22</th><td>1</td><td>10.5</td><td>6.70693</td><td>Metabolite</td><td>0</td><td>0</td><td>oral</td></tr><tr><th>23</th><td>1</td><td>11.0</td><td>6.80519</td><td>Metabolite</td><td>0</td><td>0</td><td>oral</td></tr><tr><th>24</th><td>1</td><td>11.5</td><td>6.26171</td><td>Metabolite</td><td>0</td><td>0</td><td>oral</td></tr><tr><th>&vellip;</th><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td></tr></tbody></table>
+
+<p>Please, note that the <code>DOSE</code> column must only contain a value at the time the dose was administered.</p>
+<h1>Defining the units</h1>
+<p>Next we can define time, concentration and dose units so the report includes the units for the pharmacokinetic parameters.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>timeu</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-so'>u&quot;hr&quot;</span><span class='hljl-t'>
+</span><span class='hljl-n'>concu</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-so'>u&quot;mg/L&quot;</span><span class='hljl-t'>
+</span><span class='hljl-n'>amtu</span><span class='hljl-t'>  </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-so'>u&quot;mg&quot;</span>
+</pre>
+
+
+<pre class="output">
+mg
+</pre>
+
+
+<h1>Defining the population object</h1>
+<p>Using the <code>parse_ncadata</code> function, the next step would be to define the population that we are going to use for the NCA. Within this function we need to specify the dataset, the name of the column with the subject identifier &#40;<code>id&#61;</code>&#41;, name of the time column &#40;<code>time&#61;</code>&#41;, name of the concentration column &#40;<code>conc&#61;</code>&#41;, name of the dose column &#40;<code>amt&#61;</code>&#41;, the interdose interval &#40;<code>ii&#61;</code>&#41; multiplied by the time units, the name of the formulation column &#40;<code>formulation&#61;</code>&#41; and the route of administration &#40;<code>route&#61;</code>&#41;.</p>
+<p>In this case, since parent and metabolite concentrations were measured, we need to specify the grouping variable so that the PK parameters are calculated for both analytes &#40;<code>group&#61;</code>&#41;.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>pop</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>parse_ncadata</span><span class='hljl-p'>(</span><span class='hljl-n'>data</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>id</span><span class='hljl-oB'>=:</span><span class='hljl-n'>ID</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>time</span><span class='hljl-oB'>=:</span><span class='hljl-n'>time</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>conc</span><span class='hljl-oB'>=:</span><span class='hljl-n'>DV</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>amt</span><span class='hljl-oB'>=:</span><span class='hljl-n'>DOSE</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ii</span><span class='hljl-oB'>=</span><span class='hljl-ni'>24</span><span class='hljl-n'>timeu</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>group</span><span class='hljl-oB'>=:</span><span class='hljl-n'>Analyte</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>formulation</span><span class='hljl-oB'>=:</span><span class='hljl-n'>Formulation</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>route</span><span class='hljl-oB'>=</span><span class='hljl-p'>(</span><span class='hljl-n'>ev</span><span class='hljl-oB'>=</span><span class='hljl-s'>&quot;oral&quot;</span><span class='hljl-p'>,),</span><span class='hljl-t'> </span><span class='hljl-n'>timeu</span><span class='hljl-oB'>=</span><span class='hljl-n'>timeu</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>concu</span><span class='hljl-oB'>=</span><span class='hljl-n'>concu</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>amtu</span><span class='hljl-oB'>=</span><span class='hljl-n'>amtu</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+NCAPopulation &#40;24 subjects&#41;:
+  ID: &#91;1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 2
+0, 21, 22, 23, 24&#93;
+  Group: &#91;&quot;Metabolite&quot;, &quot;Parent&quot;&#93;
+    concentration: mg L^-1
+    time:          hr
+    auc:           mg hr L^-1
+    aumc:          mg hr^2 L^-1
+    λz:            hr^-1
+    dose:          mg
+</pre>
+
+
+<p>Please, note that in the <code>route&#61;&#40;ev&#61;&quot;oral&quot;,&#41;</code> option the name between quotes should match the contents of the formulation column in our dataset.</p>
+<p>Also note that in the function above by default the lower limit of quantification &#40;LLQ&#41; is 0 and concentrations that are below LLQ &#40;BLQ&#41; are dropped.</p>
+<p>Let&#39;s say we want to specify a LLQ value of 0.4 mg/L, then we need to add <code>llq&#61;0.4concu</code> to the function above:</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>pop</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>parse_ncadata</span><span class='hljl-p'>(</span><span class='hljl-n'>data</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>id</span><span class='hljl-oB'>=:</span><span class='hljl-n'>ID</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>time</span><span class='hljl-oB'>=:</span><span class='hljl-n'>time</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>conc</span><span class='hljl-oB'>=:</span><span class='hljl-n'>DV</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>amt</span><span class='hljl-oB'>=:</span><span class='hljl-n'>DOSE</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ii</span><span class='hljl-oB'>=</span><span class='hljl-ni'>24</span><span class='hljl-n'>timeu</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>group</span><span class='hljl-oB'>=:</span><span class='hljl-n'>Analyte</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>formulation</span><span class='hljl-oB'>=:</span><span class='hljl-n'>Formulation</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>route</span><span class='hljl-oB'>=</span><span class='hljl-p'>(</span><span class='hljl-n'>ev</span><span class='hljl-oB'>=</span><span class='hljl-s'>&quot;oral&quot;</span><span class='hljl-p'>,),</span><span class='hljl-t'> </span><span class='hljl-n'>timeu</span><span class='hljl-oB'>=</span><span class='hljl-n'>timeu</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>concu</span><span class='hljl-oB'>=</span><span class='hljl-n'>concu</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>amtu</span><span class='hljl-oB'>=</span><span class='hljl-n'>amtu</span><span class='hljl-p'>,</span><span class='hljl-n'>lloq</span><span class='hljl-oB'>=</span><span class='hljl-nfB'>0.4</span><span class='hljl-n'>concu</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+NCAPopulation &#40;24 subjects&#41;:
+  ID: &#91;1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 2
+0, 21, 22, 23, 24&#93;
+  Group: &#91;&quot;Metabolite&quot;, &quot;Parent&quot;&#93;
+    concentration: mg L^-1
+    time:          hr
+    auc:           mg hr L^-1
+    aumc:          mg hr^2 L^-1
+    λz:            hr^-1
+    dose:          mg
+</pre>
+
+
+<h1>Single PK parameter calculation</h1>
+<p>We can use different functions to calculate single PK parameters. For example, we can calculate the area under the concentration curve from time 0 to the last observation using the linear trapezoidal rule &#40;default method&#41; by writing the following code.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>auc</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>,</span><span class='hljl-n'>auctype</span><span class='hljl-oB'>=:</span><span class='hljl-n'>last</span><span class='hljl-p'>,</span><span class='hljl-n'>method</span><span class='hljl-oB'>=:</span><span class='hljl-n'>linear</span><span class='hljl-p'>)</span>
+</pre>
+
+
+
+<table class="data-frame"><thead><tr><th></th><th>id</th><th>group</th><th>auc</th></tr><tr><th></th><th>Int64</th><th>String</th><th>Unitful…</th></tr></thead><tbody><p>48 rows × 3 columns</p><tr><th>1</th><td>1</td><td>Metabolite</td><td>136.19 mg hr L^-1</td></tr><tr><th>2</th><td>2</td><td>Metabolite</td><td>136.224 mg hr L^-1</td></tr><tr><th>3</th><td>3</td><td>Metabolite</td><td>139.236 mg hr L^-1</td></tr><tr><th>4</th><td>4</td><td>Metabolite</td><td>136.434 mg hr L^-1</td></tr><tr><th>5</th><td>5</td><td>Metabolite</td><td>135.299 mg hr L^-1</td></tr><tr><th>6</th><td>6</td><td>Metabolite</td><td>138.173 mg hr L^-1</td></tr><tr><th>7</th><td>7</td><td>Metabolite</td><td>139.986 mg hr L^-1</td></tr><tr><th>8</th><td>8</td><td>Metabolite</td><td>137.658 mg hr L^-1</td></tr><tr><th>9</th><td>9</td><td>Metabolite</td><td>137.915 mg hr L^-1</td></tr><tr><th>10</th><td>10</td><td>Metabolite</td><td>137.092 mg hr L^-1</td></tr><tr><th>11</th><td>11</td><td>Metabolite</td><td>135.324 mg hr L^-1</td></tr><tr><th>12</th><td>12</td><td>Metabolite</td><td>136.144 mg hr L^-1</td></tr><tr><th>13</th><td>13</td><td>Metabolite</td><td>137.992 mg hr L^-1</td></tr><tr><th>14</th><td>14</td><td>Metabolite</td><td>138.635 mg hr L^-1</td></tr><tr><th>15</th><td>15</td><td>Metabolite</td><td>136.661 mg hr L^-1</td></tr><tr><th>16</th><td>16</td><td>Metabolite</td><td>136.26 mg hr L^-1</td></tr><tr><th>17</th><td>17</td><td>Metabolite</td><td>135.707 mg hr L^-1</td></tr><tr><th>18</th><td>18</td><td>Metabolite</td><td>137.811 mg hr L^-1</td></tr><tr><th>19</th><td>19</td><td>Metabolite</td><td>139.376 mg hr L^-1</td></tr><tr><th>20</th><td>20</td><td>Metabolite</td><td>137.805 mg hr L^-1</td></tr><tr><th>21</th><td>21</td><td>Metabolite</td><td>137.404 mg hr L^-1</td></tr><tr><th>22</th><td>22</td><td>Metabolite</td><td>135.581 mg hr L^-1</td></tr><tr><th>23</th><td>23</td><td>Metabolite</td><td>139.381 mg hr L^-1</td></tr><tr><th>24</th><td>24</td><td>Metabolite</td><td>133.447 mg hr L^-1</td></tr><tr><th>&vellip;</th><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td></tr></tbody></table>
+
+<p>In the function above, the type of AUC by default is AUC from zero to infinity and the method by default is linear.</p>
+<p>We could also use the function above to calculate AUC from time 0 to infinity, and we could also change the method of calculation to log-linear trapezoidal &#40;<code>method&#61;:linuplogdown</code>&#41; or to linear-log &#40;<code>method&#61;:linlog</code>&#41;.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>auc</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>,</span><span class='hljl-n'>auctype</span><span class='hljl-oB'>=:</span><span class='hljl-n'>inf</span><span class='hljl-p'>,</span><span class='hljl-n'>method</span><span class='hljl-oB'>=:</span><span class='hljl-n'>linuplogdown</span><span class='hljl-p'>)</span>
+</pre>
+
+
+
+<table class="data-frame"><thead><tr><th></th><th>id</th><th>group</th><th>auc</th></tr><tr><th></th><th>Int64</th><th>String</th><th>Unitful…</th></tr></thead><tbody><p>48 rows × 3 columns</p><tr><th>1</th><td>1</td><td>Metabolite</td><td>137.145 mg hr L^-1</td></tr><tr><th>2</th><td>2</td><td>Metabolite</td><td>137.889 mg hr L^-1</td></tr><tr><th>3</th><td>3</td><td>Metabolite</td><td>140.86 mg hr L^-1</td></tr><tr><th>4</th><td>4</td><td>Metabolite</td><td>137.692 mg hr L^-1</td></tr><tr><th>5</th><td>5</td><td>Metabolite</td><td>138.823 mg hr L^-1</td></tr><tr><th>6</th><td>6</td><td>Metabolite</td><td>140.343 mg hr L^-1</td></tr><tr><th>7</th><td>7</td><td>Metabolite</td><td>142.779 mg hr L^-1</td></tr><tr><th>8</th><td>8</td><td>Metabolite</td><td>138.546 mg hr L^-1</td></tr><tr><th>9</th><td>9</td><td>Metabolite</td><td>139.629 mg hr L^-1</td></tr><tr><th>10</th><td>10</td><td>Metabolite</td><td>138.908 mg hr L^-1</td></tr><tr><th>11</th><td>11</td><td>Metabolite</td><td>132.405 mg hr L^-1</td></tr><tr><th>12</th><td>12</td><td>Metabolite</td><td>138.227 mg hr L^-1</td></tr><tr><th>13</th><td>13</td><td>Metabolite</td><td>140.494 mg hr L^-1</td></tr><tr><th>14</th><td>14</td><td>Metabolite</td><td>142.327 mg hr L^-1</td></tr><tr><th>15</th><td>15</td><td>Metabolite</td><td>139.605 mg hr L^-1</td></tr><tr><th>16</th><td>16</td><td>Metabolite</td><td>137.382 mg hr L^-1</td></tr><tr><th>17</th><td>17</td><td>Metabolite</td><td>136.831 mg hr L^-1</td></tr><tr><th>18</th><td>18</td><td>Metabolite</td><td>141.122 mg hr L^-1</td></tr><tr><th>19</th><td>19</td><td>Metabolite</td><td>140.318 mg hr L^-1</td></tr><tr><th>20</th><td>20</td><td>Metabolite</td><td>139.425 mg hr L^-1</td></tr><tr><th>21</th><td>21</td><td>Metabolite</td><td>139.019 mg hr L^-1</td></tr><tr><th>22</th><td>22</td><td>Metabolite</td><td>136.892 mg hr L^-1</td></tr><tr><th>23</th><td>23</td><td>Metabolite</td><td>139.458 mg hr L^-1</td></tr><tr><th>24</th><td>24</td><td>Metabolite</td><td>131.187 mg hr L^-1</td></tr><tr><th>&vellip;</th><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td></tr></tbody></table>
+
+<p>To calculate the percentage of AUC that is being extrapolated, we need to use the following function:</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>auc_extrap_percent</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>)</span>
+</pre>
+
+
+
+<table class="data-frame"><thead><tr><th></th><th>id</th><th>group</th><th>auc_extrap_percent</th></tr><tr><th></th><th>Int64</th><th>String</th><th>Float64</th></tr></thead><tbody><p>48 rows × 3 columns</p><tr><th>1</th><td>1</td><td>Metabolite</td><td>1.13832</td></tr><tr><th>2</th><td>2</td><td>Metabolite</td><td>1.68188</td></tr><tr><th>3</th><td>3</td><td>Metabolite</td><td>1.57806</td></tr><tr><th>4</th><td>4</td><td>Metabolite</td><td>1.355</td></tr><tr><th>5</th><td>5</td><td>Metabolite</td><td>3.00128</td></tr><tr><th>6</th><td>6</td><td>Metabolite</td><td>1.97431</td></tr><tr><th>7</th><td>7</td><td>Metabolite</td><td>2.41087</td></tr><tr><th>8</th><td>8</td><td>Metabolite</td><td>1.07554</td></tr><tr><th>9</th><td>9</td><td>Metabolite</td><td>1.66568</td></tr><tr><th>10</th><td>10</td><td>Metabolite</td><td>1.78404</td></tr><tr><th>11</th><td>11</td><td>Metabolite</td><td>-1.75497</td></tr><tr><th>12</th><td>12</td><td>Metabolite</td><td>1.96351</td></tr><tr><th>13</th><td>13</td><td>Metabolite</td><td>2.20683</td></tr><tr><th>14</th><td>14</td><td>Metabolite</td><td>3.02108</td></tr><tr><th>15</th><td>15</td><td>Metabolite</td><td>2.52815</td></tr><tr><th>16</th><td>16</td><td>Metabolite</td><td>1.27669</td></tr><tr><th>17</th><td>17</td><td>Metabolite</td><td>1.29982</td></tr><tr><th>18</th><td>18</td><td>Metabolite</td><td>2.77935</td></tr><tr><th>19</th><td>19</td><td>Metabolite</td><td>1.14249</td></tr><tr><th>20</th><td>20</td><td>Metabolite</td><td>1.62108</td></tr><tr><th>21</th><td>21</td><td>Metabolite</td><td>1.62419</td></tr><tr><th>22</th><td>22</td><td>Metabolite</td><td>1.393</td></tr><tr><th>23</th><td>23</td><td>Metabolite</td><td>0.490545</td></tr><tr><th>24</th><td>24</td><td>Metabolite</td><td>-1.26847</td></tr><tr><th>&vellip;</th><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td></tr></tbody></table>
+
+<p>One could also compute AUC on a certain time interval. To compute AUC from time 0 to 12 hours after dose on the first individual of the first group:</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>auc</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>interval</span><span class='hljl-oB'>=</span><span class='hljl-p'>(</span><span class='hljl-ni'>0</span><span class='hljl-p'>,</span><span class='hljl-ni'>12</span><span class='hljl-p'>)</span><span class='hljl-oB'>.*</span><span class='hljl-n'>timeu</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+109.21603297196005 mg hr L^-1
+</pre>
+
+
+<p>Note that we need to apply the time unit &#40;<code>timeu</code>&#41; to the interval for units compatibility.</p>
+<p>Multiple intervals can also be specified:</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>auc</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>interval</span><span class='hljl-oB'>=</span><span class='hljl-p'>[(</span><span class='hljl-ni'>0</span><span class='hljl-p'>,</span><span class='hljl-ni'>12</span><span class='hljl-p'>)</span><span class='hljl-oB'>.*</span><span class='hljl-n'>timeu</span><span class='hljl-p'>,(</span><span class='hljl-ni'>0</span><span class='hljl-p'>,</span><span class='hljl-ni'>6</span><span class='hljl-p'>)</span><span class='hljl-oB'>.*</span><span class='hljl-n'>timeu</span><span class='hljl-p'>])</span>
+</pre>
+
+
+<pre class="output">
+2-element Array&#123;Unitful.Quantity&#123;Float64,𝐌*𝐓*𝐋^-3,Unitful.FreeUnits&#123;&#40;mg, hr
+, L^-1&#41;,𝐌*𝐓*𝐋^-3,nothing&#125;&#125;,1&#125;:
+ 109.21603297196005 mg hr L^-1
+  54.77964396944276 mg hr L^-1
+</pre>
+
+
+<p>The function to calculate the terminal rate constant &#40;λz&#41; is:</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>lambdaz</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>)</span>
+</pre>
+
+
+
+<table class="data-frame"><thead><tr><th></th><th>id</th><th>group</th><th>lambdaz</th></tr><tr><th></th><th>Int64</th><th>String</th><th>Unitful…</th></tr></thead><tbody><p>48 rows × 3 columns</p><tr><th>1</th><td>1</td><td>Metabolite</td><td>0.381404 hr^-1</td></tr><tr><th>2</th><td>2</td><td>Metabolite</td><td>0.248853 hr^-1</td></tr><tr><th>3</th><td>3</td><td>Metabolite</td><td>0.219151 hr^-1</td></tr><tr><th>4</th><td>4</td><td>Metabolite</td><td>0.335433 hr^-1</td></tr><tr><th>5</th><td>5</td><td>Metabolite</td><td>0.165662 hr^-1</td></tr><tr><th>6</th><td>6</td><td>Metabolite</td><td>0.220596 hr^-1</td></tr><tr><th>7</th><td>7</td><td>Metabolite</td><td>0.204244 hr^-1</td></tr><tr><th>8</th><td>8</td><td>Metabolite</td><td>0.313006 hr^-1</td></tr><tr><th>9</th><td>9</td><td>Metabolite</td><td>0.214924 hr^-1</td></tr><tr><th>10</th><td>10</td><td>Metabolite</td><td>0.240297 hr^-1</td></tr><tr><th>11</th><td>11</td><td>Metabolite</td><td>-0.351196 hr^-1</td></tr><tr><th>12</th><td>12</td><td>Metabolite</td><td>0.249745 hr^-1</td></tr><tr><th>13</th><td>13</td><td>Metabolite</td><td>0.182769 hr^-1</td></tr><tr><th>14</th><td>14</td><td>Metabolite</td><td>0.181582 hr^-1</td></tr><tr><th>15</th><td>15</td><td>Metabolite</td><td>0.18012 hr^-1</td></tr><tr><th>16</th><td>16</td><td>Metabolite</td><td>0.235866 hr^-1</td></tr><tr><th>17</th><td>17</td><td>Metabolite</td><td>0.332912 hr^-1</td></tr><tr><th>18</th><td>18</td><td>Metabolite</td><td>0.189647 hr^-1</td></tr><tr><th>19</th><td>19</td><td>Metabolite</td><td>0.276342 hr^-1</td></tr><tr><th>20</th><td>20</td><td>Metabolite</td><td>0.239545 hr^-1</td></tr><tr><th>21</th><td>21</td><td>Metabolite</td><td>0.203471 hr^-1</td></tr><tr><th>22</th><td>22</td><td>Metabolite</td><td>0.215554 hr^-1</td></tr><tr><th>23</th><td>23</td><td>Metabolite</td><td>0.575591 hr^-1</td></tr><tr><th>24</th><td>24</td><td>Metabolite</td><td>-0.374832 hr^-1</td></tr><tr><th>&vellip;</th><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td></tr></tbody></table>
+
+<p>By default, λz calculation checks the last 10 or less data points, but this can be changed by using the following code:</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>lambdaz</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>threshold</span><span class='hljl-oB'>=</span><span class='hljl-ni'>3</span><span class='hljl-p'>)</span>
+</pre>
+
+
+
+<table class="data-frame"><thead><tr><th></th><th>id</th><th>group</th><th>lambdaz</th></tr><tr><th></th><th>Int64</th><th>String</th><th>Unitful…</th></tr></thead><tbody><p>48 rows × 3 columns</p><tr><th>1</th><td>1</td><td>Metabolite</td><td>0.381404 hr^-1</td></tr><tr><th>2</th><td>2</td><td>Metabolite</td><td>0.224694 hr^-1</td></tr><tr><th>3</th><td>3</td><td>Metabolite</td><td>0.48583 hr^-1</td></tr><tr><th>4</th><td>4</td><td>Metabolite</td><td>0.335433 hr^-1</td></tr><tr><th>5</th><td>5</td><td>Metabolite</td><td>0.0433925 hr^-1</td></tr><tr><th>6</th><td>6</td><td>Metabolite</td><td>0.198229 hr^-1</td></tr><tr><th>7</th><td>7</td><td>Metabolite</td><td>-0.000113736 hr^-1</td></tr><tr><th>8</th><td>8</td><td>Metabolite</td><td>0.192518 hr^-1</td></tr><tr><th>9</th><td>9</td><td>Metabolite</td><td>0.276735 hr^-1</td></tr><tr><th>10</th><td>10</td><td>Metabolite</td><td>0.0776868 hr^-1</td></tr><tr><th>11</th><td>11</td><td>Metabolite</td><td>-0.351196 hr^-1</td></tr><tr><th>12</th><td>12</td><td>Metabolite</td><td>-0.0184013 hr^-1</td></tr><tr><th>13</th><td>13</td><td>Metabolite</td><td>0.311981 hr^-1</td></tr><tr><th>14</th><td>14</td><td>Metabolite</td><td>0.214806 hr^-1</td></tr><tr><th>15</th><td>15</td><td>Metabolite</td><td>0.121545 hr^-1</td></tr><tr><th>16</th><td>16</td><td>Metabolite</td><td>0.578449 hr^-1</td></tr><tr><th>17</th><td>17</td><td>Metabolite</td><td>0.332912 hr^-1</td></tr><tr><th>18</th><td>18</td><td>Metabolite</td><td>-0.0677302 hr^-1</td></tr><tr><th>19</th><td>19</td><td>Metabolite</td><td>0.440463 hr^-1</td></tr><tr><th>20</th><td>20</td><td>Metabolite</td><td>0.473016 hr^-1</td></tr><tr><th>21</th><td>21</td><td>Metabolite</td><td>0.279127 hr^-1</td></tr><tr><th>22</th><td>22</td><td>Metabolite</td><td>0.75425 hr^-1</td></tr><tr><th>23</th><td>23</td><td>Metabolite</td><td>0.575591 hr^-1</td></tr><tr><th>24</th><td>24</td><td>Metabolite</td><td>-0.374832 hr^-1</td></tr><tr><th>&vellip;</th><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td></tr></tbody></table>
+
+<p>The exact data points to be used for λz calculation can also be specified using their indices:</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>lambdaz</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>idxs</span><span class='hljl-oB'>=</span><span class='hljl-p'>[</span><span class='hljl-ni'>18</span><span class='hljl-p'>,</span><span class='hljl-ni'>19</span><span class='hljl-p'>,</span><span class='hljl-ni'>20</span><span class='hljl-p'>])</span>
+</pre>
+
+
+
+<table class="data-frame"><thead><tr><th></th><th>id</th><th>group</th><th>lambdaz</th></tr><tr><th></th><th>Int64</th><th>String</th><th>Unitful…</th></tr></thead><tbody><p>48 rows × 3 columns</p><tr><th>1</th><td>1</td><td>Metabolite</td><td>0.110504 hr^-1</td></tr><tr><th>2</th><td>2</td><td>Metabolite</td><td>0.230273 hr^-1</td></tr><tr><th>3</th><td>3</td><td>Metabolite</td><td>0.214078 hr^-1</td></tr><tr><th>4</th><td>4</td><td>Metabolite</td><td>0.088208 hr^-1</td></tr><tr><th>5</th><td>5</td><td>Metabolite</td><td>0.0820863 hr^-1</td></tr><tr><th>6</th><td>6</td><td>Metabolite</td><td>0.10888 hr^-1</td></tr><tr><th>7</th><td>7</td><td>Metabolite</td><td>0.143096 hr^-1</td></tr><tr><th>8</th><td>8</td><td>Metabolite</td><td>0.0967849 hr^-1</td></tr><tr><th>9</th><td>9</td><td>Metabolite</td><td>0.129204 hr^-1</td></tr><tr><th>10</th><td>10</td><td>Metabolite</td><td>0.0931108 hr^-1</td></tr><tr><th>11</th><td>11</td><td>Metabolite</td><td>0.0661775 hr^-1</td></tr><tr><th>12</th><td>12</td><td>Metabolite</td><td>0.249329 hr^-1</td></tr><tr><th>13</th><td>13</td><td>Metabolite</td><td>0.0670835 hr^-1</td></tr><tr><th>14</th><td>14</td><td>Metabolite</td><td>0.102853 hr^-1</td></tr><tr><th>15</th><td>15</td><td>Metabolite</td><td>0.166512 hr^-1</td></tr><tr><th>16</th><td>16</td><td>Metabolite</td><td>0.189873 hr^-1</td></tr><tr><th>17</th><td>17</td><td>Metabolite</td><td>0.109573 hr^-1</td></tr><tr><th>18</th><td>18</td><td>Metabolite</td><td>0.0554604 hr^-1</td></tr><tr><th>19</th><td>19</td><td>Metabolite</td><td>0.222422 hr^-1</td></tr><tr><th>20</th><td>20</td><td>Metabolite</td><td>0.0999843 hr^-1</td></tr><tr><th>21</th><td>21</td><td>Metabolite</td><td>0.247727 hr^-1</td></tr><tr><th>22</th><td>22</td><td>Metabolite</td><td>-0.0121594 hr^-1</td></tr><tr><th>23</th><td>23</td><td>Metabolite</td><td>0.154676 hr^-1</td></tr><tr><th>24</th><td>24</td><td>Metabolite</td><td>0.208319 hr^-1</td></tr><tr><th>&vellip;</th><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td></tr></tbody></table>
+
+<p>or using the time point:</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>lambdaz</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>slopetimes</span><span class='hljl-oB'>=</span><span class='hljl-p'>[</span><span class='hljl-nfB'>18.5</span><span class='hljl-p'>,</span><span class='hljl-ni'>19</span><span class='hljl-p'>,</span><span class='hljl-nfB'>19.5</span><span class='hljl-p'>]</span><span class='hljl-oB'>.*</span><span class='hljl-n'>timeu</span><span class='hljl-p'>)</span>
+</pre>
+
+
+
+<table class="data-frame"><thead><tr><th></th><th>id</th><th>group</th><th>lambdaz</th></tr><tr><th></th><th>Int64</th><th>String</th><th>Unitful…</th></tr></thead><tbody><p>48 rows × 3 columns</p><tr><th>1</th><td>1</td><td>Metabolite</td><td>0.25758 hr^-1</td></tr><tr><th>2</th><td>2</td><td>Metabolite</td><td>-0.153117 hr^-1</td></tr><tr><th>3</th><td>3</td><td>Metabolite</td><td>0.109954 hr^-1</td></tr><tr><th>4</th><td>4</td><td>Metabolite</td><td>0.219002 hr^-1</td></tr><tr><th>5</th><td>5</td><td>Metabolite</td><td>0.259937 hr^-1</td></tr><tr><th>6</th><td>6</td><td>Metabolite</td><td>0.222904 hr^-1</td></tr><tr><th>7</th><td>7</td><td>Metabolite</td><td>-0.0314517 hr^-1</td></tr><tr><th>8</th><td>8</td><td>Metabolite</td><td>0.112729 hr^-1</td></tr><tr><th>9</th><td>9</td><td>Metabolite</td><td>0.235517 hr^-1</td></tr><tr><th>10</th><td>10</td><td>Metabolite</td><td>0.316836 hr^-1</td></tr><tr><th>11</th><td>11</td><td>Metabolite</td><td>0.260464 hr^-1</td></tr><tr><th>12</th><td>12</td><td>Metabolite</td><td>-0.127002 hr^-1</td></tr><tr><th>13</th><td>13</td><td>Metabolite</td><td>-0.00875341 hr^-1</td></tr><tr><th>14</th><td>14</td><td>Metabolite</td><td>0.167578 hr^-1</td></tr><tr><th>15</th><td>15</td><td>Metabolite</td><td>0.256914 hr^-1</td></tr><tr><th>16</th><td>16</td><td>Metabolite</td><td>0.106246 hr^-1</td></tr><tr><th>17</th><td>17</td><td>Metabolite</td><td>0.271907 hr^-1</td></tr><tr><th>18</th><td>18</td><td>Metabolite</td><td>0.15673 hr^-1</td></tr><tr><th>19</th><td>19</td><td>Metabolite</td><td>0.227063 hr^-1</td></tr><tr><th>20</th><td>20</td><td>Metabolite</td><td>0.278091 hr^-1</td></tr><tr><th>21</th><td>21</td><td>Metabolite</td><td>0.222777 hr^-1</td></tr><tr><th>22</th><td>22</td><td>Metabolite</td><td>0.0137376 hr^-1</td></tr><tr><th>23</th><td>23</td><td>Metabolite</td><td>0.218118 hr^-1</td></tr><tr><th>24</th><td>24</td><td>Metabolite</td><td>0.547786 hr^-1</td></tr><tr><th>&vellip;</th><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td></tr></tbody></table>
+
+<p>The concentration at a specific time can also be interpolated or extrapolated. For example, to extrapolate the concentration at time &#61; 22 hours using linear interpolation:</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>interpextrapconc</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>22</span><span class='hljl-n'>timeu</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>method</span><span class='hljl-oB'>=:</span><span class='hljl-n'>linear</span><span class='hljl-p'>)</span>
+</pre>
+
+
+
+<table class="data-frame"><thead><tr><th></th><th>id</th><th>group</th><th>interpextrapconc</th></tr><tr><th></th><th>Int64</th><th>String</th><th>Unitful…</th></tr></thead><tbody><p>48 rows × 3 columns</p><tr><th>1</th><td>1</td><td>Metabolite</td><td>0.805106 mg L^-1</td></tr><tr><th>2</th><td>2</td><td>Metabolite</td><td>0.97794 mg L^-1</td></tr><tr><th>3</th><td>3</td><td>Metabolite</td><td>0.865765 mg L^-1</td></tr><tr><th>4</th><td>4</td><td>Metabolite</td><td>0.94445 mg L^-1</td></tr><tr><th>5</th><td>5</td><td>Metabolite</td><td>0.634448 mg L^-1</td></tr><tr><th>6</th><td>6</td><td>Metabolite</td><td>0.940372 mg L^-1</td></tr><tr><th>7</th><td>7</td><td>Metabolite</td><td>1.04674 mg L^-1</td></tr><tr><th>8</th><td>8</td><td>Metabolite</td><td>0.707651 mg L^-1</td></tr><tr><th>9</th><td>9</td><td>Metabolite</td><td>0.707289 mg L^-1</td></tr><tr><th>10</th><td>10</td><td>Metabolite</td><td>1.12117 mg L^-1</td></tr><tr><th>11</th><td>11</td><td>Metabolite</td><td>0.989823 mg L^-1</td></tr><tr><th>12</th><td>12</td><td>Metabolite</td><td>0.720844 mg L^-1</td></tr><tr><th>13</th><td>13</td><td>Metabolite</td><td>0.771676 mg L^-1</td></tr><tr><th>14</th><td>14</td><td>Metabolite</td><td>0.932136 mg L^-1</td></tr><tr><th>15</th><td>15</td><td>Metabolite</td><td>0.752514 mg L^-1</td></tr><tr><th>16</th><td>16</td><td>Metabolite</td><td>0.632777 mg L^-1</td></tr><tr><th>17</th><td>17</td><td>Metabolite</td><td>0.748129 mg L^-1</td></tr><tr><th>18</th><td>18</td><td>Metabolite</td><td>0.767887 mg L^-1</td></tr><tr><th>19</th><td>19</td><td>Metabolite</td><td>0.966435 mg L^-1</td></tr><tr><th>20</th><td>20</td><td>Metabolite</td><td>0.880998 mg L^-1</td></tr><tr><th>21</th><td>21</td><td>Metabolite</td><td>0.979029 mg L^-1</td></tr><tr><th>22</th><td>22</td><td>Metabolite</td><td>0.852502 mg L^-1</td></tr><tr><th>23</th><td>23</td><td>Metabolite</td><td>0.770208 mg L^-1</td></tr><tr><th>24</th><td>24</td><td>Metabolite</td><td>0.598622 mg L^-1</td></tr><tr><th>&vellip;</th><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td></tr></tbody></table>
+
+<p>Other methods can be used such as <code>:linuplogdown</code> or <code>:linlog</code>.</p>
+<p>To calculate the maximum concentration for the first subject of the first group in the dataset we would use:</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>cmax</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>cmax</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>])</span><span class='hljl-t'>
+
+</span><span class='hljl-n'>pop</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>]</span>
+</pre>
+
+
+<pre class="output">
+NCASubject:
+  ID: 1
+  Group: Metabolite
+    concentration: mg L^-1
+    time:          hr
+    auc:           mg hr L^-1
+    aumc:          mg hr^2 L^-1
+    λz:            hr^-1
+    dose:          mg
+    ii:            24.0 hr
+</pre>
+
+
+<p>If we want dose-normalized Cmax for that same subject:</p>
+
+
+<pre class='hljl'>
+<span class='hljl-nf'>normalizedose</span><span class='hljl-p'>(</span><span class='hljl-n'>cmax</span><span class='hljl-p'>,</span><span class='hljl-n'>pop</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>])</span>
+</pre>
+
+
+<pre class="output">
+0.0069763065112534 L^-1
+</pre>
+
+
+<p>The same function can be used to compute dose-normalized AUClast:</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>AUClast</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>auc</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>],</span><span class='hljl-n'>auctype</span><span class='hljl-oB'>=:</span><span class='hljl-n'>last</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-nf'>normalizedose</span><span class='hljl-p'>(</span><span class='hljl-n'>AUClast</span><span class='hljl-p'>,</span><span class='hljl-n'>pop</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>])</span>
+</pre>
+
+
+<pre class="output">
+0.06809488355043054 hr L^-1
+</pre>
+
+
+<p>Other functions to calculate single PK parameters are the following:</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>lambdazr2</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>lambdazadjr2</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>lambdazintercept</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>lambdaztimefirst</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>lambdaznpoints</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>)</span><span class='hljl-t'>
+
+</span><span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>tmax</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>cmin</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>tmin</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>)</span><span class='hljl-t'>
+
+</span><span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>tlast</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>clast</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>)</span><span class='hljl-t'>
+
+</span><span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>aumc</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>aumclast</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>)</span><span class='hljl-t'>
+
+</span><span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>thalf</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>)</span><span class='hljl-t'>
+
+</span><span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>cl</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>clf</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>)</span><span class='hljl-t'>
+
+</span><span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>vss</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>vz</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>)</span><span class='hljl-t'>
+
+</span><span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>accumulationindex</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>cavg</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>])</span>
+</pre>
+
+
+<pre class="output">
+5.674573629202545 mg L^-1
+</pre>
+
+
+<p>If we want to calculate one of these PK parameters just in one subject, we just need to specify the index of the subject. In this case <code>pop&#91;2&#93;</code> is the index of subject with ID&#61;2 of the first group &#40;metabolite&#41; in the dataset.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>pop</span><span class='hljl-p'>[</span><span class='hljl-ni'>2</span><span class='hljl-p'>]</span><span class='hljl-t'>
+</span><span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>clf</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>[</span><span class='hljl-ni'>2</span><span class='hljl-p'>])</span>
+</pre>
+
+
+<pre class="output">
+14.434780071887287 L hr^-1
+</pre>
+
+
+<h1>NCA report</h1>
+<p>If we want a complete report of the NCA analysis we can just use the function <code>NCAreport</code> to obtain a data frame that contains all the above mentioned pharmacokinetic parameters.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>report</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>NCAReport</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-n'>report</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>NCA</span><span class='hljl-oB'>.</span><span class='hljl-nf'>to_dataframe</span><span class='hljl-p'>(</span><span class='hljl-n'>report</span><span class='hljl-p'>)</span>
+</pre>
+
+
+
+<table class="data-frame"><thead><tr><th></th><th>id</th><th>group</th><th>lambdaz</th><th>lambdazr2</th><th>lambdazadjr2</th><th>lambdazintercept</th><th>lambdaznpoints</th><th>lambdaztimefirst</th><th>cmax</th><th>tmax</th><th>cmin</th><th>tmin</th><th>c0</th><th>clast</th><th>tlast</th><th>thalf</th><th>auc</th><th>auclast</th><th>auctau</th><th>aumc</th><th>aumclast</th><th>aumctau</th><th>auc_extrap_percent</th><th>aumc_extrap_percent</th><th>cl</th><th>clf</th><th>vss</th><th>vz</th><th>tlag</th><th>mrt</th><th>fluctation</th><th>accumulationindex</th><th>swing</th><th>bioav</th><th>tau</th><th>cavg</th><th>mat</th></tr><tr><th></th><th>Int64</th><th>String</th><th>Unitful…</th><th>Float64</th><th>Float64</th><th>Float64</th><th>Int64</th><th>Unitful…</th><th>Unitful…</th><th>Unitful…</th><th>Unitful…</th><th>Unitful…</th><th>Unitful…</th><th>Unitful…</th><th>Unitful…</th><th>Unitful…</th><th>Unitful…</th><th>Unitful…</th><th>Unitful…</th><th>Unitful…</th><th>Unitful…</th><th>Unitful…</th><th>Float64</th><th>Float64</th><th>Missing</th><th>Unitful…</th><th>Unitful…</th><th>Unitful…</th><th>Unitful…</th><th>Unitful…</th><th>Float64</th><th>Float64</th><th>Missing</th><th>Missing</th><th>Unitful…</th><th>Unitful…</th><th>Missing</th></tr></thead><tbody><p>48 rows × 37 columns</p><tr><th>1</th><td>1</td><td>Metabolite</td><td>0.381404 hr^-1</td><td>0.999307</td><td>0.998614</td><td>8.6426</td><td>3</td><td>23.0 hr</td><td>13.9526 mg L^-1</td><td>5.0 hr</td><td>0.0 mg L^-1</td><td>0.0 hr</td><td>1.11442 mg L^-1</td><td>0.598092 mg L^-1</td><td>24.0 hr</td><td>1.81735 hr</td><td>137.758 mg hr L^-1</td><td>136.19 mg hr L^-1</td><td>136.19 mg hr L^-1</td><td>1144.79 mg hr^2 L^-1</td><td>1103.04 mg hr^2 L^-1</td><td>1103.04 mg hr^2 L^-1</td><td>1.13832</td><td>3.64666</td><td>missing</td><td>14.5182 L hr^-1</td><td>120.649 L</td><td>38.0652 L</td><td>0.0 hr</td><td>8.31017 hr</td><td>245.879</td><td>1.00011</td><td>missing</td><td>missing</td><td>24.0 hr</td><td>5.67457 mg L^-1</td><td>missing</td></tr><tr><th>2</th><td>2</td><td>Metabolite</td><td>0.248853 hr^-1</td><td>0.902172</td><td>0.877715</td><td>5.38993</td><td>6</td><td>21.5 hr</td><td>13.5891 mg L^-1</td><td>5.5 hr</td><td>0.0 mg L^-1</td><td>0.0 hr</td><td>1.19974 mg L^-1</td><td>0.579904 mg L^-1</td><td>24.0 hr</td><td>2.78537 hr</td><td>138.554 mg hr L^-1</td><td>136.224 mg hr L^-1</td><td>136.224 mg hr L^-1</td><td>1173.57 mg hr^2 L^-1</td><td>1108.28 mg hr^2 L^-1</td><td>1108.28 mg hr^2 L^-1</td><td>1.68188</td><td>5.56349</td><td>missing</td><td>14.4348 L hr^-1</td><td>122.265 L</td><td>58.0054 L</td><td>0.0 hr</td><td>8.47014 hr</td><td>239.413</td><td>1.00255</td><td>missing</td><td>missing</td><td>24.0 hr</td><td>5.676 mg L^-1</td><td>missing</td></tr><tr><th>3</th><td>3</td><td>Metabolite</td><td>0.219151 hr^-1</td><td>0.875347</td><td>0.861497</td><td>4.67959</td><td>11</td><td>19.0 hr</td><td>14.1714 mg L^-1</td><td>5.0 hr</td><td>0.0 mg L^-1</td><td>0.0 hr</td><td>0.885824 mg L^-1</td><td>0.489247 mg L^-1</td><td>24.0 hr</td><td>3.16287 hr</td><td>141.469 mg hr L^-1</td><td>139.236 mg hr L^-1</td><td>139.236 mg hr L^-1</td><td>1190.29 mg hr^2 L^-1</td><td>1126.53 mg hr^2 L^-1</td><td>1126.53 mg hr^2 L^-1</td><td>1.57806</td><td>5.35718</td><td>missing</td><td>14.1374 L hr^-1</td><td>118.95 L</td><td>64.5099 L</td><td>0.0 hr</td><td>8.41382 hr</td><td>244.271</td><td>1.00522</td><td>missing</td><td>missing</td><td>24.0 hr</td><td>5.80151 mg L^-1</td><td>missing</td></tr><tr><th>4</th><td>4</td><td>Metabolite</td><td>0.335433 hr^-1</td><td>0.959306</td><td>0.918611</td><td>7.60612</td><td>3</td><td>23.0 hr</td><td>13.3385 mg L^-1</td><td>5.5 hr</td><td>0.0 mg L^-1</td><td>0.0 hr</td><td>1.19964 mg L^-1</td><td>0.628626 mg L^-1</td><td>24.0 hr</td><td>2.06642 hr</td><td>138.308 mg hr L^-1</td><td>136.434 mg hr L^-1</td><td>136.434 mg hr L^-1</td><td>1167.87 mg hr^2 L^-1</td><td>1117.31 mg hr^2 L^-1</td><td>1117.31 mg hr^2 L^-1</td><td>1.355</td><td>4.32965</td><td>missing</td><td>14.4605 L hr^-1</td><td>122.104 L</td><td>43.1098 L</td><td>0.0 hr</td><td>8.44398 hr</td><td>234.637</td><td>1.00032</td><td>missing</td><td>missing</td><td>24.0 hr</td><td>5.68475 mg L^-1</td><td>missing</td></tr><tr><th>5</th><td>5</td><td>Metabolite</td><td>0.165662 hr^-1</td><td>0.771128</td><td>0.745698</td><td>3.52936</td><td>11</td><td>19.0 hr</td><td>13.8488 mg L^-1</td><td>6.0 hr</td><td>0.0 mg L^-1</td><td>0.0 hr</td><td>1.3329 mg L^-1</td><td>0.693516 mg L^-1</td><td>24.0 hr</td><td>4.18411 hr</td><td>139.485 mg hr L^-1</td><td>135.299 mg hr L^-1</td><td>135.299 mg hr L^-1</td><td>1227.06 mg hr^2 L^-1</td><td>1101.32 mg hr^2 L^-1</td><td>1101.32 mg hr^2 L^-1</td><td>3.00128</td><td>10.2475</td><td>missing</td><td>14.3384 L hr^-1</td><td>126.136 L</td><td>86.5526 L</td><td>0.0 hr</td><td>8.79708 hr</td><td>245.657</td><td>1.01912</td><td>missing</td><td>missing</td><td>24.0 hr</td><td>5.63745 mg L^-1</td><td>missing</td></tr><tr><th>6</th><td>6</td><td>Metabolite</td><td>0.220596 hr^-1</td><td>0.824746</td><td>0.805273</td><td>4.65437</td><td>11</td><td>19.0 hr</td><td>13.6978 mg L^-1</td><td>4.0 hr</td><td>0.0 mg L^-1</td><td>0.0 hr</td><td>1.13907 mg L^-1</td><td>0.613895 mg L^-1</td><td>24.0 hr</td><td>3.14216 hr</td><td>140.956 mg hr L^-1</td><td>138.173 mg hr L^-1</td><td>138.173 mg hr L^-1</td><td>1199.09 mg hr^2 L^-1</td><td>1119.69 mg hr^2 L^-1</td><td>1119.69 mg hr^2 L^-1</td><td>1.97431</td><td>6.62209</td><td>missing</td><td>14.1889 L hr^-1</td><td>120.703 L</td><td>64.3206 L</td><td>0.0 hr</td><td>8.50687 hr</td><td>237.925</td><td>1.00505</td><td>missing</td><td>missing</td><td>24.0 hr</td><td>5.7572 mg L^-1</td><td>missing</td></tr><tr><th>7</th><td>7</td><td>Metabolite</td><td>0.204244 hr^-1</td><td>0.782869</td><td>0.758743</td><td>4.32288</td><td>11</td><td>19.0 hr</td><td>14.4101 mg L^-1</td><td>4.0 hr</td><td>0.0 mg L^-1</td><td>0.0 hr</td><td>1.29035 mg L^-1</td><td>0.706329 mg L^-1</td><td>24.0 hr</td><td>3.39372 hr</td><td>143.444 mg hr L^-1</td><td>139.986 mg hr L^-1</td><td>139.986 mg hr L^-1</td><td>1231.39 mg hr^2 L^-1</td><td>1131.46 mg hr^2 L^-1</td><td>1131.46 mg hr^2 L^-1</td><td>2.41087</td><td>8.11525</td><td>missing</td><td>13.9427 L hr^-1</td><td>119.69 L</td><td>68.2648 L</td><td>0.0 hr</td><td>8.58442 hr</td><td>247.055</td><td>1.00749</td><td>missing</td><td>missing</td><td>24.0 hr</td><td>5.83275 mg L^-1</td><td>missing</td></tr><tr><th>8</th><td>8</td><td>Metabolite</td><td>0.313006 hr^-1</td><td>0.902627</td><td>0.883153</td><td>6.63204</td><td>7</td><td>21.0 hr</td><td>13.3333 mg L^-1</td><td>6.0 hr</td><td>0.0 mg L^-1</td><td>0.0 hr</td><td>1.12988 mg L^-1</td><td>0.468464 mg L^-1</td><td>24.0 hr</td><td>2.21448 hr</td><td>139.154 mg hr L^-1</td><td>137.658 mg hr L^-1</td><td>137.658 mg hr L^-1</td><td>1158.24 mg hr^2 L^-1</td><td>1117.54 mg hr^2 L^-1</td><td>1117.54 mg hr^2 L^-1</td><td>1.07554</td><td>3.51408</td><td>missing</td><td>14.3725 L hr^-1</td><td>119.629 L</td><td>45.9177 L</td><td>0.0 hr</td><td>8.32341 hr</td><td>232.46</td><td>1.00055</td><td>missing</td><td>missing</td><td>24.0 hr</td><td>5.73574 mg L^-1</td><td>missing</td></tr><tr><th>9</th><td>9</td><td>Metabolite</td><td>0.214924 hr^-1</td><td>0.738153</td><td>0.709059</td><td>4.44582</td><td>11</td><td>19.0 hr</td><td>13.0988 mg L^-1</td><td>5.5 hr</td><td>0.0 mg L^-1</td><td>0.0 hr</td><td>1.13308 mg L^-1</td><td>0.502091 mg L^-1</td><td>24.0 hr</td><td>3.22508 hr</td><td>140.251 mg hr L^-1</td><td>137.915 mg hr L^-1</td><td>137.915 mg hr L^-1</td><td>1180.79 mg hr^2 L^-1</td><td>1113.86 mg hr^2 L^-1</td><td>1113.86 mg hr^2 L^-1</td><td>1.66568</td><td>5.66879</td><td>missing</td><td>14.2601 L hr^-1</td><td>120.058 L</td><td>66.3496 L</td><td>0.0 hr</td><td>8.41913 hr</td><td>227.945</td><td>1.00579</td><td>missing</td><td>missing</td><td>24.0 hr</td><td>5.74646 mg L^-1</td><td>missing</td></tr><tr><th>10</th><td>10</td><td>Metabolite</td><td>0.240297 hr^-1</td><td>0.888425</td><td>0.876028</td><td>5.12077</td><td>11</td><td>19.0 hr</td><td>13.4776 mg L^-1</td><td>4.5 hr</td><td>0.0 mg L^-1</td><td>0.0 hr</td><td>1.39245 mg L^-1</td><td>0.598388 mg L^-1</td><td>24.0 hr</td><td>2.88454 hr</td><td>139.582 mg hr L^-1</td><td>137.092 mg hr L^-1</td><td>137.092 mg hr L^-1</td><td>1196.43 mg hr^2 L^-1</td><td>1126.3 mg hr^2 L^-1</td><td>1126.3 mg hr^2 L^-1</td><td>1.78404</td><td>5.86143</td><td>missing</td><td>14.3285 L hr^-1</td><td>122.817 L</td><td>59.6282 L</td><td>0.0 hr</td><td>8.5715 hr</td><td>235.946</td><td>1.00314</td><td>missing</td><td>missing</td><td>24.0 hr</td><td>5.71216 mg L^-1</td><td>missing</td></tr><tr><th>11</th><td>11</td><td>Metabolite</td><td>-0.351196 hr^-1</td><td>0.996679</td><td>0.995019</td><td>-8.6393</td><td>4</td><td>22.5 hr</td><td>13.0279 mg L^-1</td><td>4.0 hr</td><td>0.0 mg L^-1</td><td>0.0 hr</td><td>0.989058 mg L^-1</td><td>0.81967 mg L^-1</td><td>24.0 hr</td><td>-1.97368 hr</td><td>132.99 mg hr L^-1</td><td>135.324 mg hr L^-1</td><td>135.324 mg hr L^-1</td><td>1059.45 mg hr^2 L^-1</td><td>1108.82 mg hr^2 L^-1</td><td>1108.82 mg hr^2 L^-1</td><td>-1.75497</td><td>-4.65987</td><td>missing</td><td>15.0387 L hr^-1</td><td>119.804 L</td><td>-42.8214 L</td><td>0.0 hr</td><td>7.96637 hr</td><td>231.053</td><td>-0.000218552</td><td>missing</td><td>missing</td><td>24.0 hr</td><td>5.6385 mg L^-1</td><td>missing</td></tr><tr><th>12</th><td>12</td><td>Metabolite</td><td>0.249745 hr^-1</td><td>0.825696</td><td>0.803908</td><td>5.31898</td><td>10</td><td>19.5 hr</td><td>13.8429 mg L^-1</td><td>4.0 hr</td><td>0.0 mg L^-1</td><td>0.0 hr</td><td>1.13696 mg L^-1</td><td>0.680991 mg L^-1</td><td>24.0 hr</td><td>2.77542 hr</td><td>138.871 mg hr L^-1</td><td>136.144 mg hr L^-1</td><td>136.144 mg hr L^-1</td><td>1177.22 mg hr^2 L^-1</td><td>1100.86 mg hr^2 L^-1</td><td>1100.86 mg hr^2 L^-1</td><td>1.96351</td><td>6.48646</td><td>missing</td><td>14.4018 L hr^-1</td><td>122.086 L</td><td>57.6662 L</td><td>0.0 hr</td><td>8.47709 hr</td><td>244.028</td><td>1.0025</td><td>missing</td><td>missing</td><td>24.0 hr</td><td>5.67268 mg L^-1</td><td>missing</td></tr><tr><th>13</th><td>13</td><td>Metabolite</td><td>0.182769 hr^-1</td><td>0.895762</td><td>0.88418</td><td>3.9068</td><td>11</td><td>19.0 hr</td><td>14.1883 mg L^-1</td><td>4.0 hr</td><td>0.0 mg L^-1</td><td>0.0 hr</td><td>0.991611 mg L^-1</td><td>0.569138 mg L^-1</td><td>24.0 hr</td><td>3.79248 hr</td><td>141.106 mg hr L^-1</td><td>137.992 mg hr L^-1</td><td>137.992 mg hr L^-1</td><td>1215.83 mg hr^2 L^-1</td><td>1124.06 mg hr^2 L^-1</td><td>1124.06 mg hr^2 L^-1</td><td>2.20683</td><td>7.54817</td><td>missing</td><td>14.1737 L hr^-1</td><td>122.127 L</td><td>77.5499 L</td><td>0.0 hr</td><td>8.61643 hr</td><td>246.767</td><td>1.0126</td><td>missing</td><td>missing</td><td>24.0 hr</td><td>5.74969 mg L^-1</td><td>missing</td></tr><tr><th>14</th><td>14</td><td>Metabolite</td><td>0.181582 hr^-1</td><td>0.748337</td><td>0.716879</td><td>3.92802</td><td>10</td><td>19.5 hr</td><td>13.2064 mg L^-1</td><td>4.0 hr</td><td>0.0 mg L^-1</td><td>0.0 hr</td><td>1.07897 mg L^-1</td><td>0.78421 mg L^-1</td><td>24.0 hr</td><td>3.81726 hr</td><td>142.954 mg hr L^-1</td><td>138.635 mg hr L^-1</td><td>138.635 mg hr L^-1</td><td>1261.17 mg hr^2 L^-1</td><td>1133.73 mg hr^2 L^-1</td><td>1133.73 mg hr^2 L^-1</td><td>3.02108</td><td>10.1045</td><td>missing</td><td>13.9905 L hr^-1</td><td>123.426 L</td><td>77.0477 L</td><td>0.0 hr</td><td>8.82216 hr</td><td>228.623</td><td>1.01297</td><td>missing</td><td>missing</td><td>24.0 hr</td><td>5.77648 mg L^-1</td><td>missing</td></tr><tr><th>15</th><td>15</td><td>Metabolite</td><td>0.18012 hr^-1</td><td>0.922018</td><td>0.913353</td><td>3.75724</td><td>11</td><td>19.0 hr</td><td>13.7708 mg L^-1</td><td>5.0 hr</td><td>0.0 mg L^-1</td><td>0.0 hr</td><td>1.19124 mg L^-1</td><td>0.638457 mg L^-1</td><td>24.0 hr</td><td>3.84825 hr</td><td>140.206 mg hr L^-1</td><td>136.661 mg hr L^-1</td><td>136.661 mg hr L^-1</td><td>1211.76 mg hr^2 L^-1</td><td>1107.01 mg hr^2 L^-1</td><td>1107.01 mg hr^2 L^-1</td><td>2.52815</td><td>8.64442</td><td>missing</td><td>14.2647 L hr^-1</td><td>123.286 L</td><td>79.1955 L</td><td>0.0 hr</td><td>8.64273 hr</td><td>241.838</td><td>1.01344</td><td>missing</td><td>missing</td><td>24.0 hr</td><td>5.69423 mg L^-1</td><td>missing</td></tr><tr><th>16</th><td>16</td><td>Metabolite</td><td>0.235866 hr^-1</td><td>0.835493</td><td>0.817214</td><td>4.91162</td><td>11</td><td>19.0 hr</td><td>13.4534 mg L^-1</td><td>5.5 hr</td><td>0.0 mg L^-1</td><td>0.0 hr</td><td>1.19179 mg L^-1</td><td>0.415623 mg L^-1</td><td>24.0 hr</td><td>2.93873 hr</td><td>138.022 mg hr L^-1</td><td>136.26 mg hr L^-1</td><td>136.26 mg hr L^-1</td><td>1150.48 mg hr^2 L^-1</td><td>1100.72 mg hr^2 L^-1</td><td>1100.72 mg hr^2 L^-1</td><td>1.27669</td><td>4.32529</td><td>missing</td><td>14.4904 L hr^-1</td><td>120.784 L</td><td>61.4349 L</td><td>0.0 hr</td><td>8.33546 hr</td><td>236.959</td><td>1.00349</td><td>missing</td><td>missing</td><td>24.0 hr</td><td>5.67751 mg L^-1</td><td>missing</td></tr><tr><th>17</th><td>17</td><td>Metabolite</td><td>0.332912 hr^-1</td><td>0.959472</td><td>0.918944</td><td>7.45089</td><td>3</td><td>23.0 hr</td><td>13.6242 mg L^-1</td><td>6.0 hr</td><td>0.0 mg L^-1</td><td>0.0 hr</td><td>1.43694 mg L^-1</td><td>0.594971 mg L^-1</td><td>24.0 hr</td><td>2.08207 hr</td><td>137.494 mg hr L^-1</td><td>135.707 mg hr L^-1</td><td>135.707 mg hr L^-1</td><td>1149.95 mg hr^2 L^-1</td><td>1101.69 mg hr^2 L^-1</td><td>1101.69 mg hr^2 L^-1</td><td>1.29982</td><td>4.19673</td><td>missing</td><td>14.5461 L hr^-1</td><td>121.658 L</td><td>43.6934 L</td><td>0.0 hr</td><td>8.36365 hr</td><td>240.945</td><td>1.00034</td><td>missing</td><td>missing</td><td>24.0 hr</td><td>5.65446 mg L^-1</td><td>missing</td></tr><tr><th>18</th><td>18</td><td>Metabolite</td><td>0.189647 hr^-1</td><td>0.728241</td><td>0.698046</td><td>4.04039</td><td>11</td><td>19.0 hr</td><td>13.2769 mg L^-1</td><td>4.5 hr</td><td>0.0 mg L^-1</td><td>0.0 hr</td><td>1.13451 mg L^-1</td><td>0.74716 mg L^-1</td><td>24.0 hr</td><td>3.65493 hr</td><td>141.75 mg hr L^-1</td><td>137.811 mg hr L^-1</td><td>137.811 mg hr L^-1</td><td>1243.45 mg hr^2 L^-1</td><td>1128.12 mg hr^2 L^-1</td><td>1128.12 mg hr^2 L^-1</td><td>2.77935</td><td>9.27479</td><td>missing</td><td>14.1093 L hr^-1</td><td>123.769 L</td><td>74.3977 L</td><td>0.0 hr</td><td>8.77213 hr</td><td>231.22</td><td>1.01066</td><td>missing</td><td>missing</td><td>24.0 hr</td><td>5.74211 mg L^-1</td><td>missing</td></tr><tr><th>19</th><td>19</td><td>Metabolite</td><td>0.276342 hr^-1</td><td>0.843315</td><td>0.825906</td><td>5.73906</td><td>11</td><td>19.0 hr</td><td>14.561 mg L^-1</td><td>5.0 hr</td><td>0.0 mg L^-1</td><td>0.0 hr</td><td>1.34059 mg L^-1</td><td>0.44512 mg L^-1</td><td>24.0 hr</td><td>2.5083 hr</td><td>140.986 mg hr L^-1</td><td>139.376 mg hr L^-1</td><td>139.376 mg hr L^-1</td><td>1164.48 mg hr^2 L^-1</td><td>1120.0 mg hr^2 L^-1</td><td>1120.0 mg hr^2 L^-1</td><td>1.14249</td><td>3.82033</td><td>missing</td><td>14.1858 L hr^-1</td><td>117.168 L</td><td>51.3341 L</td><td>0.0 hr</td><td>8.25955 hr</td><td>250.736</td><td>1.00132</td><td>missing</td><td>missing</td><td>24.0 hr</td><td>5.80732 mg L^-1</td><td>missing</td></tr><tr><th>20</th><td>20</td><td>Metabolite</td><td>0.239545 hr^-1</td><td>0.808603</td><td>0.787336</td><td>5.07645</td><td>11</td><td>19.0 hr</td><td>13.0054 mg L^-1</td><td>4.0 hr</td><td>0.0 mg L^-1</td><td>0.0 hr</td><td>1.23512 mg L^-1</td><td>0.543945 mg L^-1</td><td>24.0 hr</td><td>2.89359 hr</td><td>140.075 mg hr L^-1</td><td>137.805 mg hr L^-1</td><td>137.805 mg hr L^-1</td><td>1183.36 mg hr^2 L^-1</td><td>1119.38 mg hr^2 L^-1</td><td>1119.38 mg hr^2 L^-1</td><td>1.62108</td><td>5.40638</td><td>missing</td><td>14.278 L hr^-1</td><td>120.622 L</td><td>59.6047 L</td><td>0.0 hr</td><td>8.44804 hr</td><td>226.502</td><td>1.0032</td><td>missing</td><td>missing</td><td>24.0 hr</td><td>5.74185 mg L^-1</td><td>missing</td></tr><tr><th>21</th><td>21</td><td>Metabolite</td><td>0.203471 hr^-1</td><td>0.761177</td><td>0.734641</td><td>4.27114</td><td>11</td><td>19.0 hr</td><td>13.2253 mg L^-1</td><td>5.0 hr</td><td>0.0 mg L^-1</td><td>0.0 hr</td><td>1.30627 mg L^-1</td><td>0.461581 mg L^-1</td><td>24.0 hr</td><td>3.40662 hr</td><td>139.672 mg hr L^-1</td><td>137.404 mg hr L^-1</td><td>137.404 mg hr L^-1</td><td>1182.73 mg hr^2 L^-1</td><td>1117.13 mg hr^2 L^-1</td><td>1117.13 mg hr^2 L^-1</td><td>1.62419</td><td>5.546</td><td>missing</td><td>14.3192 L hr^-1</td><td>121.254 L</td><td>70.375 L</td><td>0.0 hr</td><td>8.46789 hr</td><td>231.004</td><td>1.00763</td><td>missing</td><td>missing</td><td>24.0 hr</td><td>5.72515 mg L^-1</td><td>missing</td></tr><tr><th>22</th><td>22</td><td>Metabolite</td><td>0.215554 hr^-1</td><td>0.677143</td><td>0.64127</td><td>4.54263</td><td>11</td><td>19.0 hr</td><td>12.6379 mg L^-1</td><td>6.0 hr</td><td>0.0 mg L^-1</td><td>0.0 hr</td><td>1.03457 mg L^-1</td><td>0.412855 mg L^-1</td><td>24.0 hr</td><td>3.21565 hr</td><td>137.496 mg hr L^-1</td><td>135.581 mg hr L^-1</td><td>135.581 mg hr L^-1</td><td>1162.4 mg hr^2 L^-1</td><td>1107.54 mg hr^2 L^-1</td><td>1107.54 mg hr^2 L^-1</td><td>1.393</td><td>4.71897</td><td>missing</td><td>14.5459 L hr^-1</td><td>122.972 L</td><td>67.4814 L</td><td>0.0 hr</td><td>8.45406 hr</td><td>223.712</td><td>1.0057</td><td>missing</td><td>missing</td><td>24.0 hr</td><td>5.64919 mg L^-1</td><td>missing</td></tr><tr><th>23</th><td>23</td><td>Metabolite</td><td>0.575591 hr^-1</td><td>0.998411</td><td>0.996821</td><td>12.8932</td><td>3</td><td>23.0 hr</td><td>13.6392 mg L^-1</td><td>5.0 hr</td><td>0.0 mg L^-1</td><td>0.0 hr</td><td>1.21426 mg L^-1</td><td>0.395487 mg L^-1</td><td>24.0 hr</td><td>1.20424 hr</td><td>140.068 mg hr L^-1</td><td>139.381 mg hr L^-1</td><td>139.381 mg hr L^-1</td><td>1141.54 mg hr^2 L^-1</td><td>1123.86 mg hr^2 L^-1</td><td>1123.86 mg hr^2 L^-1</td><td>0.490545</td><td>1.54914</td><td>missing</td><td>14.2788 L hr^-1</td><td>116.37 L</td><td>24.8071 L</td><td>0.0 hr</td><td>8.14988 hr</td><td>234.854</td><td>1.0</td><td>missing</td><td>missing</td><td>24.0 hr</td><td>5.80755 mg L^-1</td><td>missing</td></tr><tr><th>24</th><td>24</td><td>Metabolite</td><td>-0.374832 hr^-1</td><td>0.871275</td><td>0.742549</td><td>-9.50509</td><td>3</td><td>23.0 hr</td><td>12.8233 mg L^-1</td><td>4.5 hr</td><td>0.0 mg L^-1</td><td>0.0 hr</td><td>1.0991 mg L^-1</td><td>0.626543 mg L^-1</td><td>24.0 hr</td><td>-1.84922 hr</td><td>131.775 mg hr L^-1</td><td>133.447 mg hr L^-1</td><td>133.447 mg hr L^-1</td><td>1042.84 mg hr^2 L^-1</td><td>1078.5 mg hr^2 L^-1</td><td>1078.5 mg hr^2 L^-1</td><td>-1.26847</td><td>-3.41924</td><td>missing</td><td>15.1773 L hr^-1</td><td>120.11 L</td><td>-40.4911 L</td><td>0.0 hr</td><td>7.9138 hr</td><td>230.623</td><td>-0.000123924</td><td>missing</td><td>missing</td><td>24.0 hr</td><td>5.56029 mg L^-1</td><td>missing</td></tr><tr><th>&vellip;</th><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td><td>&vellip;</td></tr></tbody></table>
+
+<p>By default, the AUC and AUMC reported are observed. If predicted PK parameters are needed instead, the following code should be used:</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>report</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>NCAReport</span><span class='hljl-p'>(</span><span class='hljl-n'>pop</span><span class='hljl-p'>,</span><span class='hljl-n'>pred</span><span class='hljl-oB'>=</span><span class='hljl-kc'>true</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+NCAReport
+  keys: &#40;:lambdaz, :lambdazr2, :lambdazadjr2, :lambdazintercept, :lambdaznp
+oints, :lambdaztimefirst, :cmax, :tmax, :cmin, :tmin, :c0, :clast, :tlast, 
+:thalf, :auc, :auclast, :auctau, :aumc, :aumclast, :aumctau, :auc_extrap_pe
+rcent, :aumc_extrap_percent, :cl, :clf, :vss, :vz, :tlag, :mrt, :fluctation
+, :accumulationindex, :swing, :bioav, :tau, :cavg, :mat&#41;
+</pre>
+
+
+<p>Finally, we can save this data frame as a csv file if desired.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>CSV</span><span class='hljl-oB'>.</span><span class='hljl-nf'>write</span><span class='hljl-p'>(</span><span class='hljl-s'>&quot;./report_SD_oral_2analytes.csv&quot;</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>report</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="julia-error">
+ERROR: ArgumentError: no default &#96;Tables.rows&#96; implementation for type: PuMaS.NCA.NCAReport&#123;Dict&#123;Symbol,Bool&#125;,NamedTuple&#123;&#40;:lambdaz, :lambdazr2, :lambdazadjr2, :lambdazintercept, :lambdaznpoints, :lambdaztimefirst, :cmax, :tmax, :cmin, :tmin, :c0, :clast, :tlast, :thalf, :auc, :auclast, :auctau, :aumc, :aumclast, :aumctau, :auc_extrap_percent, :aumc_extrap_percent, :cl, :clf, :vss, :vz, :tlag, :mrt, :fluctation, :accumulationindex, :swing, :bioav, :tau, :cavg, :mat&#41;,NTuple&#123;35,DataFrames.DataFrame&#125;&#125;&#125;
+</pre>
+
+
+
+
+          <HR/>
+          <div class="footer"><p>
+          Published from <a href="SD_ORAL_2ANALYTES.jmd">SD_ORAL_2ANALYTES.jmd</a> using
+          <a href="http://github.com/mpastell/Weave.jl">Weave.jl</a>
+           on 2019-04-15.
+          <p></div>
+
+
+        </div>
+      </div>
+    </div>
+  </BODY>
+</HTML>

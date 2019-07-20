@@ -1,0 +1,228 @@
+---
+title : PuMaS NCA Tutorial - Single dose IV administration
+author : Beatriz Guglieri Lopez
+date:  April 12, 2019
+---
+
+```julia
+using Pumas, CSV
+```
+
+# Introduction
+
+In this tutorial, we will cover the fundamentals of performing an NCA analysis
+with PuMaS of an example dataset in which a single intravenous (IV) bolus dose was administered.
+
+# The dataset
+
+A single IV bolus dose of 2000 mg was administered to 24 different subjects. Samples were collected every
+30 minutes until 21 hours after dose administration.
+Two different datasets are available, one with 7% of the samples below the limit of quantification (BLQ) and the other with
+18% of the samples BLQ.
+
+Let's start reading the dataset.
+By using the `missingstring` option we are specifying how the missing values are labeled in our dataset.
+
+```julia
+data7BLQ = CSV.read("./tutorials/nca/data/single_dose_IVbolus_7BLQ.csv",missingstring="NA")
+data7BLQ
+
+data18BLQ = CSV.read("./tutorials/nca/data/single_dose_IVbolus_18BLQ.csv",missingstring="NA")
+data18BLQ
+```
+
+# Defining the units
+
+Next we can define time, concentration and dose units so the report includes the units for the pharmacokinetic parameters.
+
+```julia
+timeu = u"hr"
+concu = u"mg/L"
+amtu  = u"mg"
+```
+
+# Defining the population object
+
+Using the `read_nca` function, the next step would be to define the population that we are going to use for the NCA.
+Within this function we need to specify the dataset, the name of the column with the subject identifier (`id=`), name of the
+time column (`time=`), name of the concentration column (`conc=`), name of the dose column (`amt=`), the interdose
+interval (`ii=`) multiplied by the time units, and the route of administration (`route=`).
+
+```julia
+pop7 = read_nca(data7BLQ, id=:ID, time=:time, conc=:DV, amt=:DOSE, ii=24timeu,
+    route=:Formulation,timeu=timeu, concu=concu, amtu=amtu)
+pop18 = read_nca(data18BLQ, id=:ID, time=:time, conc=:DV, amt=:DOSE, ii=24timeu,
+    route=:Formulation, timeu=timeu, concu=concu, amtu=amtu)
+```
+
+Please, note that in the `route=` option the name between quotes should match
+the name of the route of administration in the dataset. Routes include "iv" or "ev".
+
+Also note that in the function above by default the lower limit of quantification (LLQ) is 0 and concentrations that are
+below LLQ (BLQ) are dropped.
+
+Let's say we want to specify an LLQ value of 0.4 mg/L, then we need to add `llq=0.4concu` to the function above:
+
+```julia
+pop7 = read_nca(data7BLQ, id=:ID, time=:time, conc=:DV, amt=:DOSE, ii=24timeu,
+    route=:Formulation,timeu=timeu, concu=concu, amtu=amtu,llq=0.4concu)
+pop18 = read_nca(data18BLQ, id=:ID, time=:time, conc=:DV, amt=:DOSE, ii=24timeu,
+    route=:Formulation,timeu=timeu, concu=concu, amtu=amtu,llq=0.4concu)
+```
+
+# Single PK parameter calculation
+
+We can use different functions to calculate single PK parameters. For example, we can calculate the area under
+the concentration-time curve from time 0 to the last observation using the linear trapezoidal rule by writing the
+following code.
+
+```julia
+NCA.auc(pop7,auctype=:last,method=:linear)
+NCA.auc(pop18,auctype=:last,method=:linear)
+```
+In the function above, the type of AUC by default is AUC from zero to infinity and the method by default is linear.
+
+We could also use the function above to calculate AUC from time 0 to infinity, and we could also change the method of calculation to
+log-linear trapezoidal (`method=:linuplogdown`) or to linear-log (`method=:linlog`).
+
+```julia
+NCA.auc(pop7,auctype=:inf,method=:linuplogdown)
+```
+
+If we want to calculate the percentage of AUC that is being extrapolated, we need to use the following function:
+
+```julia
+NCA.auc_extrap_percent(pop7)
+```
+
+One could also compute AUC on a certain time interval. To compute AUC from time 0 to 12 hours after dose on the first individual:
+
+```julia
+NCA.auc(pop7[1], interval=(0,12).*timeu)
+```
+Please, note that `pop7[1]` refers to the first subject in the dataset, not necessarily to the subject with ID=1.
+
+```julia
+pop7[1]
+```
+
+Also note that we need to apply the time unit (`timeu`) to the interval for units compatibility.
+
+Multiple intervals can also be specified:
+
+```julia
+NCA.auc(pop7[1], interval=[(0,12).*timeu,(0,6).*timeu])
+```
+
+The function to calculate the terminal rate constant (λz) is:
+
+```julia
+NCA.lambdaz(pop7)
+```
+
+By default, λz calculation checks the last 10 or less data points, but this can be changed by using the following code:
+
+```julia
+NCA.lambdaz(pop7[1], threshold=3)
+```
+
+The exact data points to be used for λz calculation can also be specified using their indices:
+
+```julia
+NCA.lambdaz(pop7[1], idxs=[18,19,20])
+```
+
+or using the time point:
+
+```julia
+NCA.lambdaz(pop7[1], slopetimes=[18.5,19,19.5].*timeu)
+```
+
+The concentration at a specific time can also be interpolated or extrapolated. For example, to
+extrapolate the concentration at time = 22 hours using linear interpolation:
+
+```julia
+NCA.interpextrapconc(pop7, 22timeu, method=:linear)
+```
+Other methods can be used such as `:linuplogdown` or `:linlog`.
+
+To calculate the maximum concentration for the first subject we would use:
+
+```julia
+cmax = NCA.cmax(pop7[1])
+```
+
+If we want dose-normalized Cmax for that same subject:
+
+```julia
+normalizedose(cmax,pop7[1])
+```
+
+The same function can be used to compute dose-normalized AUClast:
+
+```julia
+AUClast = NCA.auc(pop7[1],auctype=:last)
+normalizedose(AUClast,pop7[1])
+```
+
+Other functions to calculate single PK parameters are the following:
+
+
+```julia
+NCA.lambdazr2(pop7)
+NCA.lambdazadjr2(pop7)
+NCA.lambdazintercept(pop7)
+NCA.lambdaztimefirst(pop7)
+NCA.lambdaznpoints(pop7)
+
+NCA.tmax(pop7)
+NCA.cmin(pop7)
+NCA.tmin(pop7)
+
+NCA.tlast(pop7)
+NCA.clast(pop7)
+
+NCA.aumc(pop7)
+NCA.aumclast(pop7)
+
+NCA.thalf(pop7)
+
+NCA.cl(pop7)
+
+NCA.vss(pop7)
+NCA.vz(pop7)
+
+NCA.accumulationindex(pop7)
+```
+
+If we want to calculate one of these PK parameters just in one subject, we just need to specify the index of the subject.
+In this case `pop7[24]` is the index of subject with ID=24 in the dataset.
+
+```julia
+pop7[24]
+
+NCA.cl(pop7[24])
+```
+
+# NCA report
+
+If we want a complete report of the NCA analysis we can just use the function `NCAreport` to obtain a data frame that contains
+all the above mentioned pharmacokinetic parameters.
+
+```julia
+report = NCAReport(pop7)
+report = NCA.to_dataframe(report)
+```
+
+By default, the AUC and AUMC reported are observed. If predicted PK parameters are needed instead, the following code should be used:
+
+```julia
+report = NCAReport(pop7,pred=true)
+report = NCA.to_dataframe(report)
+```
+
+Finally, we can save this data frame as a csv file if desired.
+
+```julia
+CSV.write("./tutorials/nca/report_SD_IVbolus_7BLQ.csv", report)
+```
