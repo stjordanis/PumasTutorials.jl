@@ -23,11 +23,11 @@ using Pumas, LinearAlgebra, Plots
 
 ## Model Code
 
-The following provides specifics to the model code:\
-  - One compartment pharmacokinetic model was used to drive pharmacodynamics\
-  - `Cp` is defined in "derived" and represents the plasma concentration in the central compartment\
-  - `IMAX`/`EMAX` parameter was fixed to 1 for maximal inhibition/simulation\
-  - Random effects on `Ka1`, `CL`, `Vc`, `Kin`, `Kout`, and `IC50`, `EC50` were assumed to follow a log-normal distribution\
+The following provides specifics to the model code:
+  - One compartment pharmacokinetic model was used to drive pharmacodynamics
+  - `Cp` is defined in "derived" and represents the plasma concentration in the central compartment
+  - `IMAX`/`EMAX` parameter was fixed to 1 for maximal inhibition/simulation
+  - Random effects on `Ka1`, `CL`, `Vc`, `Kin`, `Kout`, and `IC50`, `EC50` were assumed to follow a log-normal distribution
 
 ## `irm1`
 
@@ -80,7 +80,7 @@ The initial estimates of the parameters to simulate from. The fixed effects are 
 in the θ vector and the between-subject variability parameteres are provided in the Ω vector as
 variances. A variance of 0.04 suggests a 20% coefficient of variation.
 
-```julia; results="hidden"
+```julia
 param = (θ = [
           0.5, # Ka  Absorption rate constant 1 (1/time)
           5, # CL   Clearance (volume/time)
@@ -90,7 +90,7 @@ param = (θ = [
           10, # IC50 Concentration for 50% of max inhibition (mass/volume)
           1, # IMAX Maximum inhibition
           ],
-    Ω = Diagonal([0.04,0.04,0.04,0.04,0.04]))
+    Ω = Diagonal([0.04,0.04,0.04,0.04,0.04]));
 ```
 
 ## Simulation
@@ -98,7 +98,7 @@ For the purpose of this tutorial, a simulation of a single subject receiving a s
   - `regimen1` provides the single oral dose at `time=0` into the gut compartment (`cmt=1`)
   - `subject1` provides a single subject receiving regimen1
 
-```julia; results="hidden"
+```julia
 regimen1 = DosageRegimen(1500, time=0,cmt=1)
 subject1 = Subject(id=1,evs=regimen1)
 ```
@@ -116,7 +116,7 @@ You can now try out the other indirect response models by changing the `@dynamic
 
 ## `irm2`
 
-```julia; results="hidden"
+```julia
 irm2 = @model begin
     @param begin
         θ ∈ VectorDomain(6)
@@ -169,7 +169,7 @@ plot(sim, obsnames=[:cp,:resp])
 
 Change IMAX and IC50 to EMAX and EC50 in the `@param` block and the subsequent equations
 
-```julia; results="hidden"
+```julia
 irm3 = @model begin
     @param begin
         θ ∈ VectorDomain(6)
@@ -221,7 +221,7 @@ plot(sim, obsnames=[:cp,:resp])
 
 ## `irm4`
 
-```julia; results="hidden"
+```julia
 irm4 = @model begin
     @param begin
         θ ∈ VectorDomain(6)
@@ -267,4 +267,9 @@ end
 ```julia
 sim = simobs(irm4,subject1,param,obstimes=0:0.1:100)
 plot(sim, obsnames=[:cp,:resp])
+```
+
+```julia{echo=false,skip="notebook"}
+using PuMaSTutorials
+PuMaSTutorials.tutorial_footer(WEAVE_ARGS[:folder],WEAVE_ARGS[:file])
 ```
