@@ -1,37 +1,46 @@
 ---
-title: PKtutorial
-author: Hechuan Wang
-date: March 31st, 2019
+title: Absorption models
+author: Hechuan Wang & Vijay Ivaturi
+date: July 18, 2019
 ---
 
 ```julia
-using PuMaS, LinearAlgebra, Plots, CSV
+using Pumas, LinearAlgebra, Plots
 ```
 
 # Introduction
 
-In this tutorial, we will cover the fundamentals of setting up population PK
-models to simulate with PuMaS.
+In this tutorial, we will cover the following absorption models
 
-Model Examples:
+* first order
+* zero-order
+* first-order + zero-order simultaneously
+* Erlang absorption
+* transit absorption
 
-FO, ZO, FO+ZO, Erlang, transit
+Let's start by setting up a population of subjects to work with that receive a single dose regimen
 
-# 1 compartment model with FO absorption
-
-## The model
-
-Below is a PuMaS model that specifies a 1-compartment oral absorption model.
-Details of the model setting up are provided.
-
+## Generating the population
 
 ```julia
-model = @model begin
+sd = DosageRegimen(100, time=0)
+choose_covariates() = (Wt = rand(55:80),dose=100)
+sd_with_covariates = Population(map(i -> Subject(id=i,evs=sd,cvs=choose_covariates()),1:10))
+```
+For a more indepth tutorial, please see the tutorial on [generating and simulation populations](https://tutorials.pumas.ai/html/introduction/simulating_populations.html)
+
+For simplicity, we will use a 1-compartment distribution system with an additional absorption compartment as required.
+Note that we are not simulating with residual error in these examples, but that can be easily added
+
+
+## first-order absorption
+
+```julia
+foabs = @model begin
 
   @param begin
     θ ∈ VectorDomain(3)
-    Ω ∈ PSDDomain(3)
-    σ_prop ∈ RealDomain(init=0.1)
+    Ω ∈ PDiagDomain(3)
   end
 
   @random begin
@@ -51,88 +60,86 @@ model = @model begin
     Central' =  Ka*Depot - Central*CL/V
   end
 
-  @vars begin
-    conc = Central/V
-  end
-
   @derived begin
-    dv ~ @.Normal(conc,sqrt(conc^2*σ_prop + eps()))
+    conc = Central/V
   end
 
 end
 
 ```
-
-## Setting up parameters
+and below are the set of parameters for this model
 
 ```julia
-p = (
+param = (
   θ = [5,20,1],
-  Ω = PDMat(diagm(0 => [0.04,0.04,0.04])),
-  σ_prop = 0.01
+  Ω =Diagonal([0.04,0.04,0.04]),
   )
 ```
 
-## Single dose regimen
+We can now use the data and model with parameters to simulate a first-order absorption profile
 
 ```julia
-ev = DosageRegimen(100, time=0)
-first(ev.data)
-```
-
-## Multiple dose regimen
-
-#md = DosageRegimen(100, ii=24, addl=6)
-
-#s3 = Subject(id=3, evs=md, cvs=(Wt=70))
-
-#Subject
-
-## Building one subject
-
-```julia
-s1 = Subject(id=1,evs=ev,cvs=(Wt=70))
-
-```
-
-s1.events
-s1.covariates
-
-## Simulate one subject
-
-obs = simobs(model, s1, p, obstimes=0:0.1:24)
+obs = simobs(foabs, sd_with_covariates, param, obstimes=0:1:48)
 plot(obs)
+```
 
-## Building populations
-
-#s2 = Subject(id=2, evs=ev, csv(Wt=70))
-
-#twosubjs = Population([s1, s2])
-
-## Covariates
-
-choose_covariates() = (Wt=70)
-
-cvs = [choose_covariates() for i in 1:10]
-
-DataFrames(cvs)
-
-pop_with_covariates = Population(map(i->
-  Subject(id = i, evs=ev, cvs=choose_covariates()), 1:10))
-
-
-
-obs = simobs(model, s3, p, obstimes0:0.1:240)
-
-# 2 compartment model with ZO absorption
-
+## zero-order absorption
 
 ```julia
-model = @model begin
+zoabs = @model begin
   @param begin
     θ ∈ VectorDomain(3)
-    Ω ∈ PSDDomain(3)
-    σ_prop ∈ RealDomain(init=0.1)
+    Ω ∈ PDiagDomain(3)
+  end
+
+  @random begin
+    η ~ MvNormal(Ω)
+  end
+
+  @covariates Wt
+
+  @pre begin
+    CL = θ[1]*(Wt/11)^0.75*exp(η[1])
+    V  = θ[2]*(Wt/11)*exp(η[2])
+    duration = [0, θ[3]]
+  end
+
+  @dynamics begin
+    Central' =  - Central*CL/V
+  end
+
+  @derived begin
+    conc = Central/V
+  end
+
+end
+```
+
+and below are the set of parameters for this model
+
+```julia
+param = (
+  θ = [0.792, 13.7, 1.42],
+  Ω =Diagonal([0.04,0.04,0.04]),
+  )
+```
+
+We can now use the data and model with parameters to simulate a first-order absorption profile
+
+```julia
+obs = simobs(zoabs, sd_with_covariates, param, obstimes=0:0.1:48)
+plot(obs)
+```
+
+## simultaneous zero+first order absorption models
+
+```julia
+
+fozoabs = @model begin
+
+  @param begin
+    θ ∈ VectorDomain(6)
+    Ω ∈ PDiagDomain(2)
   end
 
   @random begin
@@ -144,146 +151,145 @@ model = @model begin
   @pre begin
     CL = θ[1]*(Wt/70)^0.75*exp(η[1])
     V  = θ[2]*(Wt/70)*exp(η[2])
-    K0 = θ[3]*exp(η[3])
-  end
-
-  @dynamics begin
-    Depot'   = -K0
-    Central' =  K0 - Central*CL/V
-  end
-
-  @vars begin
-    conc = Central/V
-  end
-
-  @derived begin
-    dv ~ @.Normal(conc,sqrt(conc^2*σ_prop + eps()))
-  end
-
-end
-```
-
-# 3 compartment model with ZO+FO absorption
-
-
-```julia
-model = @model begin
-
-  @param begin
-    θ ∈ VectorDomain(5)
-    Ω ∈ PSDDomain(2)
-    σ_prop ∈ RealDomain(init=0.1)
-  end
-
-  @random begin
-    η ~ MvNormal(Ω)
-  end
-
-  @covariates Wt amt
-
-  @pre begin
-    CL = θ[1]*(Wt/70)^0.75*exp(η[1])
-    V  = θ[2]*(Wt/70)*exp(η[2])
     Ka = θ[3]
     duration = [0, θ[4]]
-    bioav = [1-θ[5], θ[5]]
+    bioav = [θ[5], 1-θ[5]]
+    lags = [0, θ[6]]
   end
 
   @dynamics begin
     Depot'   = -Ka*Depot
-    Central' =  Ka*Depot  - Central*CL/V
-  end
-
-  @vars begin
-    conc = Central/V
+    Central' =  Ka*Depot - Central*CL/V
   end
 
   @derived begin
-    dv ~ @.Normal(conc,sqrt(conc^2*σ_prop + eps()))
+    conc = Central/V
   end
 
 end
 ```
 
-# 4 compartment model with Erlang absorption
+and below are the set of parameters for this model
 
 ```julia
-model = @model begin
+param = (
+  θ = [0.84, 0.72, 1, 1, 0.1, 2],
+  Ω = Diagonal([0.04, 0.04]),
+  )
+```
+
+
+We can now use the data and model with parameters to simulate a simultaneous first- and zero-order absorption profile
+
+```julia
+obs = simobs(fozoabs, sd_with_covariates, param, obstimes=0:0.1:8)
+plot(obs)
+```
+
+## Erlang absorption models with two compartment dsitribution
+
+```julia
+erlangabs = @model begin
   @param begin
-    θ ∈ VectorDomain(3)
-    Ω ∈ PSDDomain(3)
-    σ_prop ∈ RealDomain(init=0.1)
+    θ ∈ VectorDomain(5)
+    Ω ∈ PDiagDomain(4)
   end
 
   @random begin
     η ~ MvNormal(Ω)
   end
 
-  @covariates Wt amt
+  @covariates Wt dose
 
   @pre begin
     CL = θ[1]*(Wt/70)^0.75*exp(η[1])
-    V  = θ[2]*(Wt/70)*exp(η[2])
+    V1  = θ[2]*(Wt/70)*exp(η[2])
     Ktr = θ[3]*exp(η[3])
-    K  = CL/V
+    Q  = θ[4]*(Wt/70)^0.75*exp(η[4])
+    V2  = θ[5]*(Wt/70)
+    K  = CL/V1
+    K21 = Q/V2
+    K12 = Q/V1
     N = 5 # number of compartments
   end
 
   @dynamics begin
-    Central' = Ktr*amt*((Ktr*t)^N/factorial(N))*exp(-Ktr*t)-Central*K
-  end
-
-  @vars begin
-    conc = Central/V
+    Central' = Ktr*dose*((Ktr*t)^N/factorial(N))*exp(-Ktr*t) - Central*K + K21*Periph -K12*Central
+    Periph' = - K21*Periph + K12*Central
   end
 
   @derived begin
-    dv ~ @.Normal(conc,sqrt(conc^2*σ_prop + eps()))
+    conc = Central/V1
   end
 
 end
 ```
 
+```julia
+param = (
+  θ = [26.3, 75.9, 2, 23.9, 43.1],
+  Ω = Diagonal([0.04,0.04,0.04,0.04]),
+  σ_prop = 0
+  )
+```
+We can now use the data and model with parameters to simulate a Erlang absorption profile
+
+```julia
+obs = simobs(erlangabs, sd_with_covariates, param, obstimes=0:0.1:24)
+plot(obs)
+```
+
+
 # 5 compartment model with Transit absorption for single dose
 
 ```julia
-model = @model begin
+transabs = @model begin
   @param begin
     θ ∈ VectorDomain(6)
-    Ω ∈ PSDDomain(6)
-    σ_prop ∈ RealDomain(init=0.1)
+    Ω ∈ PDiagDomain(3)
   end
 
   @random begin
     η ~ MvNormal(Ω)
   end
 
-  @covariates Wt amt
+  @covariates Wt dose
 
   @pre begin
     CL = θ[1]*(Wt/70)^0.75*exp(η[1])
     V  = θ[2]*(Wt/70)*exp(η[2])
-    BIO = θ[3]*exp(η[3]) # bioavailability
-    Ka = θ[4]*exp(η[4])
-    MTT =θ[5]*exp(η[5])
-    NN = θ[6]*exp(η[6])
+    BIO = θ[3] # the dose was corrected by bioavailability already
+    Ka = θ[4]
+    MTT =θ[5]*exp(η[3])
+    NN = θ[6]
     K  = CL/V
     Ktr = (NN+1)/MTT
     LNFAC=log(2.5066)+(NN+0.5)*log(NN)-NN
   end
 
   @dynamics begin
-    Transit' = exp(log(BIO*amt+.00001)+log(Ktr)+NN*log(Ktr*t+0.00001)-Ktr*t-LNFAC)-Ka*Transit
-    Central' = Ka*Transit-Central*K
-  end
-
-  @vars begin
-    conc = Central/V
+    Absorption' = exp(log(BIO*dose+.00001)+log(Ktr)+NN*log(Ktr*t+0.00001)-Ktr*t-LNFAC)-Ka*Absorption
+    Central' = Ka*Absorption-Central*K
   end
 
   @derived begin
-    dv ~ @.Normal(conc,sqrt(conc^2*σ_prop + eps()))
+    conc = Central/V
   end
 
 end
+
+
+```
+
+```julia
+param = (
+  θ = [3.54, 487, 1, 1.77, 1.03, 8.15],
+  Ω = Diagonal([0.0361,0.16,0.27])
+  )
+```
+We can now use the data and model with parameters to simulate a transit absorption profile
+
+```julia
+obs = simobs(transabs, sd_with_covariates, param, obstimes=0:0.1:120)
+plot(obs)
 ```
