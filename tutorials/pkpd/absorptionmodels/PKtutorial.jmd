@@ -227,7 +227,7 @@ end
 
 ```julia
 param = (
-  θ = [26.3, 75.9, 7.31, 23.9, 43.1],
+  θ = [26.3, 75.9, 2, 23.9, 43.1],
   Ω = Diagonal([0.04,0.04,0.04,0.04]),
   σ_prop = 0
   )
@@ -243,43 +243,53 @@ plot(obs)
 # 5 compartment model with Transit absorption for single dose
 
 ```julia
-model = @model begin
+transabs = @model begin
   @param begin
     θ ∈ VectorDomain(6)
-    Ω ∈ PSDDomain(6)
-    σ_prop ∈ RealDomain(init=0.1)
+    Ω ∈ PDiagDomain(3)
   end
 
   @random begin
     η ~ MvNormal(Ω)
   end
 
-  @covariates Wt amt
+  @covariates Wt dose
 
   @pre begin
     CL = θ[1]*(Wt/70)^0.75*exp(η[1])
     V  = θ[2]*(Wt/70)*exp(η[2])
-    BIO = θ[3]*exp(η[3]) # bioavailability
-    Ka = θ[4]*exp(η[4])
-    MTT =θ[5]*exp(η[5])
-    NN = θ[6]*exp(η[6])
+    BIO = θ[3] # the dose was corrected by bioavailability already
+    Ka = θ[4]
+    MTT =θ[5]*exp(η[3])
+    NN = θ[6]
     K  = CL/V
     Ktr = (NN+1)/MTT
     LNFAC=log(2.5066)+(NN+0.5)*log(NN)-NN
   end
 
   @dynamics begin
-    Transit' = exp(log(BIO*amt+.00001)+log(Ktr)+NN*log(Ktr*t+0.00001)-Ktr*t-LNFAC)-Ka*Transit
-    Central' = Ka*Transit-Central*K
-  end
-
-  @vars begin
-    conc = Central/V
+    Absorption' = exp(log(BIO*dose+.00001)+log(Ktr)+NN*log(Ktr*t+0.00001)-Ktr*t-LNFAC)-Ka*Absorption
+    Central' = Ka*Absorption-Central*K
   end
 
   @derived begin
-    dv ~ @.Normal(conc,sqrt(conc^2*σ_prop + eps()))
+    conc = Central/V
   end
 
 end
+
+
+```
+
+```julia
+param = (
+  θ = [3.54, 487, 1, 1.77, 1.03, 8.15],
+  Ω = Diagonal([0.0361,0.16,0.27])
+  )
+```
+We can now use the data and model with parameters to simulate a transit absorption profile
+
+```julia
+obs = simobs(transabs, sd_with_covariates, param, obstimes=0:0.1:120)
+plot(obs)
 ```
