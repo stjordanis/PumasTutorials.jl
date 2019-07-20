@@ -1,11 +1,11 @@
 ---
 title : Pumas NCA Tutorial - Analyzing infusion data
-author : Beatriz Guglieri Lopez, Vijay Ivaturi
+author : Beatriz Guglieri Lopez, Shamir Kalaria, Vijay Ivaturi
 date:  July 19, 2019
 ---
 
 ```julia
-using Pumas, CSV
+using Pumas, CSV, Plots
 ```
 
 # Introduction
@@ -42,115 +42,77 @@ In the case of the infusion, the `read_nca` function should
 
 ```julia; include=false
 pop = read_nca(data, id=:ID, time=:time, conc=:DV, amt=:DOSE, ii=24timeu,
-    route=:Formulation, duration=:Infusion_Time,
-    timeu=timeu, concu=concu, amtu=amtu)
-```
-
-Please, note that in the `route=` option the name between quotes should match
-the name of the route of administration in the dataset, in this case, "iv". Routes include "iv" or "ev".
-
-To add `llq=0.4concu` to the function above:
-
-```julia; include=false
-pop = read_nca(data, id=:ID, time=:time, conc=:DV, amt=:DOSE, ii=24timeu,
     route=:Formulation, duration=:Infusion_Time,timeu=timeu,
     concu=concu, amtu=amtu,lloq=0.4concu)
 ```
+Note that in the above syntanx:
 
-# Single PK parameter calculation
+* `route=` is mapped to the `Formulation` column that should specify `iv`
+* LLOQ was set to 0.4 by `llq=0.4concu`
 
-We can use different functions to calculate single PK parameters. For example, we can calculate the area under the concentration
-curve from time 0 to the last observation using the linear trapezoidal rule (default method) by writing the following code.
+A basic plot function exists for single dose data without grouping or multiple analytes.
+More functionality will be added soon. In this example of single dose data, here is the plot output
+
+```julia
+plot(pop)
+```
+
+# NCA functions
+
+### `NCA.auc`
 
 ```julia
 NCA.auc(pop,auctype=:last,method=:linear)
 ```
+To change the methods to log-linear trapezoidal (`method=:linuplogdown`) or to linear-log (`method=:linlog`) one can use
 
-In the function above, the type of AUC by default is AUC from zero to infinity and the method by default is linear.
-
-We could also use the function above to calculate AUC from time 0 to infinity, and we could also change the method of calculation to
-log-linear trapezoidal (`method=:linuplogdown`) or to linear-log (`method=:linlog`).
-
-```julia
+```julia;eval=false
 NCA.auc(pop,auctype=:inf,method=:linuplogdown)
 ```
 
-To calculate the percentage of AUC that is being extrapolated, we need to use the following function:
+To compute the AUC over an interval, one could do
 
-```julia
-NCA.auc_extrap_percent(pop)
-```
-
-One could also compute AUC on a certain time interval.
-To compute AUC from time 0 to 12 hours after dose:
-
-```julia
+```julia;eval=false
 NCA.auc(pop, interval=(0,12).*timeu)
 ```
+where we need to apply the time unit (`timeu`) to the `interval` for units compatibility. Multiple intervals can also be specified:
 
-Please, note that we need to apply the time unit (`timeu`) to the interval for units compatibility.
-
-Multiple intervals can also be specified:
-
-```julia
+```julia;eval=false
 NCA.auc(pop, interval=[(0,12).*timeu,(0,6).*timeu])
 ```
+### `NCA.lambdaz`
 
 The function to calculate the terminal rate constant (λz) is:
 
-```julia
+```julia;eval=false
 NCA.lambdaz(pop)
 ```
+This function has options that allow
+*  to specify the maximum number of points to be used for lambdaz - `threshold=3`
+* calculation to be peformed over specified indices - `idxs=[18,19,20]` where index 18,19,20 of the subject will be used for lambdaz
+* speification of exact time points to use for lambdaz - `slopetimes=[18.5,19,19.5].*timeu`
 
-By default, λz calculation checks the last 10 or less data points, but this can be changed by using the following code:
-
-```julia
+```julia;eval=false
 NCA.lambdaz(pop, threshold=3)
-```
-
-The exact data points to be used for λz calculation can also be specified using their indices:
-
-```julia
 NCA.lambdaz(pop, idxs=[18,19,20])
-```
-
-or using the time point:
-
-```julia
 NCA.lambdaz(pop, slopetimes=[18.5,19,19.5].*timeu)
 ```
-
-The concentration at a specific time can also be interpolated or extrapolated. For example, to
-extrapolate the concentration at time = 22 hours using linear interpolation:
-
-```julia
-NCA.interpextrapconc(pop, 22timeu, method=:linear)
-```
-Other methods can be used such as `:linuplogdown` or `:linlog`.
+### `NCA.cmax`
 
 To calculate the maximum concentration for the first subject we would use:
 
 ```julia
-pop[1]
-
 cmax = NCA.cmax(pop[1])
 ```
+
+### ` NCA.normalizedose`
 
 If we want dose-normalized Cmax for that same subject:
 
 ```julia
-normalizedose(cmax,pop[1])
+ NCA.normalizedose(cmax,pop[1])
 ```
-
-The same function can be used to compute dose-normalized AUClast:
-
-```julia
-AUClast = NCA.auc(pop[1],auctype=:last)
-```
-
-```julia
-normalizedose(AUClast,pop[1])
-```
+This can be used on any parameter that can be dose normalized.
 
 Other functions to calculate single PK parameters are the following:
 
@@ -178,17 +140,6 @@ NCA.cl(pop)
 
 NCA.vss(pop)
 NCA.vz(pop)
-
-NCA.accumulationindex(pop)
-NCA.cavgss(pop)
-```
-
-If we want to calculate one of these PK parameters just in one subject, we just need to specify the index of the subject.
-In this case `pop[2]` is the index of subject with ID=2 in the dataset.
-
-```julia
-pop[2]
-NCA.cl(pop[2])
 ```
 
 # NCA report
@@ -213,4 +164,8 @@ Finally, we can save this data frame as a csv file if desired.
 
 ```julia
 CSV.write("./tutorials/nca/report_SD_IV_infusion.csv", report)
+```
+```julia
+using PumasTutorials
+PumasTutorials.tutorial_footer(WEAVE_ARGS[:folder],WEAVE_ARGS[:file])
 ```
