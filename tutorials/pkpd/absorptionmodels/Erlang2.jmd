@@ -1,0 +1,137 @@
+---
+title: PKtutorial
+author: Hechuan Wang
+date: April 27th, 2019
+---
+
+```julia
+using Pumas, LinearAlgebra, Plots, CSV
+using Pkg
+Pkg.build("GR")
+
+```
+
+
+In this tutorial, we will cover the fundamentals of setting up a 2-compartment
+model with Erlang absorption for PuMaS simulation. Here we use Cyclosporin
+population PK model reported by Rousseau et al. as an example.
+
+(flexible number of transit compartments)
+
+## The model
+
+Details of the model specification are provided.
+There are between-subject variability on CL, V1, Ktr and Q.
+
+
+```julia
+model = @model begin
+  @param begin
+    θ ∈ VectorDomain(5)
+    Ω ∈ PSDDomain(4)
+    σ_prop ∈ RealDomain(init=0.1)
+  end
+
+  @random begin
+    η ~ MvNormal(Ω)
+  end
+
+  @covariates Wt
+
+  @pre begin
+    CL = θ[1]*(Wt/70)^0.75*exp(η[1])
+    V1  = θ[2]*(Wt/70)*exp(η[2])
+    Ktr = θ[3]*exp(η[3])
+    Q  = θ[4]*(Wt/70)^0.75*exp(η[4])
+    V2  = θ[5]*(Wt/70)
+    K  = CL/V1
+    K21 = Q/V2
+    K12 = Q/V1
+    N = 5 # number of compartments
+  end
+
+  @dynamics begin
+    Depot' = -Ktr*Depot
+    DELA1' = Ktr*Depot-Ktr*DELA1
+    DELA2' = Ktr*DELA1-Ktr*DELA2
+    DELA3' = Ktr*DELA2-Ktr*DELA3
+    DELA4' = Ktr*DELA3-Ktr*DELA4
+    DELA5' = Ktr*DELA4-Ktr*DELA5
+    Central' = Ktr*DELA5 - Central*K + K21*Periph -K12*Central
+    Periph' = - K21*Periph + K12*Central
+  end
+
+  @vars begin
+    conc = Central/V1
+  end
+
+  @derived begin
+    dv ~ @.Normal(conc,sqrt(conc^2*σ_prop + eps())) # where to add the additive residual error
+  end
+
+end
+
+
+
+
+```
+
+## Setting up parameters
+
+Next we provide the initial estimates of the parameters to simulate from.
+The fixed effects are provided in the θ vector (CL, V1, Ktr, Q and V2) and the between-subject variability
+parameteres are provided in the Ω vector as variances. So, 0.09 variance on
+Ω_11 suggests a 30% coefficient of variation on CL. Similarly, σ_prop has a 4.8%
+proportional residual error.
+
+```julia
+p = (
+  θ = [27, 77.4, 7.74, 23.7, 55.6],
+  Ω = PDMat(diagm(0 => [0.09,0.22,0.10,0.52])),
+  σ_prop = 0
+  )
+```
+
+## Single dose regimen
+
+`DosageRegimen()` is the function that lets you construct a dosing regimen.
+The first argument of the `DosageRegimen` is `amt` and is not a named argument.
+All subsequent arguments need to be named. In this dosing regimen,
+a single dose of 25 mg lenalidomide is administered at `time=0`.
+
+```julia
+ev = DosageRegimen(25, time=0) ## mg
+first(ev.data)
+```
+
+## Building one subject
+
+A subject weighing 70 kg is administered above dosing regimen.
+His concentration-time profile will be simulated.
+
+
+```julia
+s1 = Subject(id=1,evs=ev,cvs=(Wt=70,))
+
+```
+
+You can use `s1.events` to check the dosing regimen and `s1.covariates` to check the model covariates.
+
+s1.events
+s1.covariates
+
+## Simulate one subject
+
+Using this one subject, `s1`, we can simulate a simple concentration time
+profile using the model above and plot the concentration-time profile for 24 hours.
+
+```julia
+randeffs = (η = zeros(4),)
+
+obs = simobs(model, s1, p, obstimes=0:0.1:24, randeffs)
+
+#obs = DataFrame(obs)
+
+plot(obs)#, yscale=:log, ylims=(0.001,Inf))
+
+```
