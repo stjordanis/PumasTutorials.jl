@@ -6,15 +6,28 @@ author: Chris Rackauckas, Vijay Ivaturi
 These exercises teach common workflows which involve Pumas.jl. This exercise
 worksheet is meant to be a living document leading new users through a deep dive
 of the Pumas.jl feature set. If you have further suggestions or want to contribute
-new problems, please open an issue or PR at the [PumasTutorials.jl](https://github.com/PumasAI/PumasTutorials.jl) repository.
+new problems, please open an issue or PR at the
+[PumasTutorials.jl](https://github.com/PumasAI/PumasTutorials.jl) repository.
 
 The exercises are described as follows:
 
-- Exercise 1 takes you through simulating a compartmental system in Pumas. The user will gain experience in writing a model using the Pumas Domain Specific Language (DSL), setting up a dosing regimen and population, simulating the model into the designed population
-and finally plotting the results of the simulation.
-- Exercise 2 takes the user through performing an Non-compartmental analysis (NCA). The user will get familiarized with reading data sets in a spread sheet format (e.g, .csv) or as the simulated output as in exercise 1 and perform a simple NCA analysis.
-- Exercise 3 introduces the user to perform a non-linear mixed effects modeling estimation (NLME) on pharmacokinetic data. The user will learn how to read and set up the data for NLME estimation, fit the model, infer and inspect the results of the model fit.
-- Exercise 4 introduces the user to various post-processing steps of model fitting, including running a visual predictive check (VPC), using the final model fits to peform simulation into an alternate dosing regimen or populaion of interest.
+- Exercise 1 takes you through simulating a compartmental system in Pumas. The
+  user will gain experience in writing a model using the Pumas Domain Specific
+  Language (DSL), setting up a dosing regimen and population, simulating the
+  model into the designed population and finally plotting the results of the
+  simulation.
+- Exercise 2 takes the user through performing an Non-compartmental analysis
+  (NCA). The user will get familiarized with reading data sets in a spread
+  sheet format (e.g, .csv) or as the simulated output as in exercise 1 and
+  perform a simple NCA analysis.
+- Exercise 3 introduces the user to perform a non-linear mixed effects modeling
+  estimation (NLME) on pharmacokinetic data. The user will learn how to read and
+  set up the data for NLME estimation, fit the model, infer and inspect the
+  results of the model fit.
+- Exercise 4 introduces the user to various post-processing steps of model
+  fitting, including running a visual predictive check (VPC), using the final
+  model fits to peform simulation into an alternate dosing regimen or populaion
+  of interest.
 
 # Problem 1: Simulate a first-order absorption model with linear elimination after a 100 mg oral dose in 24 subjects
 
@@ -27,13 +40,11 @@ Let's understand the system by setting up the differential equation or the analy
 
 $$\begin{align}
 \frac{dDepot}{dt} &= -Ka.Depot\\
-\frac{dCentral}{dt} &= Ka.Depot - (CL/V).Central$$
+\frac{dCentral}{dt} &= Ka.Depot - (CL/V).Central\end{align}$$
 
 The analytical form of this equation to calculate the concentration, `Cp` at any given time can be written as
 
-$$
-Cp = \frac{F\timesDose\timesKa}{V\times(Ka-Kel)}\times[e^{-Kel\timest - e^{-Ka\timest }]
-$$
+$$Cp = \frac{F\timesDose\timesKa}{V\times(Ka-Kel)}\times[e^{-Kel\timest - e^{-Ka\timest }]$$
 
 where the parameters are: `Ka = 1 hr-1`, `CL = 1 L/hr`, `V = 20 L/hr`.
 
@@ -45,22 +56,28 @@ tutorials to set up a population of 24 subjects that receives 100 mg dose via th
 ## Part 3: Write the model
 
 Write up a first-order absorption model where body weight is a covariate on `CL` and `V`.
-understand the different steps of writing up a model by referring to the documentation on [models](https://docs.pumas.ai/dev/basics/models/)
+understand the different steps of writing up a model by referring to the
+documentation on [models](https://docs.pumas.ai/dev/basics/models/).
 
 ## Part 4: Simulate
 
 Perform the simulation by using the `simobs` function. The details on the use of `simobs` can be seen in the documentation on [simulation](https://docs.pumas.ai/dev/basics/simulation/) and by
-looking at one of the [tutorials](https://tutorials.pumas.ai/html/introduction/introduction.html). Finish by plotting the result of the simulation
+looking at one of the [tutorials](https://tutorials.pumas.ai/html/introduction/introduction.html). Finish by plotting the result of the simulation.
 
 # Problem 2: Peform Non-compartmental analysis
 
-Use the dataset generated from Problem 1 that is stored as a CSV file [here]() to read in the data using the `read_nca` function and
-generate a NCA report. You can know more about how to do this by looking at one of the [NCA tutorials](https://tutorials.pumas.ai/html/nca/basic_nca.html)
+Use the dataset generated from Problem 1 that is stored as a CSV file [here]()
+to read in the data using the `read_nca` function and
+generate a NCA report. You can know more about how to do this by looking at
+one of the [NCA tutorials](https://tutorials.pumas.ai/html/nca/basic_nca.html)
 
 # Problem 3: Estimate using Non-linear mixed effects
 
-The same dataset that was read in for NCA analysis will be used for fitting a NLME model. You can learn more on how
-to read the data in for NLME estimation using `read_pumas` by following the tutorial in the [readme](https://github.com/PumasAI/Pumas.jl/blob/master/README.md#fit) or the [documentation](https://docs.pumas.ai/dev/basics/doses_subjects_populations/)
+The same dataset that was read in for NCA analysis will be used for fitting a
+NLME model. You can learn more on how to read the data in for NLME estimation
+using `read_pumas` by following the tutorial in the
+[readme](https://github.com/PumasAI/Pumas.jl/blob/master/README.md#fit) or the
+[documentation](https://docs.pumas.ai/dev/basics/doses_subjects_populations/)
 
 ## Part 1: Read datasets for NLME estimation
 
@@ -80,5 +97,9 @@ Inspect the results of your `fit`
 
 # Problem 4: Validate your model
 
-Using the `fit` object above, we will now perform model validation using Visual predictive checks `vpc`. Details
-on how to use the `vpc` command are listed in the [documentation](https://docs.pumas.ai/dev/analysis/diagnostics/#The-Visual-Predictive-Check-(vpc)-Function-1) or you can look at the last part of the [readme](https://github.com/PumasAI/Pumas.jl/blob/master/README.md#validate---vpc)
+Using the `fit` object above, we will now perform model validation using
+Visual predictive checks `vpc`. Details on how to use the `vpc` command are
+listed in the
+[documentation](https://docs.pumas.ai/dev/analysis/diagnostics/#The-Visual-Predictive-Check-(vpc)-Function-1)
+or you can look at the last part of the
+[readme](https://github.com/PumasAI/Pumas.jl/blob/master/README.md#validate---vpc)
