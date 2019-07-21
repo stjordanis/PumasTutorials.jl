@@ -1,12 +1,250 @@
 ---
 title: Pumas.jl Workshop Solutions
-author: Chris Rackauckas
+author: Chris Rackauckas, Vijay Ivaturi
 ---
 
-# Problem 1
+These exercises teach common workflows which involve Pumas.jl. This exercise
+worksheet is meant to be a living document leading new users through a deep dive
+of the Pumas.jl feature set. If you have further suggestions or want to contribute
+new problems, please open an issue or PR at the [PumasTutorials.jl](https://github.com/PumasAI/PumasTutorials.jl) repository.
 
-# Problem 2
+The exercises are described as follows:
 
-# Problem 3
+- Exercise 1 takes you through simulating a compartmental system in Pumas. The user will gain experience in writing a model using the Pumas Domain Specific Language (DSL), setting up a dosing regimen and population, simulating the model into the designed population
+and finally plotting the results of the simulation.
+- Exercise 2 takes the user through performing an Non-compartmental analysis (NCA). The user will get familiarized with reading data sets in a spread sheet format (e.g, .csv) or as the simulated output as in exercise 1 and perform a simple NCA analysis.
+- Exercise 3 introduces the user to perform a non-linear mixed effects modeling estimation (NLME) on pharmacokinetic data. The user will learn how to read and set up the data for NLME estimation, fit the model, infer and inspect the results of the model fit.
+- Exercise 4 introduces the user to various post-processing steps of model fitting, including running a visual predictive check (VPC), using the final model fits to peform simulation into an alternate dosing regimen or populaion of interest.
 
-# Problem 4
+# Problem 1: Simulate a first-order absorption model with linear elimination after a 100 mg oral dose in 24 subjects
+
+In this poblem, we will walk through the basics of writing a model with Pumas.jl. The pharmacokinetics after an oral dose are commonly described by a first-order process.
+In our example we will use a linear one-compartmental system for elimination of the drugs.
+
+Let's understand the system by setting up the differential equation or the analytical solution that describes the systems
+
+$$\begin{align}
+\frac{dDepot}{dt} &= -Ka.Depot\\
+\frac{dCentral}{dt} &= Ka.Depot - (CL/V).Central$$
+
+The analytical form of this equation to calculate the concentration, `Cp` at any given time can be written as
+
+$$
+Cp = \frac{F\timesDose\timesKa}{V\times(Ka-Kel)}\times[e^{-Kel\timest - e^{-Ka\timest }]
+$$
+
+where the parameters are: `Ka = 1 hr-1`, `CL = 1 L/hr`, `V = 20 L/hr`.
+
+## Part 1: Setup the population
+
+```julia
+using Pumas, Plots, CSV
+```
+
+```julia
+single_dose_regimen = DosageRegimen(100, time=0)
+first(single_dose_regimen.data)
+```
+
+to build a sinlge subject
+
+```julia
+s1 = Subject(id=1, evs=single_dose_regimen,cvs=(Wt=70,))
+```
+
+let's first define a function to choose body weight randomly
+
+```julia
+choose_covariates() = (Wt = rand(55:80),)
+```
+
+Then, we use generate a population of subjects with a random weight generated from the covariate function above
+
+```julia
+pop = Population(map(i -> Subject(id = i,evs = single_dose_regimen, cvs =  choose_covariates()),1:24))
+```
+
+You can view the generated population using by calling a random subject by index
+
+```julia
+pop[1]
+```
+
+## Part 2: Write the model
+
+```julia
+mymodel = @model begin
+  @param   begin
+    tvcl ∈ RealDomain(lower=0, init = 1.0)
+    tvv ∈ RealDomain(lower=0, init = 20)
+    tvka ∈ RealDomain(lower = 0, init= 1)
+    Ω ∈ PDiagDomain(init=[0.09,0.09, 0.09])
+    σ_prop ∈ RealDomain(lower=0,init=0.01)
+  end
+
+  @random begin
+    η ~ MvNormal(Ω)
+  end
+
+  @pre begin
+    CL = tvcl * (Wt/70)^0.75 * exp(η[1])
+    V  = tvv * (Wt/70) * exp(η[2])
+    Ka = tvka * exp(η[3])
+  end
+  @covariates Wt
+
+  @dynamics OneCompartmentModel
+    #@dynamics begin
+    #    Depot' =  -Ka*Depot
+    #    Central' =  Ka*Depot - (CL/V)*Central
+    #end
+
+  @derived begin
+      cp = @. 1000*(Central / V)
+      dv ~ @. Normal(cp, sqrt(cp^2*σ_prop))
+    end
+end
+```
+Note that above, we are using the analytical solution in `@dynamics`. You can switch to using the
+differential equation system if you prefer.
+
+## Part 3: Simulate
+
+Let's first extract the model parameters
+
+```julia
+param = init_param(mymodel)
+```
+
+Then using the `simobs` function, carry out the simulation
+
+```julia
+obs = simobs(mymodel, pop, param, obstimes=0:1:72)
+```
+
+where
+* `mymodel` is the model setup in the Part 2,
+* `pop` is the population of subjects that was setup in Part 1
+* `param` is the specified set of model parameters
+* `obstimes` specifies the simulation time period.
+
+We can visualize the simulation output by
+
+```julia
+plot(obs)
+```
+
+# Problem 2: Peform Non-compartmental analysis
+
+We will start by generating a dataframe of the resuls from the simulation step
+
+```julia
+simdf = DataFrame(obs)
+first(simdf, 6)
+```
+For the purpose of NCA, let us use the `cp` (output without residual error) as our observed value
+
+To prepare the dataset for NCA analysis, let us use the `read_nca` function. The NCA datasets in Pumas requires
+a `route` specification which can either be `iv` or `ev`. Since this is an oral drug administration, lets add that
+to the `simdf`.
+
+```julia
+simdf.route = "ev"
+```
+Next we can define time, concentration and dose units so the report includes the units for the pharmacokinetic parameters.
+The general syntax for units are `u` followed by the unit in quotes `""`.
+
+```julia
+timeu = u"hr"
+concu = u"mg/L"
+amtu  = u"mg"
+```
+
+```julia
+ncadf = read_nca(simdf, id=:id, time=:time, conc=:cp, amt=:amt,
+    route=:route,timeu=timeu, concu=concu, amtu=amtu, lloq=0.4concu)
+```
+
+You can view the concentration-time plots by doing
+
+```julia
+plot(ncadf)
+```
+
+You can then generate `cmax` and `auc` for each subject
+
+```julia
+auc = NCA.auc(ncadf)
+```
+
+```julia
+cmax = NCA.cmax(ncadf)
+```
+
+Or generate the entire NCA report using
+
+```julia
+report = NCAReport(ncadf)
+report = NCA.to_dataframe(report)
+first(report,6)
+```
+
+# Problem 3: Estimate using Non-linear mixed effects
+
+We can use the simulated dataset in the Problem 1 for our estimation. We need a couple of data manipulation steps
+
+1. missing `cmt` should be converted to 2 to reflect central compartment
+2. data rows where `time = 0`, and `cp=0` should be removed
+
+While you can chose to do the data manipulation here, we will show you here how to export your dataset
+as a spreadsheet and read it back for estimation.
+
+```julia
+CSV.write("/Users/vijay/Downloads/simdf.csv",simdf)
+```
+
+You can do the data mainpulations in your favorite spreadsheet or in Julia iteself
+
+```julia
+est_df = CSV.read("/Users/vijay/Downloads/simdf.csv")
+```
+
+## Part 1: Read datasets for NLME estimation
+
+We can use the `read_pumas` function to prepare the dataset for NLME estimation
+
+```julia
+data = read_pumas(est_df,cvs = [:Wt], dvs=[:cp])
+```
+where
+
+* `cvs` takes an array of covariates
+* `dvs` takes an array of the dependent variables
+* since the dataframe has `time` as the variable, the function does not need a specific input
+
+
+## Part 2: Perform a model fit
+
+We now use the
+* `mymodel` model that we wrote earlier
+* the set of parameters specified in `param` as initial estimates
+* `data` that was read in using the `read_pumas` function
+
+to fit the model.
+
+```julia
+res = fit(mymodel,data,param,Pumas.FOCEI())
+```
+
+## Part 3: Infer the results
+
+Infer the results of your `fit`
+
+## Part 4: Inspect the results
+
+Inspect the results of your `fit`
+
+# Problem 4: Validate your model
+
+Using the `fit` object above, we will now perform model validation using Visual predictive checks `vpc`. Details
+on how to use the `vpc` command are listed in the [documentation](https://docs.pumas.ai/dev/analysis/diagnostics/#The-Visual-Predictive-Check-(vpc)-Function-1) or you can look at the last part of the [readme](https://github.com/PumasAI/Pumas.jl/blob/master/README.md#validate---vpc)
