@@ -5,7 +5,7 @@ date:  July 19, 2019
 ---
 
 ```julia
-using Pumas, CSV, Plots
+using Pumas, PumasTutorials, CSV, Plots
 ```
 
 # Introduction

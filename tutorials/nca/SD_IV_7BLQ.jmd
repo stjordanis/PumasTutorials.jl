@@ -5,7 +5,7 @@ date:  April 12, 2019
 ---
 
 ```julia
-using Pumas, CSV
+using Pumas, PumasTutorials, CSV
 ```
 
 # Introduction
@@ -223,6 +223,6 @@ report = NCA.to_dataframe(report)
 
 Finally, we can save this data frame as a csv file if desired.
 
-```julia
+```julia;eval=false
 CSV.write("./tutorials/nca/report_SD_IVbolus_7BLQ.csv", report)
 ```
