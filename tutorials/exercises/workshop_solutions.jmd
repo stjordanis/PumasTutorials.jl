@@ -3,37 +3,9 @@ title: Pumas.jl Workshop Solutions
 author: Chris Rackauckas, Vijay Ivaturi
 ---
 
-These exercises teach common workflows which involve Pumas.jl. This exercise
-worksheet is meant to be a living document leading new users through a deep dive
-of the Pumas.jl feature set. If you have further suggestions or want to contribute
-new problems, please open an issue or PR at the [PumasTutorials.jl](https://github.com/PumasAI/PumasTutorials.jl) repository.
-
-The exercises are described as follows:
-
-- Exercise 1 takes you through simulating a compartmental system in Pumas. The user will gain experience in writing a model using the Pumas Domain Specific Language (DSL), setting up a dosing regimen and population, simulating the model into the designed population
-and finally plotting the results of the simulation.
-- Exercise 2 takes the user through performing an Non-compartmental analysis (NCA). The user will get familiarized with reading data sets in a spread sheet format (e.g, .csv) or as the simulated output as in exercise 1 and perform a simple NCA analysis.
-- Exercise 3 introduces the user to perform a non-linear mixed effects modeling estimation (NLME) on pharmacokinetic data. The user will learn how to read and set up the data for NLME estimation, fit the model, infer and inspect the results of the model fit.
-- Exercise 4 introduces the user to various post-processing steps of model fitting, including running a visual predictive check (VPC), using the final model fits to peform simulation into an alternate dosing regimen or populaion of interest.
-
 # Problem 1: Simulate a first-order absorption model with linear elimination after a 100 mg oral dose in 24 subjects
 
-In this poblem, we will walk through the basics of writing a model with Pumas.jl. The pharmacokinetics after an oral dose are commonly described by a first-order process.
-In our example we will use a linear one-compartmental system for elimination of the drugs.
-
-Let's understand the system by setting up the differential equation or the analytical solution that describes the systems
-
-$$\begin{align}
-\frac{dDepot}{dt} &= -Ka.Depot\\
-\frac{dCentral}{dt} &= Ka.Depot - (CL/V).Central$$
-
-The analytical form of this equation to calculate the concentration, `Cp` at any given time can be written as
-
-$$
-Cp = \frac{F\timesDose\timesKa}{V\times(Ka-Kel)}\times[e^{-Kel\timest - e^{-Ka\timest }]
-$$
-
-where the parameters are: `Ka = 1 hr-1`, `CL = 1 L/hr`, `V = 20 L/hr`.
+Parameters are: `Ka = 1 hr-1`, `CL = 1 L/hr`, `V = 20 L/hr`.
 
 ## Part 1: Setup the population
 
@@ -64,10 +36,19 @@ Then, we use generate a population of subjects with a random weight generated fr
 pop = Population(map(i -> Subject(id = i,evs = single_dose_regimen, cvs =  choose_covariates()),1:24))
 ```
 
-You can view the generated population using by calling a random subject by index
+You can view the generated population using by calling a random subject by index and look at
+the subject's
+
+* covariates
+* events
+* id numbers
+* observations
+* time
+
+Let us us peek at the first subject's covariates
 
 ```julia
-pop[1]
+pop[1].covariates
 ```
 
 ## Part 2: Write the model
@@ -79,7 +60,7 @@ mymodel = @model begin
     tvv ∈ RealDomain(lower=0, init = 20)
     tvka ∈ RealDomain(lower = 0, init= 1)
     Ω ∈ PDiagDomain(init=[0.09,0.09, 0.09])
-    σ_prop ∈ RealDomain(lower=0,init=0.01)
+    σ_prop ∈ RealDomain(lower=0,init=0.04)
   end
 
   @random begin
@@ -116,10 +97,11 @@ Let's first extract the model parameters
 param = init_param(mymodel)
 ```
 
-Then using the `simobs` function, carry out the simulation
+Then using the `simobs` function, carry out the simulation and visualize the simulation output
 
-```julia
+```julia;include=false
 obs = simobs(mymodel, pop, param, obstimes=0:1:72)
+plot(obs)
 ```
 
 where
@@ -127,12 +109,6 @@ where
 * `pop` is the population of subjects that was setup in Part 1
 * `param` is the specified set of model parameters
 * `obstimes` specifies the simulation time period.
-
-We can visualize the simulation output by
-
-```julia
-plot(obs)
-```
 
 # Problem 2: Peform Non-compartmental analysis
 
@@ -196,17 +172,10 @@ We can use the simulated dataset in the Problem 1 for our estimation. We need a 
 1. missing `cmt` should be converted to 2 to reflect central compartment
 2. data rows where `time = 0`, and `cp=0` should be removed
 
-While you can chose to do the data manipulation here, we will show you here how to export your dataset
-as a spreadsheet and read it back for estimation.
-
 ```julia
-CSV.write("/Users/vijay/Downloads/simdf.csv",simdf)
-```
-
-You can do the data mainpulations in your favorite spreadsheet or in Julia itself
-
-```julia
-est_df = CSV.read("/Users/vijay/Downloads/simdf.csv")
+simdf.cmt = ifelse.(ismissing.(simdf.cmt), 2, simdf.cmt)
+est_df = simdf[.!((simdf.dv .== 0.0) .& (simdf.cmt .==2)),:]
+first(est_df,6)
 ```
 
 ## Part 1: Read datasets for NLME estimation
@@ -214,7 +183,7 @@ est_df = CSV.read("/Users/vijay/Downloads/simdf.csv")
 We can use the `read_pumas` function to prepare the dataset for NLME estimation
 
 ```julia
-data = read_pumas(est_df,cvs = [:Wt], dvs=[:dv])
+data = read_pumas(est_df ,cvs = [:Wt], dvs=[:dv])
 ```
 where
 
@@ -246,10 +215,32 @@ infer(res)
 
 ## Part 4: Inspect the results
 
-inspect gives you the model predictions, residuals and Empirical Bayes estimates
+inspect gives you the
+* model predictions
+* residuals
+* Empirical Bayes estimates
 
 ```julia
-resout = DataFrame(inspect(res), include_covariates=false)
+preds = DataFrame(predict(res))
+first(preds, 6)
+```
+
+```julia
+resids = DataFrame(wresiduals(res))
+first(resids, 6)
+```
+
+```julia
+ebes = DataFrame(empirical_bayes(res))
+first(ebes, 6)
+```
+
+There is an `inspect` function that provides all the results at once
+
+_Note that this function below fails to convert into a dataframe due to a bug. Will be fixed soon_
+
+```julia;eval=false
+resout = DataFrame(inspect(res))
 first(resout, 6)
 ```
 
