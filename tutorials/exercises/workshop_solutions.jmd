@@ -203,7 +203,7 @@ as a spreadsheet and read it back for estimation.
 CSV.write("/Users/vijay/Downloads/simdf.csv",simdf)
 ```
 
-You can do the data mainpulations in your favorite spreadsheet or in Julia iteself
+You can do the data mainpulations in your favorite spreadsheet or in Julia itself
 
 ```julia
 est_df = CSV.read("/Users/vijay/Downloads/simdf.csv")
@@ -214,7 +214,7 @@ est_df = CSV.read("/Users/vijay/Downloads/simdf.csv")
 We can use the `read_pumas` function to prepare the dataset for NLME estimation
 
 ```julia
-data = read_pumas(est_df,cvs = [:Wt], dvs=[:cp])
+data = read_pumas(est_df,cvs = [:Wt], dvs=[:dv])
 ```
 where
 
@@ -238,13 +238,31 @@ res = fit(mymodel,data,param,Pumas.FOCEI())
 
 ## Part 3: Infer the results
 
-Infer the results of your `fit`
+infer provides the model inference
+
+```julia
+infer(res)
+```
 
 ## Part 4: Inspect the results
 
-Inspect the results of your `fit`
+inspect gives you the model predictions, residuals and Empirical Bayes estimates
+
+```julia
+resout = DataFrame(inspect(res), include_covariates=false)
+first(resout, 6)
+```
 
 # Problem 4: Validate your model
 
-Using the `fit` object above, we will now perform model validation using Visual predictive checks `vpc`. Details
-on how to use the `vpc` command are listed in the [documentation](https://docs.pumas.ai/dev/analysis/diagnostics/#The-Visual-Predictive-Check-(vpc)-Function-1) or you can look at the last part of the [readme](https://github.com/PumasAI/Pumas.jl/blob/master/README.md#validate---vpc)
+Finally validate your model with a visual predictive check
+
+```julia
+vpc(res,200) |> plot
+```
+
+or stratify it based on bodyweight
+
+```julia
+vpc(res,200, stratify_on=[:Wt]) |> plot
+```
