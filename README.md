@@ -20,6 +20,9 @@ PumasTutorials.open_notebooks()
   - [Introduction to Pumas](https://tutorials.pumas.ai/html/introduction/introduction.html)
   - [Generating and Simulating Populations](https://tutorials.pumas.ai/html/introduction/simulating_populations.html)
   - [Introduction to Noncompartmental Analysis (NCA)](https://tutorials.pumas.ai/html/nca/basic_nca.html)
+- Workshop Materials
+  - [Workshop Exercises](https://tutorials.pumas.ai/html/exercises/workshop_exercises.html)
+  - [Workshop Exercise Solutions](https://tutorials.pumas.ai/html/exercises/workshop_solutions.html)
 - Models
   - [Discrete Response Models](https://tutorials.pumas.ai/html/discrete/discrete_response_models.html)
   - [Indirect Response Models](https://tutorials.pumas.ai/html/pkpd/indirect_response_models.html)
