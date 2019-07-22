@@ -664,11 +664,8 @@ div.title {text-align: center;}
           <p>These exercises teach common workflows which involve Pumas.jl. This exercise worksheet is meant to be a living document leading new users through a deep dive of the Pumas.jl feature set. If you have further suggestions or want to contribute new problems, please open an issue or PR at the <a href="https://github.com/PumasAI/PumasTutorials.jl">PumasTutorials.jl</a> repository.</p>
 <p>The exercises are described as follows:</p>
 <ul>
-<li><p>Exercise 1 takes you through simulating a compartmental system in Pumas. The user will gain experience in writing a model using the Pumas Domain Specific Language &#40;DSL&#41;, setting up a dosing regimen and population, simulating the model into the designed population</p>
+<li><p>Exercise 1 takes you through simulating a compartmental system in Pumas. The user will gain experience in writing a model using the Pumas Domain Specific Language &#40;DSL&#41;, setting up a dosing regimen and population, simulating the model into the designed population and finally plotting the results of the simulation.</p>
 </li>
-</ul>
-<p>and finally plotting the results of the simulation.</p>
-<ul>
 <li><p>Exercise 2 takes the user through performing an Non-compartmental analysis &#40;NCA&#41;. The user will get familiarized with reading data sets in a spread sheet format &#40;e.g, .csv&#41; or as the simulated output as in exercise 1 and perform a simple NCA analysis.</p>
 </li>
 <li><p>Exercise 3 introduces the user to perform a non-linear mixed effects modeling estimation &#40;NLME&#41; on pharmacokinetic data. The user will learn how to read and set up the data for NLME estimation, fit the model, infer and inspect the results of the model fit.</p>
@@ -682,20 +679,20 @@ div.title {text-align: center;}
 <p>Let&#39;s understand the system by setting up the differential equation or the analytical solution that describes the systems</p>
 <p class="math">\[
 \begin{align}
-\frac{dDepot}{dt} &= -Ka.Depot\\
-\frac{dCentral}{dt} &= Ka.Depot - (CL/V).Central
+\frac{dDepot}{dt} &= -K_a.Depot\\
+\frac{dCentral}{dt} &= K_a.Depot - (CL/V).Central\end{align}
 \]</p>
 <p>The analytical form of this equation to calculate the concentration, <code>Cp</code> at any given time can be written as</p>
 <p class="math">\[
-Cp = \frac{F\timesDose\timesKa}{V\times(Ka-Kel)}\times[e^{-Kel\timest - e^{-Ka\timest }]
+Cp = \frac{F \times Dose \times K_a}{V (K_a-K_{el})}(e^{-K_{el} t} - e^{-K_a t})
 \]</p>
 <p>where the parameters are: <code>Ka &#61; 1 hr-1</code>, <code>CL &#61; 1 L/hr</code>, <code>V &#61; 20 L/hr</code>.</p>
 <h2>Part 2: Setup the population</h2>
 <p>Setting up a dosing regimen and population of subjects. Go through the section on <a href="https://tutorials.pumas.ai/html/introduction/simulating_populations.html">Generating and simulating populations</a> in the tutorials to set up a population of 24 subjects that receives 100 mg dose via the mouth and assign a random body weight to each subjects</p>
 <h2>Part 3: Write the model</h2>
-<p>Write up a first-order absorption model where body weight is a covariate on <code>CL</code> and <code>V</code>. understand the different steps of writing up a model by referring to the documentation on <a href="https://docs.pumas.ai/dev/basics/models/">models</a></p>
+<p>Write up a first-order absorption model where body weight is a covariate on <code>CL</code> and <code>V</code>. understand the different steps of writing up a model by referring to the documentation on <a href="https://docs.pumas.ai/dev/basics/models/">models</a>.</p>
 <h2>Part 4: Simulate</h2>
-<p>Perform the simulation by using the <code>simobs</code> function. The details on the use of <code>simobs</code> can be seen in the documentation on <a href="https://docs.pumas.ai/dev/basics/simulation/">simulation</a> and by looking at one of the <a href="https://tutorials.pumas.ai/html/introduction/introduction.html">tutorials</a>. Finish by plotting the result of the simulation</p>
+<p>Perform the simulation by using the <code>simobs</code> function. The details on the use of <code>simobs</code> can be seen in the documentation on <a href="https://docs.pumas.ai/dev/basics/simulation/">simulation</a> and by looking at one of the <a href="https://tutorials.pumas.ai/html/introduction/introduction.html">tutorials</a>. Finish by plotting the result of the simulation.</p>
 <h1>Problem 2: Peform Non-compartmental analysis</h1>
 <p>Use the dataset generated from Problem 1 that is stored as a CSV file <a href="">here</a> to read in the data using the <code>read_nca</code> function and generate a NCA report. You can know more about how to do this by looking at one of the <a href="https://tutorials.pumas.ai/html/nca/basic_nca.html">NCA tutorials</a></p>
 <h1>Problem 3: Estimate using Non-linear mixed effects</h1>

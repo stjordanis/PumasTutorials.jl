@@ -31,20 +31,24 @@ The exercises are described as follows:
 
 # Problem 1: Simulate a first-order absorption model with linear elimination after a 100 mg oral dose in 24 subjects
 
-In this poblem, we will walk through the basics of writing a model with Pumas.jl. The pharmacokinetics after an oral dose are commonly described by a first-order process.
-In our example we will use a linear one-compartmental system for elimination of the drugs.
+In this poblem, we will walk through the basics of writing a model with Pumas.jl.
+The pharmacokinetics after an oral dose are commonly described by a first-order
+process. In our example we will use a linear one-compartmental system for
+elimination of the drugs.
 
 ## Part 1: Understand the system
 
-Let's understand the system by setting up the differential equation or the analytical solution that describes the systems
+Let's understand the system by setting up the differential equation or the
+analytical solution that describes the systems
 
 $$\begin{align}
-\frac{dDepot}{dt} &= -Ka.Depot\\
-\frac{dCentral}{dt} &= Ka.Depot - (CL/V).Central\end{align}$$
+\frac{dDepot}{dt} &= -K_a.Depot\\
+\frac{dCentral}{dt} &= K_a.Depot - (CL/V).Central\end{align}$$
 
-The analytical form of this equation to calculate the concentration, `Cp` at any given time can be written as
+The analytical form of this equation to calculate the concentration, `Cp` at
+any given time can be written as
 
-$$Cp = \frac{F\timesDose\timesKa}{V\times(Ka-Kel)}\times[e^{-Kel\timest - e^{-Ka\timest }]$$
+$$Cp = \frac{F \times Dose \times K_a}{V (K_a-K_{el})}(e^{-K_{el} t} - e^{-K_a t})$$
 
 where the parameters are: `Ka = 1 hr-1`, `CL = 1 L/hr`, `V = 20 L/hr`.
 
