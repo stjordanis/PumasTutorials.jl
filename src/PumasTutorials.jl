@@ -57,6 +57,8 @@ function weave_folder(folder)
   end
 end
 
+tutorial_data(folder,file) = joinpath(joinpath(@__DIR__, ".."),"$folder/"*file*".csv")
+
 function tutorial_footer(folder=nothing, file=nothing)
     display("text/markdown", """
     ## Appendix
