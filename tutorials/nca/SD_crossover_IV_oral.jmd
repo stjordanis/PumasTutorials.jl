@@ -27,8 +27,8 @@ Let's start reading the dataset. By using the `missingstring` option we are spec
 missing values are labeled in our dataset.
 
 ```julia
-data = PumasTutorials.tutorial_data("data/nca","SD_crossover_IV_oral")
-data = CSV.read(data,missingstring="NA")
+path = PumasTutorials.tutorial_data("data/nca","SD_crossover_IV_oral")
+data = CSV.read(path,missingstring="NA")
 first(data,10)
 ```
 
