@@ -5,7 +5,7 @@ date :  August 10, 2019
 ---
 
 ```julia
-using Pumas, LinearAlgebra, Plots
+using Pumas, LinearAlgebra, Plots, StatsPlots, CategoricalArrays
 ```
 
 ```julia
@@ -266,4 +266,9 @@ However, our interest is to evaluate if the change from baseline QTc is greater 
 simdf = DataFrame(sim_pop, include_events=false, include_covariates=false)
 foo = by(simdf, :id, :cp => maximum)
 bar = join(simdf, foo, on = :id)
+bar.bins = cut(bar.cp_maximum,5)
+```
+
+```julia;
+StatsPlots.@df bar boxplot(:bins,:qtc)
 ```
