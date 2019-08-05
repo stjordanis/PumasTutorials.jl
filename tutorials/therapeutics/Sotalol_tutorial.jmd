@@ -68,8 +68,6 @@ sotalol_PKPD_model = @model begin
     @derived begin
         cp = @. (Central / (Vc/1000))
         dv = @. Normal(cp, sqrt(cp^2*σ_prop_PK))
-        nca := @nca cp
-        cmax = NCA.cmax(nca)
         qtc = @. e0 + (Slope*cp)
         qt = @. Normal(qtc, sqrt(σ_prop_PD))
     end
@@ -263,3 +261,9 @@ plot(sim_pop, obsnames = [:cp,:qtc],
 ```
 
 However, our interest is to evaluate if the change from baseline QTc is greater than 30 msec
+
+```julia
+simdf = DataFrame(sim_pop, include_events=false, include_covariates=false)
+foo = by(simdf, :id, :cp => maximum)
+bar = join(simdf, foo, on = :id)
+```
