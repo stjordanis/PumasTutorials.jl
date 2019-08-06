@@ -316,3 +316,117 @@ We can now use the data and model with parameters to simulate a transit absorpti
 obs = simobs(transabs, sd_with_covariates, param, obstimes=0:0.1:120)
 plot(obs)
 ```
+
+## Two parallel first-order absorptions
+
+
+```julia
+two_parallel_foabs = @model begin
+
+  @param begin
+    θ ∈ VectorDomain(6)
+    Ω ∈ PDiagDomain(6)
+  end
+
+  @random begin
+    η ~ MvNormal(Ω)
+  end
+
+  @covariates Wt
+
+  @pre begin
+    CL = θ[1]*(Wt/70)^0.75*exp(η[1])
+    V  = θ[2]*(Wt/70)*exp(η[2])
+    Ka1 = θ[3]*exp(η[3])
+    Ka2 = θ[4]*exp(η[4])
+    lags = (Depot2 = θ[5]*exp(η[5]),)
+    bioav = (Depot1 = θ[6]*exp(η[6]), Depot2 = 1-θ[6]*exp(η[6]))
+  end
+
+  @dynamics begin
+    Depot1'   = -Ka1*Depot1
+    Depot2'   = -Ka2*Depot2
+    Central' =  Ka1*Depot1 + Ka2*Depot2 - Central*CL/V
+  end
+
+  @derived begin
+    conc = Central/V
+  end
+
+end
+
+```
+and below are the set of parameters for this model
+
+```julia
+param = (
+  θ = [5,50,0.8,0.6,5,0.5],
+  Ω =Diagonal([0.04,0.04,0.36,0.36,0.04,0.04]),
+  )
+```
+
+We can now use the data and model with parameters to simulate a first-order absorption profile
+
+```julia
+fo_1 = DosageRegimen(100,cmt=1,time=0)
+fo_2 = DosageRegimen(100,cmt=2,time=0)
+parallel_fo = DosageRegimen(fo_1,fo_2)
+parallel_fo_with_covariates = Population(map(i -> Subject(id=i,evs=parallel_fo,cvs=choose_covariates()),1:10))
+obs = simobs(two_parallel_foabs, parallel_fo_with_covariates, param, obstimes=0:1:48)
+plot(obs, title =  "Two Parallel First-order absorption")
+```
+
+## Weibull-Type Absorption
+
+```julia
+wb_abs = @model begin
+
+  @param begin
+    θ ∈ VectorDomain(4)
+    Ω ∈ PDiagDomain(4)
+  end
+
+  @random begin
+    η ~ MvNormal(Ω)
+  end
+
+  @covariates Wt
+
+  @pre begin
+    CL = θ[1]*(Wt/70)^0.75*exp(η[1])
+    V  = θ[2]*(Wt/70)*exp(η[2])
+    Ka1 = θ[3]*exp(η[3])
+    Gama1 = θ[4]*exp(η[4])
+    # Weibull function
+    wb = 1-exp((-Ka1*t)^Gama1)
+  end
+
+  @dynamics begin
+    Depot'   = -wb*Depot
+    Central' =  wb*Depot - Central*CL/V
+  end
+
+  @derived begin
+    conc = Central/V
+  end
+
+end
+
+```
+and below are the set of parameters for this model
+
+```julia
+param = (
+  θ = [5,50,0.4,4],
+  Ω =Diagonal([0.04,0.04,0.36,0.04]),
+  )
+```
+
+We can now use the data and model with parameters to simulate a weibull absorption profile
+
+```julia
+wb_reg = DosageRegimen(100,cmt=1,time=0)
+wb_reg_with_covariates = Population(map(i -> Subject(id=i,evs=parallel_fo,cvs=choose_covariates()),1:10))
+obs = simobs(wb_abs,wb_reg_with_covariates, param, obstimes=0:1:48)
+plot(obs, title =  "Two Parallel First-order absorption")
+```
