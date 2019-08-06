@@ -1,7 +1,7 @@
 ---
 title: Absorption models
 author: Hechuan Wang & Vijay Ivaturi
-date: July 18, 2019
+date: August 10, 2019
 ---
 
 ```julia
@@ -80,7 +80,7 @@ We can now use the data and model with parameters to simulate a first-order abso
 
 ```julia
 obs = simobs(foabs, sd_with_covariates, param, obstimes=0:1:48)
-plot(obs)
+plot(obs, title =  "First-order absorption")
 ```
 
 ## zero-order absorption
@@ -101,7 +101,7 @@ zoabs = @model begin
   @pre begin
     CL = θ[1]*(Wt/11)^0.75*exp(η[1])
     V  = θ[2]*(Wt/11)*exp(η[2])
-    duration = [0, θ[3]]
+    duration =  (Central = θ[3],)
   end
 
   @dynamics begin
@@ -119,16 +119,24 @@ and below are the set of parameters for this model
 
 ```julia
 param = (
-  θ = [0.792, 13.7, 1.42],
+  θ = [0.792, 13.7, 5],
   Ω =Diagonal([0.04,0.04,0.04]),
   )
 ```
 
-We can now use the data and model with parameters to simulate a first-order absorption profile
+We can now use the data and model with parameters to simulate a zero-order absorption profile
+
+```julia
+sd = DosageRegimen(100, time=0, rate=-2)
+choose_covariates() = (Wt = rand(55:80),dose=100)
+sd_with_covariates = Population(map(i -> Subject(id=i,evs=sd,cvs=choose_covariates()),1:10))
+```
+
+Note that while modeling duration, `rate` data item has to be set to `< 0`
 
 ```julia
 obs = simobs(zoabs, sd_with_covariates, param, obstimes=0:0.1:48)
-plot(obs)
+plot(obs, title =  "Zero-order absorption")
 ```
 
 ## simultaneous zero+first order absorption models
@@ -152,9 +160,9 @@ fozoabs = @model begin
     CL = θ[1]*(Wt/70)^0.75*exp(η[1])
     V  = θ[2]*(Wt/70)*exp(η[2])
     Ka = θ[3]
-    duration = [0, θ[4]]
-    bioav = [θ[5], 1-θ[5]]
-    lags = [0, θ[6]]
+    duration = (Central =θ[4],)
+    bioav = (Depot = θ[5], Central = 1-θ[5])
+    lags = (Central =θ[6],)
   end
 
   @dynamics begin
@@ -182,7 +190,16 @@ param = (
 We can now use the data and model with parameters to simulate a simultaneous first- and zero-order absorption profile
 
 ```julia
-obs = simobs(fozoabs, sd_with_covariates, param, obstimes=0:0.1:8)
+sd_fo = DosageRegimen(100, time=0, cmt=1, rate = 0, evid=1)
+sd_zo = DosageRegimen(100, time=0, cmt=2, rate = -2, evid=1)
+sd_fo_zo = DosageRegimen(sd_fo,sd_zo)
+
+choose_covariates() = (Wt = rand(55:80),dose=100)
+sd_with_covariates = Population(map(i -> Subject(id=i,evs=sd_fo_zo,cvs=choose_covariates()),1:10))
+```
+
+```julia
+obs = simobs(fozoabs, sd_with_covariates, param, obstimes=0:0.1:8, parallel_type=Pumas.Serial)
 plot(obs)
 ```
 
@@ -223,6 +240,12 @@ erlangabs = @model begin
   end
 
 end
+```
+
+```julia
+sd = DosageRegimen(100, time=0)
+choose_covariates() = (Wt = rand(55:80),dose=100)
+sd_with_covariates = Population(map(i -> Subject(id=i,evs=sd,cvs=choose_covariates()),1:10))
 ```
 
 ```julia
