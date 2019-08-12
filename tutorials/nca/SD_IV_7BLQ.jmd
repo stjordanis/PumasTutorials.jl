@@ -21,12 +21,12 @@ just learning about the NCA can skip the next section on "Data Simulation"
 
 (_You can safely skip this section if you are only interested in the NCA analysis and not data generation_)
 
-```julia
+```julia;results = "hidden"
 using Random
 Random.seed!(1)
 ```
 
-```julia
+```julia;results = "hidden"
 iv = @model begin
   @param   begin
     tvcl ∈ RealDomain(lower=0)
@@ -65,7 +65,7 @@ choose_covariates() = (wt = rand(55:80))
 ```
 ### Single dose simulation
 
-```julia
+```julia;results = "hidden"
 sd = DosageRegimen(2000, time=0) # setup single dose regimen
 sd_population =  Population(map(i -> Subject(id=i, evs=sd, cvs = (Wt = choose_covariates(),)),1:24)) # generate population
 sd_obstimes = [0, 0.25, 0.5, 0.75, 1, 2, 4, 8, 12, 16, 20, 22, 24] # sampling times
@@ -80,7 +80,7 @@ iv_sim_sd = DataFrame(obs)|>
 
 ### Multiple dose simulation
 
-```julia
+```julia;results = "hidden"
 md = DosageRegimen(2000, time=0, addl=3, ii=24) # setup multiple dose regimen
 md_population =  Population(map(i -> Subject(id=i, evs=md, cvs = (Wt = choose_covariates(),)),1:24)) # generate population
 md_obstimes = [0, 0.25, 0.5, 0.75, 1, 2, 4, 8, 12, 16, 20, 22, 24,
@@ -104,7 +104,7 @@ iv_sim_md = DataFrame(obs)|>
 
 From the simulation above we created 2 datasets:
 
-1. `iv_sim_sd` - Single dose IV adminstration
+#### 1. `iv_sim_sd` - Single dose IV adminstration
   * dose = 2000 mg
   * number of subjects = 24
   * sampling = 0, 0.25, 0.5, 0.75, 1, 2, 4, 8, 12, 16, 20, 22, 24 hours after dose
@@ -114,7 +114,7 @@ From the simulation above we created 2 datasets:
 first(iv_sim_sd,10)
 ```
 
-2. `iv_sim_md`
+#### 2. `iv_sim_md` - Multiple dose IV adminstration
   * dose = 2000 mg every 24 hours for 4 days
   * number of subjects = 24
   * sampling = 0, 0.25, 0.5, 0.75, 1, 2, 4, 8, 12, 16, 20, 22, 24 hours after each dose
@@ -133,7 +133,7 @@ The results and reports generated as part of the anlaysis will the include the
 units for the pharmacokinetic parameters. As you can see below, the syntax for specifying units
 is the letter `u` followed the actual units in quotes `" "` (no space between `u` and the quotes)
 
-```julia
+```julia;term=true
 timeu = u"hr"
 concu = u"mg/L"
 amtu  = u"mg"
@@ -160,13 +160,15 @@ iv_nca_sd = read_nca(iv_sim_sd, id=:id, time=:time, conc=:dv, amt=:amt,
 
 ### Performing the NCA analysis
 
-We can use different functions to calculate single dose PK parameters. For example, we can calculate the area under the concentration
-curve from time 0 to the last observation using the linear trapezoidal rule (default method) by writing the following code.
+We can use different functions to calculate single dose PK parameters. Please refer to the [documentation](https://docs.pumas.ai/dev/basics/nca/#NCA-Function-List-1)
+for the complete list. For example, we can calculate the area under the concentration curve from time 0 to the
+last observation using the linear trapezoidal  rule (default method) by writing the following code.
 
 ### `NCA.auc`
 
 ```julia
-NCA.auc(iv_nca_sd,auctype=:last,method=:linear)
+auc = NCA.auc(iv_nca_sd,auctype=:last,method=:linear)
+first(auc,6)
 ```
 This generates a dataframe that includes the units
 
@@ -209,25 +211,29 @@ NCA.auc_extrap_percent(iv_nca_sd)
 The function to calculate the terminal rate constant (λz) is:
 
 ```julia
-NCA.lambdaz(iv_nca_sd)
+λ𝚉 =  NCA.lambdaz(iv_nca_sd)
+first(λ𝚉,6)
 ```
 
 By default, λz calculation checks the last 10 or less data points, but this can be changed by using the following code:
 
 ```julia
-NCA.lambdaz(iv_nca_sd, threshold=3)
+λ𝚉 = NCA.lambdaz(iv_nca_sd, threshold=3)
+first(λ𝚉,6)
 ```
 
 The exact data points to be used for λz calculation can also be specified using their indices:
 
 ```julia
-NCA.lambdaz(iv_nca_sd, idxs=[8,9,10])
+λ𝚉 = NCA.lambdaz(iv_nca_sd, idxs=[8,9,10])
+first(λ𝚉,6)
 ```
 
 or using the time point:
 
 ```julia
-NCA.lambdaz(iv_nca_sd, slopetimes=[16,20,22].*timeu)
+λ𝚉 = NCA.lambdaz(iv_nca_sd, slopetimes=[16,20,22].*timeu)
+first(λ𝚉,6)
 ```
 Other methods can be used such as `:linuplogdown` or `:linlog`.
 
@@ -258,7 +264,7 @@ normalizedose(AUClast,iv_nca_sd[1])
 Other functions to calculate single PK parameters are the following:
 
 
-```julia
+```julia;eval=false
 NCA.lambdazr2(iv_nca_sd)
 NCA.lambdazadjr2(iv_nca_sd)
 NCA.lambdazintercept(iv_nca_sd)
@@ -310,7 +316,7 @@ report = NCA.to_dataframe(report)
 
 By default, the AUC and AUMC reported are observed. If predicted PK parameters are needed instead, the following code should be used:
 
-```julia
+```julia;results="hidden"
 report = NCAReport(iv_nca_sd,ithdose=1,pred=true)
 report = NCA.to_dataframe(report)
 ```
@@ -321,7 +327,45 @@ Finally, we can save this data frame as a csv file if desired.
 CSV.write("./tutorials/nca/report_SD_crossover_IV_oral.csv", report)
 ```
 
+## NCA Analysis for multiple dose dataset
+
+The workflow for multiple dose NCA analysis remains largely the same compared to the single dose discussed above.
+Here we will cover only those features that are different.
+
+### Defining the population object
+
+The standard requirements of `read_nca` as specified in for the single dose apply. In this mulitple dose example, since subjects
+visit in more than once occasion, we need to use an `occasion=` variable to speify the multiple dose nature.
+
+```julia
+iv_nca_md = read_nca(iv_sim_md, id=:id, time=:time, conc=:dv, amt=:amt, ii=24timeu,
+    route=:route, occasion=:day,timeu=timeu, concu=concu, amtu=amtu,llq=0.4concu)
+```
+Key features of the syntax above:
+
+* `occasion=:day` provides a way to specify multiple dosing
+
+To check how occasion works, lets calculate the AUC
+
+```julia
+auc = NCA.auc(iv_nca_md,auctype=:last,method=:linear)
+first(auc, 6)
+```
+
+Note how the results above are grouped by `occasion`
+All other NCA function work on this grouped variable. Let's directly print the NCA report.
+
+```julia
+report = NCAReport(iv_nca_md)
+report = NCA.to_dataframe(report)
+```
+Below is a listing of all the NCA parameters in the report
+
+```julia
+println(names(report))
+```
+
 ```julia{echo=false,skip="notebook"}
-using PuMaSTutorials
-PuMaSTutorials.tutorial_footer(WEAVE_ARGS[:folder],WEAVE_ARGS[:file])
+using PumasTutorials
+PumasTutorials.tutorial_footer(WEAVE_ARGS[:folder],WEAVE_ARGS[:file])
 ```
