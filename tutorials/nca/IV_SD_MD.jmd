@@ -133,9 +133,15 @@ The results and reports generated as part of the anlaysis will the include the
 units for the pharmacokinetic parameters. As you can see below, the syntax for specifying units
 is the letter `u` followed the actual units in quotes `" "` (no space between `u` and the quotes)
 
-```julia;term=true
+```julia
 timeu = u"hr"
+```
+
+```julia
 concu = u"mg/L"
+```
+
+```julia
 amtu  = u"mg"
 ```
 
@@ -202,7 +208,7 @@ NCA.auc(iv_nca_sd[1], interval=[(0,12).*timeu,(0,6).*timeu])
 
 To calculate the percentage of AUC that is being extrapolated, we need to use the following function:
 
-```julia;eval=false
+```julia
 NCA.auc_extrap_percent(iv_nca_sd)
 ```
 

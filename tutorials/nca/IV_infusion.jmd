@@ -1,7 +1,7 @@
 ---
 title : Non-Compartmental Analysis - IV infusion
 author : Beatriz Guglieri-Lopez, Vijay Ivaturi
-date:  August 17, 2019
+date:  August 26, 2019
 ---
 
 ```julia
@@ -51,7 +51,7 @@ iv = @model begin
 
   @derived begin
       cp := @. (Central / V)
-      dv ~ @. Normal(cp, sqrt(cp^2*σ_prop))
+      foo ~ @. Normal(cp, sqrt(cp^2*σ_prop))
     end
 end
 
@@ -74,22 +74,37 @@ sd_obstimes = [0, 0.25, 0.5, 0.75, 1, 2, 4, 8, 12, 16, 20, 22, 24] # sampling ti
 
 obs = simobs(iv, sd_population, param, obstimes=sd_obstimes)
 iv_sim_sd = DataFrame(obs)|>
+          @filter(!(_.evid<0)) |>
           @filter(!(_.time == 0 && _.evid == 0)) |>
-          @mutate(cmt = 1) |>
+          @mutate(cmt = 1, duration=1) |>
           @mutate(route = "iv") |>
           DataFrame
+data = read_pumas(iv_sim_sd,cvs=[:Wt,:route])
+o = fit(iv,data,param,Pumas.FOCEI())
 ```
 
 
 # Defining the population object
+
+```julia
+timeu = u"hr"
+```
+
+```julia
+concu = u"mg/L"
+```
+
+```julia
+amtu  = u"mg"
+```
 
 In the case of the infusion, the `read_nca` function should
 
 * carry the name of the column that contains the duration of the infusion (`duration=`).
 
 ```julia; include=false
-pop = read_nca(data, id=:ID, time=:time, conc=:DV, amt=:DOSE, ii=24timeu,
-    route=:Formulation, duration=:Infusion_Time,timeu=timeu,
+pop = read_nca(iv_sim_sd, id=:id, time=:time, conc=:dv, amt=:amt, ii=24timeu,
+    route=:route, duration=:duration,timeu=timeu,
     concu=concu, amtu=amtu,lloq=0.4concu)
 ```
 Note that in the above syntanx:
