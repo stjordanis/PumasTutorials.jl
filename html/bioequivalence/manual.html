@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<HTML lang = "en">
+<HEAD>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  
+  
+
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      TeX: { equationNumbers: { autoNumber: "AMS" } }
+    });
+  </script>
+
+  <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+  </script>
+
+  
+<style>
+pre.hljl {
+    border: 1px solid #ccc;
+    margin: 5px;
+    padding: 5px;
+    overflow-x: auto;
+    color: rgb(68,68,68); background-color: rgb(251,251,251); }
+pre.hljl > span.hljl-t { }
+pre.hljl > span.hljl-w { }
+pre.hljl > span.hljl-e { }
+pre.hljl > span.hljl-eB { }
+pre.hljl > span.hljl-o { }
+pre.hljl > span.hljl-k { color: rgb(148,91,176); font-weight: bold; }
+pre.hljl > span.hljl-kc { color: rgb(59,151,46); font-style: italic; }
+pre.hljl > span.hljl-kd { color: rgb(214,102,97); font-style: italic; }
+pre.hljl > span.hljl-kn { color: rgb(148,91,176); font-weight: bold; }
+pre.hljl > span.hljl-kp { color: rgb(148,91,176); font-weight: bold; }
+pre.hljl > span.hljl-kr { color: rgb(148,91,176); font-weight: bold; }
+pre.hljl > span.hljl-kt { color: rgb(148,91,176); font-weight: bold; }
+pre.hljl > span.hljl-n { }
+pre.hljl > span.hljl-na { }
+pre.hljl > span.hljl-nb { }
+pre.hljl > span.hljl-nbp { }
+pre.hljl > span.hljl-nc { }
+pre.hljl > span.hljl-ncB { }
+pre.hljl > span.hljl-nd { color: rgb(214,102,97); }
+pre.hljl > span.hljl-ne { }
+pre.hljl > span.hljl-neB { }
+pre.hljl > span.hljl-nf { color: rgb(66,102,213); }
+pre.hljl > span.hljl-nfm { color: rgb(66,102,213); }
+pre.hljl > span.hljl-np { }
+pre.hljl > span.hljl-nl { }
+pre.hljl > span.hljl-nn { }
+pre.hljl > span.hljl-no { }
+pre.hljl > span.hljl-nt { }
+pre.hljl > span.hljl-nv { }
+pre.hljl > span.hljl-nvc { }
+pre.hljl > span.hljl-nvg { }
+pre.hljl > span.hljl-nvi { }
+pre.hljl > span.hljl-nvm { }
+pre.hljl > span.hljl-l { }
+pre.hljl > span.hljl-ld { color: rgb(148,91,176); font-style: italic; }
+pre.hljl > span.hljl-s { color: rgb(201,61,57); }
+pre.hljl > span.hljl-sa { color: rgb(201,61,57); }
+pre.hljl > span.hljl-sb { color: rgb(201,61,57); }
+pre.hljl > span.hljl-sc { color: rgb(201,61,57); }
+pre.hljl > span.hljl-sd { color: rgb(201,61,57); }
+pre.hljl > span.hljl-sdB { color: rgb(201,61,57); }
+pre.hljl > span.hljl-sdC { color: rgb(201,61,57); }
+pre.hljl > span.hljl-se { color: rgb(59,151,46); }
+pre.hljl > span.hljl-sh { color: rgb(201,61,57); }
+pre.hljl > span.hljl-si { }
+pre.hljl > span.hljl-so { color: rgb(201,61,57); }
+pre.hljl > span.hljl-sr { color: rgb(201,61,57); }
+pre.hljl > span.hljl-ss { color: rgb(201,61,57); }
+pre.hljl > span.hljl-ssB { color: rgb(201,61,57); }
+pre.hljl > span.hljl-nB { color: rgb(59,151,46); }
+pre.hljl > span.hljl-nbB { color: rgb(59,151,46); }
+pre.hljl > span.hljl-nfB { color: rgb(59,151,46); }
+pre.hljl > span.hljl-nh { color: rgb(59,151,46); }
+pre.hljl > span.hljl-ni { color: rgb(59,151,46); }
+pre.hljl > span.hljl-nil { color: rgb(59,151,46); }
+pre.hljl > span.hljl-noB { color: rgb(59,151,46); }
+pre.hljl > span.hljl-oB { color: rgb(102,102,102); font-weight: bold; }
+pre.hljl > span.hljl-ow { color: rgb(102,102,102); font-weight: bold; }
+pre.hljl > span.hljl-p { }
+pre.hljl > span.hljl-c { color: rgb(153,153,119); font-style: italic; }
+pre.hljl > span.hljl-ch { color: rgb(153,153,119); font-style: italic; }
+pre.hljl > span.hljl-cm { color: rgb(153,153,119); font-style: italic; }
+pre.hljl > span.hljl-cp { color: rgb(153,153,119); font-style: italic; }
+pre.hljl > span.hljl-cpB { color: rgb(153,153,119); font-style: italic; }
+pre.hljl > span.hljl-cs { color: rgb(153,153,119); font-style: italic; }
+pre.hljl > span.hljl-csB { color: rgb(153,153,119); font-style: italic; }
+pre.hljl > span.hljl-g { }
+pre.hljl > span.hljl-gd { }
+pre.hljl > span.hljl-ge { }
+pre.hljl > span.hljl-geB { }
+pre.hljl > span.hljl-gh { }
+pre.hljl > span.hljl-gi { }
+pre.hljl > span.hljl-go { }
+pre.hljl > span.hljl-gp { }
+pre.hljl > span.hljl-gs { }
+pre.hljl > span.hljl-gsB { }
+pre.hljl > span.hljl-gt { }
+</style>
+
+
+
+  <style type="text/css">
+  @font-face {
+  font-style: normal;
+  font-weight: 300;
+}
+@font-face {
+  font-style: normal;
+  font-weight: 400;
+}
+@font-face {
+  font-style: normal;
+  font-weight: 600;
+}
+html {
+  font-family: sans-serif; /* 1 */
+  -ms-text-size-adjust: 100%; /* 2 */
+  -webkit-text-size-adjust: 100%; /* 2 */
+}
+body {
+  margin: 0;
+}
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+main,
+menu,
+nav,
+section,
+summary {
+  display: block;
+}
+audio,
+canvas,
+progress,
+video {
+  display: inline-block; /* 1 */
+  vertical-align: baseline; /* 2 */
+}
+audio:not([controls]) {
+  display: none;
+  height: 0;
+}
+[hidden],
+template {
+  display: none;
+}
+a:active,
+a:hover {
+  outline: 0;
+}
+abbr[title] {
+  border-bottom: 1px dotted;
+}
+b,
+strong {
+  font-weight: bold;
+}
+dfn {
+  font-style: italic;
+}
+h1 {
+  font-size: 2em;
+  margin: 0.67em 0;
+}
+mark {
+  background: #ff0;
+  color: #000;
+}
+small {
+  font-size: 80%;
+}
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+sup {
+  top: -0.5em;
+}
+sub {
+  bottom: -0.25em;
+}
+img {
+  border: 0;
+}
+svg:not(:root) {
+  overflow: hidden;
+}
+figure {
+  margin: 1em 40px;
+}
+hr {
+  -moz-box-sizing: content-box;
+  box-sizing: content-box;
+  height: 0;
+}
+pre {
+  overflow: auto;
+}
+code,
+kbd,
+pre,
+samp {
+  font-family: monospace, monospace;
+  font-size: 1em;
+}
+button,
+input,
+optgroup,
+select,
+textarea {
+  color: inherit; /* 1 */
+  font: inherit; /* 2 */
+  margin: 0; /* 3 */
+}
+button {
+  overflow: visible;
+}
+button,
+select {
+  text-transform: none;
+}
+button,
+html input[type="button"], /* 1 */
+input[type="reset"],
+input[type="submit"] {
+  -webkit-appearance: button; /* 2 */
+  cursor: pointer; /* 3 */
+}
+button[disabled],
+html input[disabled] {
+  cursor: default;
+}
+button::-moz-focus-inner,
+input::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+input {
+  line-height: normal;
+}
+input[type="checkbox"],
+input[type="radio"] {
+  box-sizing: border-box; /* 1 */
+  padding: 0; /* 2 */
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  height: auto;
+}
+input[type="search"] {
+  -webkit-appearance: textfield; /* 1 */
+  -moz-box-sizing: content-box;
+  -webkit-box-sizing: content-box; /* 2 */
+  box-sizing: content-box;
+}
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+fieldset {
+  border: 1px solid #c0c0c0;
+  margin: 0 2px;
+  padding: 0.35em 0.625em 0.75em;
+}
+legend {
+  border: 0; /* 1 */
+  padding: 0; /* 2 */
+}
+textarea {
+  overflow: auto;
+}
+optgroup {
+  font-weight: bold;
+}
+table {
+  font-family: monospace, monospace;
+  font-size : 0.8em;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+td,
+th {
+  padding: 0;
+}
+thead th {
+    border-bottom: 1px solid black;
+    background-color: white;
+}
+tr:nth-child(odd){
+  background-color: rgb(248,248,248);
+}
+
+
+/*
+* Skeleton V2.0.4
+* Copyright 2014, Dave Gamache
+* www.getskeleton.com
+* Free to use under the MIT license.
+* http://www.opensource.org/licenses/mit-license.php
+* 12/29/2014
+*/
+.container {
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 20px;
+  box-sizing: border-box; }
+.column,
+.columns {
+  width: 100%;
+  float: left;
+  box-sizing: border-box; }
+@media (min-width: 400px) {
+  .container {
+    width: 85%;
+    padding: 0; }
+}
+@media (min-width: 550px) {
+  .container {
+    width: 80%; }
+  .column,
+  .columns {
+    margin-left: 4%; }
+  .column:first-child,
+  .columns:first-child {
+    margin-left: 0; }
+
+  .one.column,
+  .one.columns                    { width: 4.66666666667%; }
+  .two.columns                    { width: 13.3333333333%; }
+  .three.columns                  { width: 22%;            }
+  .four.columns                   { width: 30.6666666667%; }
+  .five.columns                   { width: 39.3333333333%; }
+  .six.columns                    { width: 48%;            }
+  .seven.columns                  { width: 56.6666666667%; }
+  .eight.columns                  { width: 65.3333333333%; }
+  .nine.columns                   { width: 74.0%;          }
+  .ten.columns                    { width: 82.6666666667%; }
+  .eleven.columns                 { width: 91.3333333333%; }
+  .twelve.columns                 { width: 100%; margin-left: 0; }
+
+  .one-third.column               { width: 30.6666666667%; }
+  .two-thirds.column              { width: 65.3333333333%; }
+
+  .one-half.column                { width: 48%; }
+
+  /* Offsets */
+  .offset-by-one.column,
+  .offset-by-one.columns          { margin-left: 8.66666666667%; }
+  .offset-by-two.column,
+  .offset-by-two.columns          { margin-left: 17.3333333333%; }
+  .offset-by-three.column,
+  .offset-by-three.columns        { margin-left: 26%;            }
+  .offset-by-four.column,
+  .offset-by-four.columns         { margin-left: 34.6666666667%; }
+  .offset-by-five.column,
+  .offset-by-five.columns         { margin-left: 43.3333333333%; }
+  .offset-by-six.column,
+  .offset-by-six.columns          { margin-left: 52%;            }
+  .offset-by-seven.column,
+  .offset-by-seven.columns        { margin-left: 60.6666666667%; }
+  .offset-by-eight.column,
+  .offset-by-eight.columns        { margin-left: 69.3333333333%; }
+  .offset-by-nine.column,
+  .offset-by-nine.columns         { margin-left: 78.0%;          }
+  .offset-by-ten.column,
+  .offset-by-ten.columns          { margin-left: 86.6666666667%; }
+  .offset-by-eleven.column,
+  .offset-by-eleven.columns       { margin-left: 95.3333333333%; }
+
+  .offset-by-one-third.column,
+  .offset-by-one-third.columns    { margin-left: 34.6666666667%; }
+  .offset-by-two-thirds.column,
+  .offset-by-two-thirds.columns   { margin-left: 69.3333333333%; }
+
+  .offset-by-one-half.column,
+  .offset-by-one-half.columns     { margin-left: 52%; }
+
+}
+html {
+  font-size: 62.5%; }
+body {
+  font-size: 1.5em; /* currently ems cause chrome bug misinterpreting rems on body element */
+  line-height: 1.6;
+  font-weight: 400;
+  font-family: "Raleway", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #222; }
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  margin-bottom: 2rem;
+  font-weight: 300; }
+h1 { font-size: 3.6rem; line-height: 1.2;  letter-spacing: -.1rem;}
+h2 { font-size: 3.4rem; line-height: 1.25; letter-spacing: -.1rem; }
+h3 { font-size: 3.2rem; line-height: 1.3;  letter-spacing: -.1rem; }
+h4 { font-size: 2.8rem; line-height: 1.35; letter-spacing: -.08rem; }
+h5 { font-size: 2.4rem; line-height: 1.5;  letter-spacing: -.05rem; }
+h6 { font-size: 1.5rem; line-height: 1.6;  letter-spacing: 0; }
+
+p {
+  margin-top: 0; }
+a {
+  color: #1EAEDB; }
+a:hover {
+  color: #0FA0CE; }
+.button,
+button,
+input[type="submit"],
+input[type="reset"],
+input[type="button"] {
+  display: inline-block;
+  height: 38px;
+  padding: 0 30px;
+  color: #555;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 38px;
+  letter-spacing: .1rem;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  background-color: transparent;
+  border-radius: 4px;
+  border: 1px solid #bbb;
+  cursor: pointer;
+  box-sizing: border-box; }
+.button:hover,
+button:hover,
+input[type="submit"]:hover,
+input[type="reset"]:hover,
+input[type="button"]:hover,
+.button:focus,
+button:focus,
+input[type="submit"]:focus,
+input[type="reset"]:focus,
+input[type="button"]:focus {
+  color: #333;
+  border-color: #888;
+  outline: 0; }
+.button.button-primary,
+button.button-primary,
+input[type="submit"].button-primary,
+input[type="reset"].button-primary,
+input[type="button"].button-primary {
+  color: #FFF;
+  background-color: #33C3F0;
+  border-color: #33C3F0; }
+.button.button-primary:hover,
+button.button-primary:hover,
+input[type="submit"].button-primary:hover,
+input[type="reset"].button-primary:hover,
+input[type="button"].button-primary:hover,
+.button.button-primary:focus,
+button.button-primary:focus,
+input[type="submit"].button-primary:focus,
+input[type="reset"].button-primary:focus,
+input[type="button"].button-primary:focus {
+  color: #FFF;
+  background-color: #1EAEDB;
+  border-color: #1EAEDB; }
+input[type="email"],
+input[type="number"],
+input[type="search"],
+input[type="text"],
+input[type="tel"],
+input[type="url"],
+input[type="password"],
+textarea,
+select {
+  height: 38px;
+  padding: 6px 10px; /* The 6px vertically centers text on FF, ignored by Webkit */
+  background-color: #fff;
+  border: 1px solid #D1D1D1;
+  border-radius: 4px;
+  box-shadow: none;
+  box-sizing: border-box; }
+/* Removes awkward default styles on some inputs for iOS */
+input[type="email"],
+input[type="number"],
+input[type="search"],
+input[type="text"],
+input[type="tel"],
+input[type="url"],
+input[type="password"],
+textarea {
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none; }
+textarea {
+  min-height: 65px;
+  padding-top: 6px;
+  padding-bottom: 6px; }
+input[type="email"]:focus,
+input[type="number"]:focus,
+input[type="search"]:focus,
+input[type="text"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+input[type="password"]:focus,
+textarea:focus,
+select:focus {
+  border: 1px solid #33C3F0;
+  outline: 0; }
+label,
+legend {
+  display: block;
+  margin-bottom: .5rem;
+  font-weight: 600; }
+fieldset {
+  padding: 0;
+  border-width: 0; }
+input[type="checkbox"],
+input[type="radio"] {
+  display: inline; }
+label > .label-body {
+  display: inline-block;
+  margin-left: .5rem;
+  font-weight: normal; }
+ul {
+  list-style: circle; }
+ol {
+  list-style: decimal; }
+ul ul,
+ul ol,
+ol ol,
+ol ul {
+  margin: 1.5rem 0 1.5rem 3rem;
+  font-size: 90%; }
+li > p {margin : 0;}
+th,
+td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #E1E1E1; }
+th:first-child,
+td:first-child {
+  padding-left: 0; }
+th:last-child,
+td:last-child {
+  padding-right: 0; }
+button,
+.button {
+  margin-bottom: 1rem; }
+input,
+textarea,
+select,
+fieldset {
+  margin-bottom: 1.5rem; }
+pre,
+blockquote,
+dl,
+figure,
+table,
+p,
+ul,
+ol,
+form {
+  margin-bottom: 1.0rem; }
+.u-full-width {
+  width: 100%;
+  box-sizing: border-box; }
+.u-max-full-width {
+  max-width: 100%;
+  box-sizing: border-box; }
+.u-pull-right {
+  float: right; }
+.u-pull-left {
+  float: left; }
+hr {
+  margin-top: 3rem;
+  margin-bottom: 3.5rem;
+  border-width: 0;
+  border-top: 1px solid #E1E1E1; }
+.container:after,
+.row:after,
+.u-cf {
+  content: "";
+  display: table;
+  clear: both; }
+
+pre {
+  display: block;
+  padding: 9.5px;
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.42857143;
+  word-break: break-all;
+  word-wrap: break-word;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+pre.hljl {
+  margin: 0 0 10px;
+  display: block;
+  background: #f5f5f5;
+  border-radius: 4px;
+  padding : 5px;
+}
+
+pre.output {
+  background: #ffffff;
+}
+
+pre.code {
+  background: #ffffff;
+}
+
+pre.julia-error {
+  color : red
+}
+
+code,
+kbd,
+pre,
+samp {
+  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+  font-size: 13px;
+}
+
+
+@media (min-width: 400px) {}
+@media (min-width: 550px) {}
+@media (min-width: 750px) {}
+@media (min-width: 1000px) {}
+@media (min-width: 1200px) {}
+
+h1.title {margin-top : 20px}
+img {max-width : 100%}
+div.title {text-align: center;}
+
+  </style>
+
+
+
+</HEAD>
+  <BODY>
+    <div class ="container">
+      <div class = "row">
+        <div class = "col-md-12 twelve columns">
+
+          <div class="title">
+            
+            
+            
+          </div>
+
+          <h1>Bioequivalence</h1>
+<p>Bioequivalence.jl is a package for performing bioequivalence analysis part of the PumasAI ecosystem for pharmaceutical science &#40;e.g. Pumas.jl: the simulation engine for PKPD, PBPK, QSP, and other models&#41;.</p>
+<p>The documentation provides a how-to and technical details for performing bioequivalence analysis using various designs.</p>
+<h2>Setup</h2>
+<p>Using JuliaPro,</p>
+<h3>Installing</h3>
+<pre><code>using Pkg;
+Pkg.add&#40;&quot;Bioequivalence&quot;&#41;</code></pre>
+<h3>Loading</h3>
+<pre><code>using Bioequivalence</code></pre>
+<h2>API</h2>
+<pre><code>BioequivalenceStudy&#40;data::AbstractDataFrame,
+                    endpoint::Union&#123;Integer, Symbol&#125; &#61; :AUC;
+                    id::Union&#123;Integer, Symbol&#125; &#61; :id,
+                    sequence::Union&#123;Integer, Symbol&#125; &#61; :sequence,
+                    period::Union&#123;Integer, Symbol&#125; &#61; :period,
+                    reference::Union&#123;Nothing, Char&#125; &#61; nothing,
+                    nonparametric::Bool &#61; occursin&#40;r&quot;&#40;?i&#41;tmax&quot;, string&#40;endpoint&#41;&#41;&#41;,
+                    reml::Bool &#61; false&#41;</code></pre>
+<p>Return a bioequivalence study</p>
+<p>Arguments</p>
+<ul>
+<li><p>data: must have id, sequence, period, and an endpoint.</p>
+</li>
+<li><p>id &#40;e.g., 1&#41;</p>
+</li>
+<li><p>sequence &#40;e.g., RT which means first R and T in the second period&#41;</p>
+</li>
+<li><p>period &#40;e.g, 1:4&#41;</p>
+</li>
+<li><p>endpoint: which variable is the endpoint?</p>
+</li>
+<li><p>id: which variable is the subject id?</p>
+</li>
+<li><p>sequence: which variable is the sequence?</p>
+</li>
+<li><p>period: which variable is the period?</p>
+</li>
+<li><p>reference: which formulation is the reference?</p>
+</li>
+</ul>
+<p>For example, in a design with RTTR|TRRT one can specify &#39;R&#39; to be the reference. By default, the reference is taken to be the first character &#40;alphabetically&#41;.</p>
+<ul>
+<li><p>nonparametric: use nonparametric method for analysis of the endpoint?</p>
+</li>
+<li><p>reml: if the design uses a linear mixed model should it optimize REML instead of ML?</p>
+</li>
+</ul>
+<p>Each bioequivalence study has the following fields:</p>
+<ul>
+<li><p>data: data used for the study</p>
+</li>
+<li><p>design: number of subjects in each sequence</p>
+</li>
+<li><p>model: statistical models used for the analysis</p>
+</li>
+<li><p>result: result based on previous components</p>
+</li>
+</ul>
+<p>Current designs include:</p>
+<ul>
+<li><p>Parallel &#40;e.g., R|T, A|B|C&#41;</p>
+</li>
+<li><p>2x2 &#40;e.g., RT|TR&#41;</p>
+</li>
+<li><p>Balaam &#40;e.g., RR|RT|TR|TT&#41;</p>
+</li>
+<li><p>Dual &#40;e.g., RTT|TRR&#41;</p>
+</li>
+<li><p>2S4P1 &#40;e.g., RTTR|TRRT&#41;</p>
+</li>
+<li><p>2S4P2 &#40;e.g., RTRT|TRTR&#41;</p>
+</li>
+<li><p>WD3F &#40;e.g., ABC|ACB|BAC|BCA|CAB|CBA&#41;</p>
+</li>
+<li><p>WD4F &#40;e.g., ABCD|CADB|DCBA|BDAC&#41;</p>
+</li>
+</ul>
+<h2>Designs</h2>
+<h3>Housekeeping</h3>
+<p>Loading a few packages to showcase the features provided by <code>Bioequivalence</code></p>
+
+
+<pre class='hljl'>
+<span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>DataFrames</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>StatsBase</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>Bioequivalence</span>
+</pre>
+
+
+
+<h3>Nonparametric</h3>
+<p>Nonparametric designs are included for analysis of endpoints such as Tmax.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>PJ31</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span><span class='hljl-oB'>.</span><span class='hljl-nf'>read</span><span class='hljl-p'>(</span><span class='hljl-nf'>string</span><span class='hljl-p'>(</span><span class='hljl-nf'>dirname</span><span class='hljl-p'>(</span><span class='hljl-nf'>pathof</span><span class='hljl-p'>(</span><span class='hljl-n'>Bioequivalence</span><span class='hljl-p'>)),</span><span class='hljl-t'>
+                       </span><span class='hljl-s'>&quot;/../data/Nonparametric/PJ2006_3_1.tsv&quot;</span><span class='hljl-p'>))</span><span class='hljl-t'>
+</span><span class='hljl-nf'>first</span><span class='hljl-p'>(</span><span class='hljl-n'>PJ31</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>6</span><span class='hljl-p'>)</span>
+</pre>
+
+
+
+<table class="data-frame"><thead><tr><th></th><th>id</th><th>sequence</th><th>period</th><th>Tmax</th></tr><tr><th></th><th>Int64</th><th>String</th><th>Int64</th><th>Float64</th></tr></thead><tbody><p>6 rows × 4 columns</p><tr><th>1</th><td>1</td><td>RT</td><td>1</td><td>0.5</td></tr><tr><th>2</th><td>1</td><td>RT</td><td>2</td><td>0.5</td></tr><tr><th>3</th><td>2</td><td>TR</td><td>1</td><td>1.0</td></tr><tr><th>4</th><td>2</td><td>TR</td><td>2</td><td>1.0</td></tr><tr><th>5</th><td>3</td><td>TR</td><td>1</td><td>0.5</td></tr><tr><th>6</th><td>3</td><td>TR</td><td>2</td><td>0.5</td></tr></tbody></table>
+
+<p>The average bioequivalence analysis can be requested through <code>BioequivalenceStudy</code></p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>Tmax</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>read_be</span><span class='hljl-p'>(</span><span class='hljl-n'>PJ31</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-sc'>:Tmax</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+Design: RT|TR
+
+Sequences: RT|TR &#40;2&#41;
+Periods: 1:2 &#40;2&#41;
+Subjects per Sequence: &#40;RT &#61; 17, TR &#61; 15&#41;
+
+Average Bioequivalence
+─────────────────────────────────────────────
+            lnLB      lnUB        LB       UB
+─────────────────────────────────────────────
+T - R  -0.202733  0.346574  0.816497  1.41421
+─────────────────────────────────────────────
+</pre>
+
+
+<p>When the name of the endpoint matches some form of Tmax &#40;case insensitive&#41; it defaults to nonparametric.</p>
+<p>Otherwise, it will attempt a parametric design. This can be overwriten through the <code>nonparametric</code> argument.</p>
+<p>Nonparametric analysis uses the Wilcoxon signed rank test.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>Tmax</span><span class='hljl-oB'>.</span><span class='hljl-n'>model</span>
+</pre>
+
+
+<pre class="output">
+1-element Array&#123;HypothesisTests.ApproximateSignedRankTest&#123;Float64&#125;,1&#125;:
+ Approximate Wilcoxon signed rank test
+-------------------------------------
+Population details:
+    parameter of interest:   Location parameter &#40;pseudomedian&#41;
+    value under h_0:         0
+    point estimate:          0.0
+    95&#37; confidence interval: &#40;-0.2027, 0.3466&#41;
+
+Test summary:
+    outcome with 95&#37; confidence: fail to reject h_0
+    two-sided p-value:           0.8774
+
+Details:
+    number of observations:      32
+    Wilcoxon rank-sum statistic: 182.0
+    rank sums:                   &#91;182.0, 169.0&#93;
+    adjustment for ties:         1848.0
+    normal approximation &#40;μ, σ&#41;: &#40;6.5, 38.88122940443113&#41;
+</pre>
+
+
+<p>Other endpoints can potentially be analyzed through a nonparametric method as well</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>PJ46</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span><span class='hljl-oB'>.</span><span class='hljl-nf'>read</span><span class='hljl-p'>(</span><span class='hljl-nf'>string</span><span class='hljl-p'>(</span><span class='hljl-nf'>dirname</span><span class='hljl-p'>(</span><span class='hljl-nf'>pathof</span><span class='hljl-p'>(</span><span class='hljl-n'>Bioequivalence</span><span class='hljl-p'>)),</span><span class='hljl-t'>
+                       </span><span class='hljl-s'>&quot;/../data/Williams/PJ2006_4_6.tsv&quot;</span><span class='hljl-p'>))</span><span class='hljl-t'>
+</span><span class='hljl-nf'>first</span><span class='hljl-p'>(</span><span class='hljl-n'>PJ46</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>6</span><span class='hljl-p'>)</span>
+</pre>
+
+
+
+<table class="data-frame"><thead><tr><th></th><th>id</th><th>sequence</th><th>period</th><th>AUC</th><th>Cmax</th></tr><tr><th></th><th>Int64</th><th>String</th><th>Int64</th><th>Float64</th><th>Float64</th></tr></thead><tbody><p>6 rows × 5 columns</p><tr><th>1</th><td>1</td><td>DCAB</td><td>1</td><td>2942.0</td><td>563.6</td></tr><tr><th>2</th><td>1</td><td>DCAB</td><td>2</td><td>2525.0</td><td>658.1</td></tr><tr><th>3</th><td>1</td><td>DCAB</td><td>3</td><td>278.0</td><td>55.6</td></tr><tr><th>4</th><td>1</td><td>DCAB</td><td>4</td><td>359.0</td><td>73.0</td></tr><tr><th>5</th><td>2</td><td>ADBC</td><td>1</td><td>484.0</td><td>108.4</td></tr><tr><th>6</th><td>2</td><td>ADBC</td><td>2</td><td>4190.0</td><td>818.0</td></tr></tbody></table>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>NP</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>read_be</span><span class='hljl-p'>(</span><span class='hljl-n'>PJ46</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>nonparametric</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-kc'>true</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+Design: ADBC|BACD|CBDA|DCAB
+
+Sequences: ADBC|BACD|CBDA|DCAB &#40;4&#41;
+Periods: 1:4 &#40;4&#41;
+Subjects per Sequence: &#40;ADBC &#61; 7, BACD &#61; 7, CBDA &#61; 7, DCAB &#61; 7&#41;
+
+Average Bioequivalence
+───────────────────────────────────────────────
+             lnLB       lnUB        LB       UB
+───────────────────────────────────────────────
+D - A   2.03582    2.11813    7.65856   8.31556
+B - A  -0.0734472  0.0543133  0.929185  1.05582
+C - A   2.05093    2.14861    7.7751    8.57292
+───────────────────────────────────────────────
+</pre>
+
+
+<h3>Parallel</h3>
+<p>Consider a parallel design dataset with balance between treatment groups such as Clayton and Leslie &#40;<a href="https://doi.org/10.1177/030006058100900608">1981</a>&#41;.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>ClaytonandLeslie1981</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span><span class='hljl-oB'>.</span><span class='hljl-nf'>read</span><span class='hljl-p'>(</span><span class='hljl-nf'>string</span><span class='hljl-p'>(</span><span class='hljl-nf'>dirname</span><span class='hljl-p'>(</span><span class='hljl-nf'>pathof</span><span class='hljl-p'>(</span><span class='hljl-n'>Bioequivalence</span><span class='hljl-p'>)),</span><span class='hljl-t'>
+                                       </span><span class='hljl-s'>&quot;/../data/Parallel/FSL2015_1.tsv&quot;</span><span class='hljl-p'>))</span><span class='hljl-t'>
+</span><span class='hljl-nf'>first</span><span class='hljl-p'>(</span><span class='hljl-n'>ClaytonandLeslie1981</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>6</span><span class='hljl-p'>)</span>
+</pre>
+
+
+
+<table class="data-frame"><thead><tr><th></th><th>id</th><th>sequence</th><th>period</th><th>AUC</th></tr><tr><th></th><th>Int64</th><th>String</th><th>Int64</th><th>Float64</th></tr></thead><tbody><p>6 rows × 4 columns</p><tr><th>1</th><td>1</td><td>T</td><td>1</td><td>2.52</td></tr><tr><th>2</th><td>2</td><td>T</td><td>1</td><td>8.87</td></tr><tr><th>3</th><td>3</td><td>T</td><td>1</td><td>0.79</td></tr><tr><th>4</th><td>4</td><td>T</td><td>1</td><td>1.68</td></tr><tr><th>5</th><td>5</td><td>T</td><td>1</td><td>6.95</td></tr><tr><th>6</th><td>6</td><td>T</td><td>1</td><td>1.05</td></tr></tbody></table>
+
+<p>The bioequivalence analysis can be requested through <code>BioequivalenceStudy</code> or its alias <code>read_be</code>.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-cs'># notice it defaults to the AUC endpoint</span><span class='hljl-t'>
+</span><span class='hljl-n'>Parallel</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>read_be</span><span class='hljl-p'>(</span><span class='hljl-n'>ClaytonandLeslie1981</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+Design: R|T
+
+Sequences: R|T &#40;2&#41;
+Periods: 1:1 &#40;1&#41;
+Subjects per Sequence: &#40;R &#61; 9, T &#61; 9&#41;
+
+Average Bioequivalence
+─────────────────────────────────────────────────────────────────────────────
+              PE        SE      lnLB       lnUB       GMR        LB        UB
+─────────────────────────────────────────────────────────────────────────────
+T - R  -0.721906  0.333328  -1.31755  -0.126258  0.485825  0.267789  0.881387
+─────────────────────────────────────────────────────────────────────────────
+</pre>
+
+
+<p>The output shows the design, statistical model, and result.</p>
+<p>One can access the statistical model directly through</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>Parallel</span><span class='hljl-oB'>.</span><span class='hljl-n'>model</span>
+</pre>
+
+
+<pre class="output">
+1-element Array&#123;HypothesisTests.UnequalVarianceTTest,1&#125;:
+ Two sample t-test &#40;unequal variance&#41;
+------------------------------------
+Population details:
+    parameter of interest:   Mean difference
+    value under h_0:         0
+    point estimate:          -0.7219063401460275
+    95&#37; confidence interval: &#40;-1.4507, 0.0069&#41;
+
+Test summary:
+    outcome with 95&#37; confidence: fail to reject h_0
+    two-sided p-value:           0.0519
+
+Details:
+    number of observations:   &#91;9,9&#93;
+    t-statistic:              -2.1657564404915037
+    degrees of freedom:       11.633717042877814
+    empirical standard error: 0.3333275739825092
+</pre>
+
+
+<p>The results can be accessed through</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>Parallel</span><span class='hljl-oB'>.</span><span class='hljl-n'>result</span>
+</pre>
+
+
+
+<table class="data-frame"><thead><tr><th></th><th>Parameter</th><th>PE</th><th>SE</th><th>lnLB</th><th>lnUB</th><th>GMR</th><th>LB</th><th>UB</th></tr><tr><th></th><th>String</th><th>Float64</th><th>Float64</th><th>Float64</th><th>Float64</th><th>Float64</th><th>Float64</th><th>Float64</th></tr></thead><tbody><p>1 rows × 8 columns</p><tr><th>1</th><td>T - R</td><td>-0.721906</td><td>0.333328</td><td>-1.31755</td><td>-0.126258</td><td>0.485825</td><td>0.267789</td><td>0.881387</td></tr></tbody></table>
+
+<p>or calling <code>coeftable</code> on the object</p>
+
+
+<pre class='hljl'>
+<span class='hljl-nf'>coeftable</span><span class='hljl-p'>(</span><span class='hljl-n'>Parallel</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+─────────────────────────────────────────────────────────────────────────────
+              PE        SE      lnLB       lnUB       GMR        LB        UB
+─────────────────────────────────────────────────────────────────────────────
+T - R  -0.721906  0.333328  -1.31755  -0.126258  0.485825  0.267789  0.881387
+─────────────────────────────────────────────────────────────────────────────
+</pre>
+
+
+<p>Notice that the results are validated with those reported in Fuglsang, Schütz, and Labes &#40;<a href="https://doi.org/10.1208/s12248-014-9704-6">2015</a>&#41;. The Geometric Means Ratio &#40;GMR&#41; has a point estimate of &#40;48.58&#41; and a 90&#37; confidence interval of &#40;26.78, 88.14&#41;. These are the values reported in the study obtained with various statistical packages with the Welch correction.</p>
+<h3>Crossover</h3>
+<p>The most common bioequivalence design is perhaps the 2x2 crossover &#40;RT|TR&#41;. Consider a dataset from Schütz, Labes, and Fuglsang &#40;<a href="https://doi.org/10.1208/s12248-014-9661-0">2014</a>&#41; which has been simulated with an extreme range in raw data, outliers, and imbalance between sequences and a large number of subjects.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>SLF2014</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span><span class='hljl-oB'>.</span><span class='hljl-nf'>read</span><span class='hljl-p'>(</span><span class='hljl-nf'>string</span><span class='hljl-p'>(</span><span class='hljl-nf'>dirname</span><span class='hljl-p'>(</span><span class='hljl-nf'>pathof</span><span class='hljl-p'>(</span><span class='hljl-n'>Bioequivalence</span><span class='hljl-p'>)),</span><span class='hljl-t'>
+                          </span><span class='hljl-s'>&quot;/../data/2S2P/SLF2014_8.tsv&quot;</span><span class='hljl-p'>))</span><span class='hljl-t'>
+</span><span class='hljl-nf'>first</span><span class='hljl-p'>(</span><span class='hljl-n'>SLF2014</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>6</span><span class='hljl-p'>)</span>
+</pre>
+
+
+
+<table class="data-frame"><thead><tr><th></th><th>id</th><th>period</th><th>sequence</th><th>AUC</th></tr><tr><th></th><th>Int64</th><th>Int64</th><th>String</th><th>Float64</th></tr></thead><tbody><p>6 rows × 4 columns</p><tr><th>1</th><td>1</td><td>1</td><td>TR</td><td>168.407</td></tr><tr><th>2</th><td>1</td><td>2</td><td>TR</td><td>210.919</td></tr><tr><th>3</th><td>2</td><td>1</td><td>TR</td><td>131.031</td></tr><tr><th>4</th><td>2</td><td>2</td><td>TR</td><td>67.4314</td></tr><tr><th>5</th><td>3</td><td>1</td><td>TR</td><td>151.737</td></tr><tr><th>6</th><td>3</td><td>2</td><td>TR</td><td>85.1296</td></tr></tbody></table>
+
+<p>The bioequivalence analysis can be requested through <code>BioequivalenceStudy</code></p>
+
+
+<pre class='hljl'>
+<span class='hljl-cs'># notice it defaults to the AUC endpoint</span><span class='hljl-t'>
+</span><span class='hljl-n'>Crossover</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>read_be</span><span class='hljl-p'>(</span><span class='hljl-n'>SLF2014</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+Design: RT|TR
+
+Sequences: RT|TR &#40;2&#41;
+Periods: 1:2 &#40;2&#41;
+Subjects per Sequence: &#40;RT &#61; 288, TR &#61; 429&#41;
+
+Average Bioequivalence
+───────────────────────────────────────────────────────────────────────────────
+               PE        SE       lnLB        lnUB       GMR        LB       UB
+───────────────────────────────────────────────────────────────────────────────
+T - R  -0.0680309  0.044609  -0.141501  0.00543947  0.934232  0.868054  1.00545
+───────────────────────────────────────────────────────────────────────────────
+</pre>
+
+
+<p>As with other designs one can access the specific elements of the models use in the analysis.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-nf'>loglikelihood</span><span class='hljl-p'>(</span><span class='hljl-n'>Crossover</span><span class='hljl-oB'>.</span><span class='hljl-n'>model</span><span class='hljl-oB'>.</span><span class='hljl-n'>model</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+-1265.3503174162302
+</pre>
+
+
+<p>The results are obtained through,</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>Crossover</span><span class='hljl-oB'>.</span><span class='hljl-n'>result</span>
+</pre>
+
+
+
+<table class="data-frame"><thead><tr><th></th><th>Parameter</th><th>PE</th><th>SE</th><th>lnLB</th><th>lnUB</th><th>GMR</th><th>LB</th><th>UB</th></tr><tr><th></th><th>String</th><th>Float64</th><th>Float64</th><th>Float64</th><th>Float64</th><th>Float64</th><th>Float64</th><th>Float64</th></tr></thead><tbody><p>1 rows × 8 columns</p><tr><th>1</th><td>T - R</td><td>-0.0680309</td><td>0.044609</td><td>-0.141501</td><td>0.00543947</td><td>0.934232</td><td>0.868054</td><td>1.00545</td></tr></tbody></table>
+
+<p>Crossover 2x2 designs are validated with Schütz, Labes, and Fuglsang &#40;<a href="https://doi.org/10.1208/s12248-014-9661-0">2014</a>&#41; and Patterson and Jones &#40;2006&#41;. In this example, the estimate for the GMR is &#40;93.42&#41; with a 90&#37; confidence interval of &#40;86.81, 100.55&#41;.</p>
+<h3>Balaam</h3>
+<p>The Balaam design &#40;RR|RT|TR|TT&#41; is explored with a dataset from Chow and Liu &#40;2009&#41;.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>ChowandLiu2009</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span><span class='hljl-oB'>.</span><span class='hljl-nf'>read</span><span class='hljl-p'>(</span><span class='hljl-nf'>string</span><span class='hljl-p'>(</span><span class='hljl-nf'>dirname</span><span class='hljl-p'>(</span><span class='hljl-nf'>pathof</span><span class='hljl-p'>(</span><span class='hljl-n'>Bioequivalence</span><span class='hljl-p'>)),</span><span class='hljl-t'>
+                                 </span><span class='hljl-s'>&quot;/../data/Balaam/CL2009_9_2_1.tsv&quot;</span><span class='hljl-p'>))</span><span class='hljl-t'>
+</span><span class='hljl-nf'>first</span><span class='hljl-p'>(</span><span class='hljl-n'>ChowandLiu2009</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>6</span><span class='hljl-p'>)</span>
+</pre>
+
+
+
+<table class="data-frame"><thead><tr><th></th><th>id</th><th>sequence</th><th>period</th><th>AUC</th></tr><tr><th></th><th>Int64</th><th>String</th><th>Int64</th><th>Int64</th></tr></thead><tbody><p>6 rows × 4 columns</p><tr><th>1</th><td>1</td><td>TT</td><td>1</td><td>280</td></tr><tr><th>2</th><td>1</td><td>TT</td><td>2</td><td>482</td></tr><tr><th>3</th><td>2</td><td>TT</td><td>1</td><td>219</td></tr><tr><th>4</th><td>2</td><td>TT</td><td>2</td><td>161</td></tr><tr><th>5</th><td>3</td><td>TT</td><td>1</td><td>230</td></tr><tr><th>6</th><td>3</td><td>TT</td><td>2</td><td>99</td></tr></tbody></table>
+
+<p>The data has the same specification as other crossover studies.</p>
+<p>The analysis follows similarly as well.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-cs'># notice it defaults to the AUC endpoint</span><span class='hljl-t'>
+</span><span class='hljl-n'>Balaam</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>read_be</span><span class='hljl-p'>(</span><span class='hljl-n'>ChowandLiu2009</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+Design: RR|RT|TR|TT
+
+Sequences: RR|RT|TR|TT &#40;4&#41;
+Periods: 1:2 &#40;2&#41;
+Subjects per Sequence: &#40;RR &#61; 6, RT &#61; 6, TR &#61; 6, TT &#61; 6&#41;
+Regulatory constant for reference-scaled estimates: 0.10
+Auxiliary parameter for reference-scaled estimates: 1.11
+
+Average Bioequivalence
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+              PE         SE       lnLB       lnUB       GMR       LB       UB     scLB     scUB  Varratio  VarLB    VarUB
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+T - R  -0.129419  0.0936591  -0.290245  0.0314075  0.878606  0.74808  1.03191  0.75401  1.32624   6.49813  3.871  10.9082
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+</pre>
+
+
+<p>We can also obtain the results for the intra-subject variabilities through</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>Balaam</span><span class='hljl-oB'>.</span><span class='hljl-n'>model</span><span class='hljl-oB'>.</span><span class='hljl-n'>σ</span>
+</pre>
+
+
+<pre class="output">
+0.2294170516947747
+</pre>
+
+
+<p>Designs with repeated measures include rescaled parameter estimates and variance analysis.</p>
+<p>The rescaled parameter estimates are especially of interest when the reference drug is a highly variable drug &#40;HVD&#41; or a narrow therapeutic index &#40;NTI&#41; drug &#40;Haidar et al. 2008&#41;.</p>
+<p>The default values are:</p>
+<ul>
+<li><p>regulatory constant for reference-scaled estimates: 0.1</p>
+</li>
+<li><p>auxiliary parameter for reference-scaled estimates: 1.11</p>
+</li>
+</ul>
+<p>These maybe be overwriten by passing the keyword arguments &#40;see the docstring of <code>read_be</code> for more details&#41;.</p>
+<h3>Dual</h3>
+<p>Consider the example 4.1 in Patterson and Jones &#40;2006&#41;</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>PJ41</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span><span class='hljl-oB'>.</span><span class='hljl-nf'>read</span><span class='hljl-p'>(</span><span class='hljl-nf'>string</span><span class='hljl-p'>(</span><span class='hljl-nf'>dirname</span><span class='hljl-p'>(</span><span class='hljl-nf'>pathof</span><span class='hljl-p'>(</span><span class='hljl-n'>Bioequivalence</span><span class='hljl-p'>)),</span><span class='hljl-t'>
+                       </span><span class='hljl-s'>&quot;/../data/Dual/PJ2006_4_1.tsv&quot;</span><span class='hljl-p'>))</span><span class='hljl-t'>
+</span><span class='hljl-nf'>first</span><span class='hljl-p'>(</span><span class='hljl-n'>PJ41</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>6</span><span class='hljl-p'>)</span>
+</pre>
+
+
+
+<table class="data-frame"><thead><tr><th></th><th>id</th><th>sequence</th><th>period</th><th>AUC</th><th>Cmax</th></tr><tr><th></th><th>Int64</th><th>String</th><th>Int64</th><th>Float64⍰</th><th>Float64⍰</th></tr></thead><tbody><p>6 rows × 5 columns</p><tr><th>1</th><td>101</td><td>TRR</td><td>1</td><td>12.26</td><td>0.511</td></tr><tr><th>2</th><td>101</td><td>TRR</td><td>2</td><td>16.19</td><td>0.688</td></tr><tr><th>3</th><td>101</td><td>TRR</td><td>3</td><td>11.34</td><td>0.533</td></tr><tr><th>4</th><td>102</td><td>TRR</td><td>1</td><td>397.98</td><td>13.27</td></tr><tr><th>5</th><td>102</td><td>TRR</td><td>2</td><td>267.63</td><td>7.933</td></tr><tr><th>6</th><td>102</td><td>TRR</td><td>3</td><td>487.55</td><td>12.952</td></tr></tbody></table>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>Dual</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>read_be</span><span class='hljl-p'>(</span><span class='hljl-n'>PJ41</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-sc'>:Cmax</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+Design: RTT|TRR
+
+Sequences: RTT|TRR &#40;2&#41;
+Periods: 1:3 &#40;3&#41;
+Subjects per Sequence: &#40;RTT &#61; 47, TRR &#61; 48&#41;
+Regulatory constant for reference-scaled estimates: 0.10
+Auxiliary parameter for reference-scaled estimates: 1.11
+
+Average Bioequivalence
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+               PE         SE       lnLB       lnUB       GMR        LB       UB     scLB     scUB  Varratio    VarLB    VarUB
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+T - R  -0.0565121  0.0685313  -0.169803  0.0567792  0.945055  0.843831  1.05842  0.57774  1.73088   1.23391  1.03853  1.46604
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+</pre>
+
+
+<h3>2S4P Designs</h3>
+<p>For 2S4P designs both RRTT|TTRR and RTRT|TRTR are supported</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>PJ43</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span><span class='hljl-oB'>.</span><span class='hljl-nf'>read</span><span class='hljl-p'>(</span><span class='hljl-nf'>string</span><span class='hljl-p'>(</span><span class='hljl-nf'>dirname</span><span class='hljl-p'>(</span><span class='hljl-nf'>pathof</span><span class='hljl-p'>(</span><span class='hljl-n'>Bioequivalence</span><span class='hljl-p'>)),</span><span class='hljl-t'>
+                       </span><span class='hljl-s'>&quot;/../data/2S4P/PJ2006_4_3.tsv&quot;</span><span class='hljl-p'>))</span><span class='hljl-t'>
+</span><span class='hljl-nf'>first</span><span class='hljl-p'>(</span><span class='hljl-n'>PJ43</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>6</span><span class='hljl-p'>)</span>
+</pre>
+
+
+
+<table class="data-frame"><thead><tr><th></th><th>id</th><th>sequence</th><th>period</th><th>AUC</th><th>Cmax</th></tr><tr><th></th><th>Int64</th><th>String</th><th>Int64</th><th>Int64⍰</th><th>Int64⍰</th></tr></thead><tbody><p>6 rows × 5 columns</p><tr><th>1</th><td>1</td><td>RTTR</td><td>1</td><td>10671</td><td>817</td></tr><tr><th>2</th><td>1</td><td>RTTR</td><td>2</td><td>12772</td><td>1439</td></tr><tr><th>3</th><td>1</td><td>RTTR</td><td>3</td><td>13151</td><td>1310</td></tr><tr><th>4</th><td>1</td><td>RTTR</td><td>4</td><td>11206</td><td>1502</td></tr><tr><th>5</th><td>2</td><td>TRRT</td><td>1</td><td>6518</td><td>1393</td></tr><tr><th>6</th><td>2</td><td>TRRT</td><td>2</td><td>6068</td><td>1372</td></tr></tbody></table>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>Inner</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>read_be</span><span class='hljl-p'>(</span><span class='hljl-n'>PJ43</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+Design: RTTR|TRRT
+
+Sequences: RTTR|TRRT &#40;2&#41;
+Periods: 1:4 &#40;4&#41;
+Subjects per Sequence: &#40;RTTR &#61; 8, TRRT &#61; 9&#41;
+Regulatory constant for reference-scaled estimates: 0.10
+Auxiliary parameter for reference-scaled estimates: 1.11
+
+Average Bioequivalence
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+              PE         SE         lnLB       lnUB      GMR        LB       UB      scLB     scUB  Varratio     VarLB   VarUB
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+T - R  0.0356935  0.0226361  -0.00230475  0.0736918  1.03634  0.997698  1.07647  0.908307  1.10095   1.29984  0.962939  1.7546
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+</pre>
+
+
+
+<pre class='hljl'>
+<span class='hljl-n'>PJ44</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span><span class='hljl-oB'>.</span><span class='hljl-nf'>read</span><span class='hljl-p'>(</span><span class='hljl-nf'>string</span><span class='hljl-p'>(</span><span class='hljl-nf'>dirname</span><span class='hljl-p'>(</span><span class='hljl-nf'>pathof</span><span class='hljl-p'>(</span><span class='hljl-n'>Bioequivalence</span><span class='hljl-p'>)),</span><span class='hljl-t'>
+                       </span><span class='hljl-s'>&quot;/../data/2S4P/PJ2006_4_4.tsv&quot;</span><span class='hljl-p'>))</span><span class='hljl-t'>
+</span><span class='hljl-nf'>first</span><span class='hljl-p'>(</span><span class='hljl-n'>PJ44</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>6</span><span class='hljl-p'>)</span>
+</pre>
+
+
+
+<table class="data-frame"><thead><tr><th></th><th>id</th><th>sequence</th><th>period</th><th>AUC</th><th>Cmax</th></tr><tr><th></th><th>Int64</th><th>String</th><th>Int64</th><th>Float64⍰</th><th>Float64⍰</th></tr></thead><tbody><p>6 rows × 5 columns</p><tr><th>1</th><td>1</td><td>RTRT</td><td>1</td><td>812.6</td><td>99.85</td></tr><tr><th>2</th><td>1</td><td>RTRT</td><td>2</td><td>1173.7</td><td>204.09</td></tr><tr><th>3</th><td>1</td><td>RTRT</td><td>3</td><td>889.1</td><td>170.94</td></tr><tr><th>4</th><td>1</td><td>RTRT</td><td>4</td><td>620.1</td><td>112.78</td></tr><tr><th>5</th><td>2</td><td>TRTR</td><td>1</td><td>216.3</td><td>29.06</td></tr><tr><th>6</th><td>2</td><td>TRTR</td><td>2</td><td>338.0</td><td>50.48</td></tr></tbody></table>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>Outer</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>read_be</span><span class='hljl-p'>(</span><span class='hljl-n'>PJ44</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-sc'>:Cmax</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+Design: RTRT|TRTR
+
+Sequences: RTRT|TRTR &#40;2&#41;
+Periods: 1:4 &#40;4&#41;
+Subjects per Sequence: &#40;RTRT &#61; 27, TRTR &#61; 27&#41;
+Regulatory constant for reference-scaled estimates: 0.10
+Auxiliary parameter for reference-scaled estimates: 1.11
+
+Average Bioequivalence
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+             PE         SE     lnLB      lnUB      GMR       LB       UB      scLB     scUB  Varratio    VarLB    VarUB
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+T - R  0.413998  0.0745634  0.29061  0.537386  1.51285  1.33724  1.71153  0.566073  1.76656  0.937014  0.79558  1.10359
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+</pre>
+
+
+<h3>Williams</h3>
+<p>Consider a 3 formulations Williams design</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>PJ45</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span><span class='hljl-oB'>.</span><span class='hljl-nf'>read</span><span class='hljl-p'>(</span><span class='hljl-nf'>string</span><span class='hljl-p'>(</span><span class='hljl-nf'>dirname</span><span class='hljl-p'>(</span><span class='hljl-nf'>pathof</span><span class='hljl-p'>(</span><span class='hljl-n'>Bioequivalence</span><span class='hljl-p'>)),</span><span class='hljl-t'>
+                       </span><span class='hljl-s'>&quot;/../data/Williams/PJ2006_4_5.tsv&quot;</span><span class='hljl-p'>))</span><span class='hljl-t'>
+</span><span class='hljl-nf'>first</span><span class='hljl-p'>(</span><span class='hljl-n'>PJ45</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>6</span><span class='hljl-p'>)</span>
+</pre>
+
+
+
+<table class="data-frame"><thead><tr><th></th><th>id</th><th>sequence</th><th>period</th><th>AUC</th><th>Cmax</th></tr><tr><th></th><th>Int64</th><th>String</th><th>Int64</th><th>Int64⍰</th><th>Int64⍰</th></tr></thead><tbody><p>6 rows × 5 columns</p><tr><th>1</th><td>1</td><td>SRT</td><td>1</td><td>7260</td><td>1633</td></tr><tr><th>2</th><td>1</td><td>SRT</td><td>2</td><td>6463</td><td>1366</td></tr><tr><th>3</th><td>1</td><td>SRT</td><td>3</td><td>8759</td><td>2141</td></tr><tr><th>4</th><td>2</td><td>RTS</td><td>1</td><td>3457</td><td>776</td></tr><tr><th>5</th><td>2</td><td>RTS</td><td>2</td><td>6556</td><td>2387</td></tr><tr><th>6</th><td>2</td><td>RTS</td><td>3</td><td>4081</td><td>1355</td></tr></tbody></table>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>W3F</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>read_be</span><span class='hljl-p'>(</span><span class='hljl-n'>PJ45</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+Design: RST|RTS|SRT|STR|TRS|TSR
+
+Sequences: RST|RTS|SRT|STR|TRS|TSR &#40;6&#41;
+Periods: 1:3 &#40;3&#41;
+Subjects per Sequence: &#40;RST &#61; 9, RTS &#61; 11, SRT &#61; 11, STR &#61; 10, TRS &#61; 11, TSR &#61; 10&#41;
+
+Average Bioequivalence
+─────────────────────────────────────────────────────────────────────────
+             PE         SE      lnLB      lnUB      GMR       LB       UB
+─────────────────────────────────────────────────────────────────────────
+S - R  0.341072  0.0378374  0.278325  0.403819  1.40645  1.32092  1.49753
+T - R  0.149693  0.0378182  0.086978  0.212408  1.16148  1.09087  1.23665
+─────────────────────────────────────────────────────────────────────────
+</pre>
+
+
+<p>Imagine for a moment that the reference formulation is actually S instead of R. One can pass such a parameter as following.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>W3F</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>read_be</span><span class='hljl-p'>(</span><span class='hljl-n'>PJ45</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>reference</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-sc'>&#39;S&#39;</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+Design: RST|RTS|SRT|STR|TRS|TSR
+
+Sequences: RST|RTS|SRT|STR|TRS|TSR &#40;6&#41;
+Periods: 1:3 &#40;3&#41;
+Subjects per Sequence: &#40;RST &#61; 9, RTS &#61; 11, SRT &#61; 11, STR &#61; 10, TRS &#61; 11, TSR &#61; 10&#41;
+
+Average Bioequivalence
+───────────────────────────────────────────────────────────────────────────────
+              PE         SE       lnLB       lnUB       GMR        LB        UB
+───────────────────────────────────────────────────────────────────────────────
+R - S  -0.341072  0.0378374  -0.403819  -0.278325  0.711008  0.667765  0.757051
+T - S  -0.191379  0.0380271  -0.254441  -0.128318  0.825819  0.77535   0.879574
+───────────────────────────────────────────────────────────────────────────────
+</pre>
+
+
+<p>Williams designs for four formulations are available as well</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>PJ46</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span><span class='hljl-oB'>.</span><span class='hljl-nf'>read</span><span class='hljl-p'>(</span><span class='hljl-nf'>string</span><span class='hljl-p'>(</span><span class='hljl-nf'>dirname</span><span class='hljl-p'>(</span><span class='hljl-nf'>pathof</span><span class='hljl-p'>(</span><span class='hljl-n'>Bioequivalence</span><span class='hljl-p'>)),</span><span class='hljl-t'>
+                       </span><span class='hljl-s'>&quot;/../data/Williams/PJ2006_4_6.tsv&quot;</span><span class='hljl-p'>))</span><span class='hljl-t'>
+</span><span class='hljl-nf'>first</span><span class='hljl-p'>(</span><span class='hljl-n'>PJ46</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>6</span><span class='hljl-p'>)</span>
+</pre>
+
+
+
+<table class="data-frame"><thead><tr><th></th><th>id</th><th>sequence</th><th>period</th><th>AUC</th><th>Cmax</th></tr><tr><th></th><th>Int64</th><th>String</th><th>Int64</th><th>Float64</th><th>Float64</th></tr></thead><tbody><p>6 rows × 5 columns</p><tr><th>1</th><td>1</td><td>DCAB</td><td>1</td><td>2942.0</td><td>563.6</td></tr><tr><th>2</th><td>1</td><td>DCAB</td><td>2</td><td>2525.0</td><td>658.1</td></tr><tr><th>3</th><td>1</td><td>DCAB</td><td>3</td><td>278.0</td><td>55.6</td></tr><tr><th>4</th><td>1</td><td>DCAB</td><td>4</td><td>359.0</td><td>73.0</td></tr><tr><th>5</th><td>2</td><td>ADBC</td><td>1</td><td>484.0</td><td>108.4</td></tr><tr><th>6</th><td>2</td><td>ADBC</td><td>2</td><td>4190.0</td><td>818.0</td></tr></tbody></table>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>W4F</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>read_be</span><span class='hljl-p'>(</span><span class='hljl-n'>PJ46</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+Design: ADBC|BACD|CBDA|DCAB
+
+Sequences: ADBC|BACD|CBDA|DCAB &#40;4&#41;
+Periods: 1:4 &#40;4&#41;
+Subjects per Sequence: &#40;ADBC &#61; 7, BACD &#61; 7, CBDA &#61; 7, DCAB &#61; 7&#41;
+
+Average Bioequivalence
+───────────────────────────────────────────────────────────────────────────────
+               PE         SE        lnLB       lnUB      GMR        LB       UB
+───────────────────────────────────────────────────────────────────────────────
+D - A  0.00468645  0.0342341  -0.0523004  0.0616733  1.0047   0.949044  1.06361
+B - A  2.09353     0.0342341   2.03654    2.15052    8.11351  7.66407   8.5893 
+C - A  2.05738     0.0342341   2.0004     2.11437    7.82546  7.39198   8.28436
+───────────────────────────────────────────────────────────────────────────────
+</pre>
+
+
+<h2>References</h2>
+<p>Chow, Shein-Chung, and Jen-pei Liu. 2009. Design and Analysis of Bioavailability and Bioequivalence Studies. 3rd ed. Chapman &amp; Hall/CRC Biostatistics Series 27. Boca Raton: CRC Press.</p>
+<p>Clayton, D, and A Leslie. 1981. &quot;The Bioavailability of Erythromycin Stearate versus Enteric-Coated Erythromycin Base When Taken Immediately before and after Food.&quot; Journal of International Medical Research 9 &#40;6&#41;: 470-77. <a href="https://doi.org/10.1177/030006058100900608">DOI:10.1177/030006058100900608</a>.</p>
+<p>Fuglsang, Anders, Helmut Schütz, and Detlew Labes. 2015. &quot;Reference Datasets for Bioequivalence Trials in a Two-Group Parallel Design.&quot; The AAPS Journal 17 &#40;2&#41;: 400-404. <a href="https://doi.org/10.1208/s12248-014-9704-6">DOI:10.1208/s12248-014-9704-6</a>.</p>
+<p>Haidar, Sam H., Fairouz Makhlouf, Donald J. Schuirmann, Terry Hyslop, Barbara Davit, Dale Conner, and Lawrence X. Yu. 2008. &quot;Evaluation of a Scaling Approach for the Bioequivalence of Highly Variable Drugs.&quot; The AAPS Journal 10 &#40;3&#41;: 450-54. <a href="https://doi.org/10.1208/s12248-008-9053-4">DOI:10.1208/s12248-008-9053-4</a>.</p>
+<p>Patterson, Scott D, and Byron Jones. 2006. Bioequivalence and Statistics in Clinical Pharmacology. Boca Raton: Chapman &amp; Hall/CRC. ISBN: 9781420034936.</p>
+<p>Schütz, Helmut, Detlew Labes, and Anders Fuglsang. 2014. &quot;Reference Datasets for 2-Treatment, 2-Sequence, 2-Period Bioequivalence Studies.&quot; The AAPS Journal 16 &#40;6&#41;: 1292-97. <a href="https://doi.org/10.1208/s12248-014-9661-0">DOI:10.1208/s12248-014-9661-0</a>.</p>
+
+
+
+          <HR/>
+          <div class="footer"><p>
+          Published from <a href="manual.jmd">manual.jmd</a> using
+          <a href="http://github.com/mpastell/Weave.jl">Weave.jl</a>
+           on 2019-08-29.
+          <p></div>
+
+
+        </div>
+      </div>
+    </div>
+  </BODY>
+</HTML>

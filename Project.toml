@@ -3,9 +3,12 @@ uuid = "b7b41870-aa11-11e9-048a-09266ec4a62f"
 version = "0.0.1"
 
 [deps]
+Bioequivalence = "4ece37e6-a012-11e8-38cd-91247efc2c34"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 IJulia = "7073ff75-c697-5162-941a-fcdaad2a7d2a"
 InteractiveUtils = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 Weave = "44d3d7a6-8a23-5bf8-98c5-b353f8df5ec9"
