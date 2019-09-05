@@ -1,0 +1,131 @@
+---
+title: IVIVC Tutorial
+author: Shubham Maddhashiya
+date: Sep 5, 2019
+---
+
+# Introduction
+
+This is an introduction and walk-through `IVIVC.jl`, a submodule under software `Pumas.jl`.
+
+In this tutorial, we will establish In Vitro In Vivo Correlation model and predict Plasma Concentration Profile using `IVIVC.jl` for a given ivivc dataset.
+
+The Basic workflow of IVIVC.jl is:
+  1. Read the data
+  2. InVitro Modeling
+  3. Unit Impulse Response (UIR)
+  4. Deconvolution of InVivo data
+  5. Establishing InVitro InVivo Correlation Model
+  6. Validation
+
+
+## Installation
+
+This package is under `Pumas.jl`, So if you haven't installed `Pumas.jl`. Please follow the instructions [here](https://tutorials.pumas.ai/html/introduction/introduction.html)
+
+
+## Getting Started
+
+Load the package
+
+```julia
+using Pumas.IVIVC
+```
+
+## Read the data
+
+First of all, let's read the given data set, we will have three dataset file for InVitro, Reference InVivo, and InVivo data, one for each.
+
+`read_vitro`, `read_uir` and `read_vivo` functions are to read and parse InVitro, Reference InVivo, and InVivo data csv file, respectively.
+
+These functions take `path` to the data file (or `DataFrame` object of csv file) and accept keyword args for columns headers.
+
+By Default, keyword args for `read_vitro` functions are `id=:id, time=:time, conc=:conc, formulation=:form`, for `read_uir` keyword args are `time=:time, conc=:conc, formulation=:form, dose=:dose`,
+and for `read_vivo` function, these are `time=:time, conc=:conc, formulation=:form, dose=:dose`.
+
+
+```julia
+vivo_data = read_vivo("./vivo_data.csv");
+```
+
+if you have a different header for any column name, you can pass column name as keyword arg.
+For example, if we have time column header `conc` for plasma concentration column, then we can do like this.
+
+
+```julia
+vivo_data = read_vivo("./vivo_data.csv", conc=:conc);
+```
+
+These functions return array of subject or batch sorted by their subject-id of batch-id.
+Each entry in this array is mapping of formulation type to corresponding data for a particular subject or batch of data.
+
+If you have your data already in DataFrame object, you can pass it instead of `path` and rest will follow the same.
+
+
+```julia
+using CSV
+df = CSV.read("./vivo_data.csv")
+vivo_data = read_vivo(df);
+```
+
+Let's see how the data are packed inside `vivo_data` and take the `fast` formulation (one of the formulation types in our data) data for the first subject.
+
+
+```julia
+vivo_fast_data = vivo_data[1]["fast"]
+```
+
+Time array of this data
+
+
+```julia
+vivo_fast_data.time
+```
+
+Similar syntax follows for `read_uir` and `read_vitro` functions.
+
+## InVitro Modeling
+
+In InVitro data, We have time series data of fraction dissolved amount of drug. Using this data, we have to
+fit a predefined model, which, of course will be continuous. Standard models available in IVIVC.jl are
+Emax, Weibull, Double Weibull and Makoid banakar. You can also use custom model by passing function of the model.
+
+`estimate_fdiss` function takes object to vitro data and `Symbol` to model to fit (which are available in the package)
+or function of the same. 
+
+You can see available models using `get_avail_models` function. It returns dictionary of `Symbol` to model.
+
+```julia
+get_avail_models()
+```
+Let's fit Emax model to our InVitro data.  
+
+```julia
+vitro_data = read_vitro("./vitro_data.csv");
+vitro_fast_data = vitro_data[1]["fast"]
+estimate_fdiss(vitro_fast_data, :emax);
+```
+
+We can call `plot` function on this instance of data to plot the fitted model.
+
+```julia
+using Plots
+scatter(vitro_fast_data.time, vitro_fast_data.conc, label="Observed data", xlabel="time", ylabel="Fdiss")
+plot!(vitro_fast_data, label="Fitted model", legend=:topleft)
+```
+
+Note: If you are passing function then you will also have to provide initial estimates of parameters, lower bounds and upper bounds.
+For example, let's fit Emax model again but passing our own function.  
+
+```julia
+Emax_model(t, p) = @. (p[1] * (t ^ p[2])) / (p[3]^p[2] + t^p[2])
+p0 = [vitro_fast_data.conc[end], 1.2, vitro_fast_data.time[2]]
+lb = [0.0, 1.0, 0.0]
+ub = [1.25, Inf, vitro_fast_data.time[end]]
+estimate_fdiss(vitro_fast_data, Emax_model, p0=p0, lower_bound=lb, upper_bound=ub);
+```
+Optimized parameters are stored in `pmin` vector.
+
+```julia
+vitro_fast_data.pmin
+```
