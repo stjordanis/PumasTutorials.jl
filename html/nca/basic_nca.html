@@ -681,7 +681,7 @@ div.title {text-align: center;}
 <pre class='hljl'>
 <span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>Pumas</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span><span class='hljl-t'>
 
-</span><span class='hljl-n'>file</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>Pumas</span><span class='hljl-oB'>.</span><span class='hljl-nf'>example_nmtran_data</span><span class='hljl-p'>(</span><span class='hljl-s'>&quot;nca_test_data/dapa_IV&quot;</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-n'>file</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>Pumas</span><span class='hljl-oB'>.</span><span class='hljl-nf'>example_data</span><span class='hljl-p'>(</span><span class='hljl-s'>&quot;nca_test_data/dapa_IV&quot;</span><span class='hljl-p'>)</span><span class='hljl-t'>
 </span><span class='hljl-n'>data</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span><span class='hljl-oB'>.</span><span class='hljl-nf'>read</span><span class='hljl-p'>(</span><span class='hljl-n'>file</span><span class='hljl-p'>);</span>
 </pre>
 
@@ -1048,7 +1048,7 @@ da_z_intercept, :lambda_z_lower, :lambda_z_upper, :span, :route&#93;
 
 
 <pre class='hljl'>
-<span class='hljl-n'>multiple_doses_file</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>Pumas</span><span class='hljl-oB'>.</span><span class='hljl-nf'>example_nmtran_data</span><span class='hljl-p'>(</span><span class='hljl-s'>&quot;nca_test_data/dapa_IV_ORAL&quot;</span><span class='hljl-p'>)</span><span class='hljl-t'>
+<span class='hljl-n'>multiple_doses_file</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>Pumas</span><span class='hljl-oB'>.</span><span class='hljl-nf'>example_data</span><span class='hljl-p'>(</span><span class='hljl-s'>&quot;nca_test_data/dapa_IV_ORAL&quot;</span><span class='hljl-p'>)</span><span class='hljl-t'>
 </span><span class='hljl-n'>mdata</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span><span class='hljl-oB'>.</span><span class='hljl-nf'>read</span><span class='hljl-p'>(</span><span class='hljl-n'>multiple_doses_file</span><span class='hljl-p'>)</span><span class='hljl-t'>
 
 </span><span class='hljl-n'>timeu</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-so'>u&quot;hr&quot;</span><span class='hljl-t'>
