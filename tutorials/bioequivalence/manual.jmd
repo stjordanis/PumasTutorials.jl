@@ -5,89 +5,69 @@ options:
 
 # Bioequivalence
 
-Bioequivalence.jl is a package for performing bioequivalence analysis part of the PumasAI ecosystem for pharmaceutical science (e.g. Pumas.jl: the simulation engine for PKPD, PBPK, QSP, and other models).
+Bioequivalence.jl is a package for performing bioequivalence analysis part of the Pumas (PharmaceUtical Modeling And Simulation) ecosystem for developing, simulating, fitting, and analyzing pharmaceutical models.
 
-The documentation provides a how-to and technical details for performing bioequivalence analysis using various designs.
+This document provides a how-to and technical details for performing bioequivalence analysis using the software.
 
-## Setup
+## How to obtain Bioequivalence.jl?
 
-Using JuliaPro,
+Bioequivalence.jl is covered under the [Julia Computing EULA](https://juliacomputing.com/eula) and distributed through via [JuliaPro](https://juliacomputing.com/products/juliapro.html) from Julia Computing Inc.
 
-### Installing
+Using JuliaPro, one can install the Bioequivalence.jl package using the Julia package manager.
 
 ```
 using Pkg;
 Pkg.add("Bioequivalence")
 ```
 
-### Loading
+## Getting Started
 
-```
+To load the package, use
+
+```julia
 using Bioequivalence
 ```
 
-## API
+The Bioequivalence package provides two functions: `read_be` and `generate_design`.
+
+`read_be` is an alias for `BioequivalenceStudy` which takes a table with data from a bioequivalence study and other optional arguments and returns the output of the analysis. This function tries to be quite smart and flexible. For most cases, it should work how you want it to work, but allows for users to overwrite default behavior.
+
+The other function provided by Bioequivalence.jl is `generate_design` which allows to generate data according to some bioequivalence study design.
+
+### Setting up the environment
+
+There are a few packages that can be helpful when using Bioequivalence.jl.
+
+- CSV.jl is a package for importing text files (e.g., comma-separated values or CSV)
+- DataFrames.jl is a package that provides a table representation for data
+- StatsBase.jl is a package that provides a common way to query statistical models
+
+In order to install any of these packages, one can use the package manager.
+
+For example to install CSV.jl,
 
 ```
-BioequivalenceStudy(data::AbstractDataFrame,
-                    endpoint::Union{Integer, Symbol} = :AUC;
-                    id::Union{Integer, Symbol} = :id,
-                    sequence::Union{Integer, Symbol} = :sequence,
-                    period::Union{Integer, Symbol} = :period,
-                    reference::Union{Nothing, Char} = nothing,
-                    nonparametric::Bool = occursin(r"(?i)tmax", string(endpoint))),
-                    reml::Bool = false)
+julia> using Pkg;
+julia> Pkg.add("CSV")
 ```
 
-Return a bioequivalence study
-
-Arguments
-
-- data: must have id, sequence, period, and an endpoint.
-- id (e.g., 1)
-- sequence (e.g., RT which means first R and T in the second period)
-- period (e.g, 1:4)
-- endpoint: which variable is the endpoint?
-- id: which variable is the subject id?
-- sequence: which variable is the sequence?
-- period: which variable is the period?
-- reference: which formulation is the reference?
-
-For example, in a design with RTTR|TRRT one can specify 'R' to be the reference. By default, the reference is taken to be the first character (alphabetically).
-
-- nonparametric: use nonparametric method for analysis of the endpoint?
-- reml: if the design uses a linear mixed model should it optimize REML instead of ML?
-
-Each bioequivalence study has the following fields:
-
-- data: data used for the study
-- design: number of subjects in each sequence
-- model: statistical models used for the analysis
-- result: result based on previous components
-
-Current designs include:
-- Parallel (e.g., R|T, A|B|C)
-- 2x2 (e.g., RT|TR)
-- Balaam (e.g., RR|RT|TR|TT)
-- Dual (e.g., RTT|TRR)
-- 2S4P1 (e.g., RTTR|TRRT)
-- 2S4P2 (e.g., RTRT|TRTR)
-- WD3F (e.g., ABC|ACB|BAC|BCA|CAB|CBA)
-- WD4F (e.g., ABCD|CADB|DCBA|BDAC)
-
-## Designs
-
-### Housekeeping
-
-Loading a few packages to showcase the features provided by `Bioequivalence`
+We can load the packages through,
 
 ```julia
 using CSV, DataFrames, StatsBase, Bioequivalence
 ```
 
+We always recommend using a local environment for each application which allows for reproducibility. For learning more about environments, we recommend checking out the Julia [documentation](https://julialang.github.io/Pkg.jl/v1/environments/#Creating-your-own-projects-1).
+
 ### Nonparametric
 
 Nonparametric designs are included for analysis of endpoints such as Tmax.
+
+We can load data from a bioequivalence study by using the `CSV.read` function and giving itt the path to a file.
+
+In this case, we will use some example/validation datasets included with Bioequivalence.jl.
+
+This dataset is available from Patterson and Jones (2006).
 
 ```julia
 PJ31 = CSV.read(string(dirname(pathof(Bioequivalence)),
@@ -95,11 +75,17 @@ PJ31 = CSV.read(string(dirname(pathof(Bioequivalence)),
 first(PJ31, 6)
 ```
 
-The average bioequivalence analysis can be requested through `BioequivalenceStudy`
+We have now assigned the data to the variable `PJ31`.
+
+The average bioequivalence analysis can be requested through `read_be`.
 
 ```julia
 Tmax = read_be(PJ31, :Tmax)
 ```
+
+The first argument is the data and the second argument is which variable should be used as the endpoint.
+
+Variable names `DataFrame`s are symbols.
 
 When the name of the endpoint matches some form of Tmax (case insensitive) it defaults to nonparametric.
 
@@ -137,7 +123,7 @@ The bioequivalence analysis can be requested through `BioequivalenceStudy` or it
 
 ```julia
 # notice it defaults to the AUC endpoint
-Parallel = read_be(ClaytonandLeslie1981)
+Parallel = read_be(ClaytonandLeslie1981) # Same as read_be(ClaytonandLeslie1981, :AUC)
 ```
 
 The output shows the design, statistical model, and result.
@@ -300,6 +286,19 @@ first(PJ46, 6)
 W4F = read_be(PJ46)
 ```
 
+### Additional documentation
+
+#### Analyzing bioequivalence studies
+
+```julia
+@doc BioequivalenceStudy
+```
+
+#### Generating study design data
+
+```julia
+@doc generate_design
+```
 
 ## References
 

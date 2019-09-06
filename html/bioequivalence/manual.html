@@ -662,86 +662,41 @@ div.title {text-align: center;}
           </div>
 
           <h1>Bioequivalence</h1>
-<p>Bioequivalence.jl is a package for performing bioequivalence analysis part of the PumasAI ecosystem for pharmaceutical science &#40;e.g. Pumas.jl: the simulation engine for PKPD, PBPK, QSP, and other models&#41;.</p>
-<p>The documentation provides a how-to and technical details for performing bioequivalence analysis using various designs.</p>
-<h2>Setup</h2>
-<p>Using JuliaPro,</p>
-<h3>Installing</h3>
+<p>Bioequivalence.jl is a package for performing bioequivalence analysis part of the Pumas &#40;PharmaceUtical Modeling And Simulation&#41; ecosystem for developing, simulating, fitting, and analyzing pharmaceutical models.</p>
+<p>This document provides a how-to and technical details for performing bioequivalence analysis using the software.</p>
+<h2>How to obtain Bioequivalence.jl?</h2>
+<p>Bioequivalence.jl is covered under the <a href="https://juliacomputing.com/eula">Julia Computing EULA</a> and distributed through via <a href="https://juliacomputing.com/products/juliapro.html">JuliaPro</a> from Julia Computing Inc.</p>
+<p>Using JuliaPro, one can install the Bioequivalence.jl package using the Julia package manager.</p>
 <pre><code>using Pkg;
 Pkg.add&#40;&quot;Bioequivalence&quot;&#41;</code></pre>
-<h3>Loading</h3>
-<pre><code>using Bioequivalence</code></pre>
-<h2>API</h2>
-<pre><code>BioequivalenceStudy&#40;data::AbstractDataFrame,
-                    endpoint::Union&#123;Integer, Symbol&#125; &#61; :AUC;
-                    id::Union&#123;Integer, Symbol&#125; &#61; :id,
-                    sequence::Union&#123;Integer, Symbol&#125; &#61; :sequence,
-                    period::Union&#123;Integer, Symbol&#125; &#61; :period,
-                    reference::Union&#123;Nothing, Char&#125; &#61; nothing,
-                    nonparametric::Bool &#61; occursin&#40;r&quot;&#40;?i&#41;tmax&quot;, string&#40;endpoint&#41;&#41;&#41;,
-                    reml::Bool &#61; false&#41;</code></pre>
-<p>Return a bioequivalence study</p>
-<p>Arguments</p>
+<h2>Getting Started</h2>
+<p>To load the package, use</p>
+
+
+<pre class='hljl'>
+<span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>Bioequivalence</span>
+</pre>
+
+
+
+<p>The Bioequivalence package provides two functions: <code>read_be</code> and <code>generate_design</code>.</p>
+<p><code>read_be</code> is an alias for <code>BioequivalenceStudy</code> which takes a table with data from a bioequivalence study and other optional arguments and returns the output of the analysis. This function tries to be quite smart and flexible. For most cases, it should work how you want it to work, but allows for users to overwrite default behavior.</p>
+<p>The other function provided by Bioequivalence.jl is <code>generate_design</code> which allows to generate data according to some bioequivalence study design.</p>
+<h3>Setting up the environment</h3>
+<p>There are a few packages that can be helpful when using Bioequivalence.jl.</p>
 <ul>
-<li><p>data: must have id, sequence, period, and an endpoint.</p>
+<li><p>CSV.jl is a package for importing text files &#40;e.g., comma-separated values or CSV&#41;</p>
 </li>
-<li><p>id &#40;e.g., 1&#41;</p>
+<li><p>DataFrames.jl is a package that provides a table representation for data</p>
 </li>
-<li><p>sequence &#40;e.g., RT which means first R and T in the second period&#41;</p>
-</li>
-<li><p>period &#40;e.g, 1:4&#41;</p>
-</li>
-<li><p>endpoint: which variable is the endpoint?</p>
-</li>
-<li><p>id: which variable is the subject id?</p>
-</li>
-<li><p>sequence: which variable is the sequence?</p>
-</li>
-<li><p>period: which variable is the period?</p>
-</li>
-<li><p>reference: which formulation is the reference?</p>
+<li><p>StatsBase.jl is a package that provides a common way to query statistical models</p>
 </li>
 </ul>
-<p>For example, in a design with RTTR|TRRT one can specify &#39;R&#39; to be the reference. By default, the reference is taken to be the first character &#40;alphabetically&#41;.</p>
-<ul>
-<li><p>nonparametric: use nonparametric method for analysis of the endpoint?</p>
-</li>
-<li><p>reml: if the design uses a linear mixed model should it optimize REML instead of ML?</p>
-</li>
-</ul>
-<p>Each bioequivalence study has the following fields:</p>
-<ul>
-<li><p>data: data used for the study</p>
-</li>
-<li><p>design: number of subjects in each sequence</p>
-</li>
-<li><p>model: statistical models used for the analysis</p>
-</li>
-<li><p>result: result based on previous components</p>
-</li>
-</ul>
-<p>Current designs include:</p>
-<ul>
-<li><p>Parallel &#40;e.g., R|T, A|B|C&#41;</p>
-</li>
-<li><p>2x2 &#40;e.g., RT|TR&#41;</p>
-</li>
-<li><p>Balaam &#40;e.g., RR|RT|TR|TT&#41;</p>
-</li>
-<li><p>Dual &#40;e.g., RTT|TRR&#41;</p>
-</li>
-<li><p>2S4P1 &#40;e.g., RTTR|TRRT&#41;</p>
-</li>
-<li><p>2S4P2 &#40;e.g., RTRT|TRTR&#41;</p>
-</li>
-<li><p>WD3F &#40;e.g., ABC|ACB|BAC|BCA|CAB|CBA&#41;</p>
-</li>
-<li><p>WD4F &#40;e.g., ABCD|CADB|DCBA|BDAC&#41;</p>
-</li>
-</ul>
-<h2>Designs</h2>
-<h3>Housekeeping</h3>
-<p>Loading a few packages to showcase the features provided by <code>Bioequivalence</code></p>
+<p>In order to install any of these packages, one can use the package manager.</p>
+<p>For example to install CSV.jl,</p>
+<pre><code>julia&gt; using Pkg;
+julia&gt; Pkg.add&#40;&quot;CSV&quot;&#41;</code></pre>
+<p>We can load the packages through,</p>
 
 
 <pre class='hljl'>
@@ -750,8 +705,12 @@ Pkg.add&#40;&quot;Bioequivalence&quot;&#41;</code></pre>
 
 
 
+<p>We always recommend using a local environment for each application which allows for reproducibility. For learning more about environments, we recommend checking out the Julia <a href="https://julialang.github.io/Pkg.jl/v1/environments/#Creating-your-own-projects-1">documentation</a>.</p>
 <h3>Nonparametric</h3>
 <p>Nonparametric designs are included for analysis of endpoints such as Tmax.</p>
+<p>We can load data from a bioequivalence study by using the <code>CSV.read</code> function and giving itt the path to a file.</p>
+<p>In this case, we will use some example/validation datasets included with Bioequivalence.jl.</p>
+<p>This dataset is available from Patterson and Jones &#40;2006&#41;.</p>
 
 
 <pre class='hljl'>
@@ -764,7 +723,8 @@ Pkg.add&#40;&quot;Bioequivalence&quot;&#41;</code></pre>
 
 <table class="data-frame"><thead><tr><th></th><th>id</th><th>sequence</th><th>period</th><th>Tmax</th></tr><tr><th></th><th>Int64</th><th>String</th><th>Int64</th><th>Float64</th></tr></thead><tbody><p>6 rows × 4 columns</p><tr><th>1</th><td>1</td><td>RT</td><td>1</td><td>0.5</td></tr><tr><th>2</th><td>1</td><td>RT</td><td>2</td><td>0.5</td></tr><tr><th>3</th><td>2</td><td>TR</td><td>1</td><td>1.0</td></tr><tr><th>4</th><td>2</td><td>TR</td><td>2</td><td>1.0</td></tr><tr><th>5</th><td>3</td><td>TR</td><td>1</td><td>0.5</td></tr><tr><th>6</th><td>3</td><td>TR</td><td>2</td><td>0.5</td></tr></tbody></table>
 
-<p>The average bioequivalence analysis can be requested through <code>BioequivalenceStudy</code></p>
+<p>We have now assigned the data to the variable <code>PJ31</code>.</p>
+<p>The average bioequivalence analysis can be requested through <code>read_be</code>.</p>
 
 
 <pre class='hljl'>
@@ -788,6 +748,8 @@ T - R  -0.202733  0.346574  0.816497  1.41421
 </pre>
 
 
+<p>The first argument is the data and the second argument is which variable should be used as the endpoint.</p>
+<p>Variable names <code>DataFrame</code>s are symbols.</p>
 <p>When the name of the endpoint matches some form of Tmax &#40;case insensitive&#41; it defaults to nonparametric.</p>
 <p>Otherwise, it will attempt a parametric design. This can be overwriten through the <code>nonparametric</code> argument.</p>
 <p>Nonparametric analysis uses the Wilcoxon signed rank test.</p>
@@ -877,7 +839,7 @@ C - A   2.05093    2.14861    7.7751    8.57292
 
 <pre class='hljl'>
 <span class='hljl-cs'># notice it defaults to the AUC endpoint</span><span class='hljl-t'>
-</span><span class='hljl-n'>Parallel</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>read_be</span><span class='hljl-p'>(</span><span class='hljl-n'>ClaytonandLeslie1981</span><span class='hljl-p'>)</span>
+</span><span class='hljl-n'>Parallel</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>read_be</span><span class='hljl-p'>(</span><span class='hljl-n'>ClaytonandLeslie1981</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-cs'># Same as read_be(ClaytonandLeslie1981, :AUC)</span>
 </pre>
 
 
@@ -1296,6 +1258,138 @@ C - A  2.05738     0.0342341   2.0004     2.11437    7.82546  7.39198   8.28436
 </pre>
 
 
+<h3>Additional documentation</h3>
+<h4>Analyzing bioequivalence studies</h4>
+
+
+<pre class='hljl'>
+<span class='hljl-nd'>@doc</span><span class='hljl-t'> </span><span class='hljl-n'>BioequivalenceStudy</span>
+</pre>
+
+
+
+<div class="markdown"><pre><code>BioequivalenceStudy&#40;data::AbstractDataFrame,
+                    endpoint::Union&#123;Integer, Symbol&#125; &#61; :AUC,
+                    σw₀::Real &#61; 0.1,
+                    𝛥::Real &#61; 1.11;
+                    id::Union&#123;Integer, Symbol&#125; &#61; :id,
+                    sequence::Union&#123;Integer, Symbol&#125; &#61; :sequence,
+                    period::Union&#123;Integer, Symbol&#125; &#61; :period,
+                    reference::Union&#123;Nothing, Char&#125; &#61; nothing,
+                    nonparametric::Bool &#61; occursin&#40;r&quot;&#40;?i&#41;tmax&quot;, string&#40;endpoint&#41;&#41;&#41;,
+                    reml::Bool &#61; false&#41;</code></pre>
+<p>Return a bioequivalence study</p>
+<p>Arguments</p>
+<ul>
+<li><p>data: must have <code>id</code>, <code>sequence</code>, <code>period</code>, and an <code>endpoint</code>.</p>
+</li>
+<li><p>id: which variable is the subject id?</p>
+</li>
+<li><p>sequence: which variable is the sequence?</p>
+</li>
+<li><p>period: which variable is the period?</p>
+</li>
+<li><p>endpoint: which variable is the endpoint?</p>
+</li>
+<li><p>σw₀: regulatory constant for reference-scaled estimates</p>
+</li>
+<li><p>𝛥: auxiliary parameter for reference-scaled estimates</p>
+</li>
+<li><p>reference: which formulation is the reference?</p>
+</li>
+</ul>
+<p>For example, in a design with RTTR|TRRT one can specify &#39;R&#39; to be the reference. By default, the reference is taken to be the first character &#40;alphabetically&#41;.</p>
+<ul>
+<li><p>nonparametric: use nonparametric method for analysis of the endpoint?</p>
+</li>
+<li><p>reml: if the design uses a linear mixed model should it optimize REML instead of ML?</p>
+</li>
+</ul>
+<p>Each bioequivalence study has the following fields:</p>
+<ul>
+<li><p>data: data used for the study</p>
+</li>
+<li><p>design: number of subjects in each sequence</p>
+</li>
+<li><p>model: statistical models used for the analysis</p>
+</li>
+<li><p>result: result based on previous components</p>
+</li>
+</ul>
+<p>Current designs include:</p>
+<ul>
+<li><p>Parallel &#40;e.g., R|T, A|B|C&#41;</p>
+</li>
+<li><p>2x2 &#40;e.g., RT|TR&#41;</p>
+</li>
+<li><p>Balaam &#40;e.g., RR|RT|TR|TT&#41;</p>
+</li>
+<li><p>Dual &#40;e.g., RTT|TRR&#41;</p>
+</li>
+<li><p>2S4P1 &#40;e.g., RTTR|TRRT&#41;</p>
+</li>
+<li><p>2S4P2 &#40;e.g., RTRT|TRTR&#41;</p>
+</li>
+<li><p>WD3F &#40;e.g., ABC|ACB|BAC|BCA|CAB|CBA&#41;</p>
+</li>
+<li><p>WD4F &#40;e.g., ABCD|CADB|DCBA|BDAC&#41;</p>
+</li>
+</ul>
+<p>Examples,</p>
+<pre><code>julia&gt; read_be&#40;data&#41; # read_be is an alias for BioequivalenceStudy, same as &#96;BioequivalenceStudy&#40;data&#41;&#96;</code></pre>
+<pre><code>julia&gt; read_be&#40;data, sequence &#61; :Sequence&#41; # It declares :Sequence as the sequence variable name</code></pre>
+<pre><code>julia&gt; read_be&#40;data, reml &#61; true&#41; # Model estimation uses REML instead of ML if applicable</code></pre>
+
+
+</div>
+
+<h4>Generating study design data</h4>
+
+
+<pre class='hljl'>
+<span class='hljl-nd'>@doc</span><span class='hljl-t'> </span><span class='hljl-n'>generate_design</span>
+</pre>
+
+
+
+<div class="markdown"><pre><code>generate_design&#40;design::AbstractString,
+                amt::Union&#123;Number,AbstractVector&#123;&lt;:Number&#125;&#125;,
+                formulation::AbstractVector,
+                subjects_per_sequence::Union&#123;&lt;:Integer,AbstractVector&#123;&lt;:Integer&#125;&#125;
+                &#41;::DataFrame</code></pre>
+<p>Returns a DataFrame with id, sequence, period, formulation, amt, evid, cmt, and time. It can be used to quickly set up data for PuMaS, NCA, and Bioequivalence. In order to add covariates, use <code>join</code> to join the result of this function with another DataFrame with covariates.</p>
+<p>The following designs are available:</p>
+<ul>
+<li><p>&quot;Parallel&quot; &#61;&gt; &#39;A&#39;:&#39;A&#39; &#43; num_formulations - 1</p>
+</li>
+<li><p>&quot;2x2&quot; &#61;&gt; &#91;&quot;RT&quot;, &quot;TR&quot;&#93;</p>
+</li>
+<li><p>&quot;Balaam&quot; &#61;&gt; &#91;&quot;RR&quot;, &quot;RT&quot;, &quot;TR&quot;, &quot;TT&quot;&#93;</p>
+</li>
+<li><p>&quot;Dual&quot; &#61;&gt; &#91;&quot;RTT&quot;, &quot;TRR&quot;&#93;</p>
+</li>
+<li><p>&quot;2S4P1&quot; &#61;&gt; &#91;&quot;RTTR&quot;, &quot;TRRT&quot;&#93;</p>
+</li>
+<li><p>&quot;2S4P2&quot; &#61;&gt; &#91;&quot;RTRT&quot;, &quot;TRTR&quot;&#93;</p>
+</li>
+<li><p>&quot;WD3F&quot; &#61;&gt; &#91;&quot;ABC&quot;, &quot;ACB&quot;, &quot;BAC&quot;, &quot;BCA&quot;, &quot;CAB&quot;, &quot;CBA&quot;&#93;</p>
+</li>
+<li><p>&quot;WD4F&quot; &#61;&gt; &#91;&quot;ABCD&quot;, &quot;CADB&quot;, &quot;DCBA&quot;, &quot;BDAC&quot;&#93;</p>
+</li>
+</ul>
+<p>Examples</p>
+<pre><code class="language-julia-repl">julia&gt; skeleton &#61; generate_design&#40;&quot;Parallel&quot;, 100, &#91;&quot;tablet&quot;, &quot;soft&quot;, &quot;hard&quot;&#93;, 10&#41;</code></pre>
+<pre><code class="language-julia-repl">julia&gt; skeleton &#61; generate_design&#40;&quot;2S4P2&quot;, &#91;50, 25&#93;, &#91;&quot;tablet&quot;, &quot;capsule&quot;&#93;, &#91;10, 9&#93;&#41;
+julia&gt; m &#61; length&#40;skeleton.id&#41;
+julia&gt; data &#61; join&#40;skeleton,
+                   DataFrame&#40;id &#61; 1:m,
+                             wt &#61; rand&#40;100:200, m&#41;,
+                             age &#61; rand&#40;25:85, m&#41;&#41;,
+                   on &#61; :id&#41;</code></pre>
+
+
+</div>
+
 <h2>References</h2>
 <p>Chow, Shein-Chung, and Jen-pei Liu. 2009. Design and Analysis of Bioavailability and Bioequivalence Studies. 3rd ed. Chapman &amp; Hall/CRC Biostatistics Series 27. Boca Raton: CRC Press.</p>
 <p>Clayton, D, and A Leslie. 1981. &quot;The Bioavailability of Erythromycin Stearate versus Enteric-Coated Erythromycin Base When Taken Immediately before and after Food.&quot; Journal of International Medical Research 9 &#40;6&#41;: 470-77. <a href="https://doi.org/10.1177/030006058100900608">DOI:10.1177/030006058100900608</a>.</p>
@@ -1310,7 +1404,7 @@ C - A  2.05738     0.0342341   2.0004     2.11437    7.82546  7.39198   8.28436
           <div class="footer"><p>
           Published from <a href="manual.jmd">manual.jmd</a> using
           <a href="http://github.com/mpastell/Weave.jl">Weave.jl</a>
-           on 2019-08-29.
+           on 2019-09-06.
           <p></div>
 
 

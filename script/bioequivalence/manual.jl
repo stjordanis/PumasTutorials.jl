@@ -1,4 +1,7 @@
 
+using Bioequivalence
+
+
 using CSV, DataFrames, StatsBase, Bioequivalence
 
 
@@ -27,7 +30,7 @@ first(ClaytonandLeslie1981, 6)
 
 
 # notice it defaults to the AUC endpoint
-Parallel = read_be(ClaytonandLeslie1981)
+Parallel = read_be(ClaytonandLeslie1981) # Same as read_be(ClaytonandLeslie1981, :AUC)
 
 
 Parallel.model
@@ -107,4 +110,10 @@ first(PJ46, 6)
 
 
 W4F = read_be(PJ46)
+
+
+@doc BioequivalenceStudy
+
+
+@doc generate_design
 
