@@ -706,6 +706,50 @@ julia&gt; Pkg.add&#40;&quot;CSV&quot;&#41;</code></pre>
 
 
 <p>We always recommend using a local environment for each application which allows for reproducibility. For learning more about environments, we recommend checking out the Julia <a href="https://julialang.github.io/Pkg.jl/v1/environments/#Creating-your-own-projects-1">documentation</a>.</p>
+<h2>Designs</h2>
+<p>For each design, we well use the syntax <code>read_be&#40;data, endpoint, kwargs...&#41;</code></p>
+<p>where the kewyword arguments allows to change some default behavior.</p>
+<p>For example, every data, should be a <code>DataFrame</code> with the following variables:</p>
+<ul>
+<li><p>id: the subject ID</p>
+</li>
+<li><p>sequence: the sequence of formulations &#40;e.g., &quot;RT&quot; for reference and test&#41;</p>
+</li>
+<li><p>period: integers refering to the periods starting with the firsr period being 1</p>
+</li>
+<li><p>endpoint: the values for the endpoint &#40;e.g., AUC&#41;</p>
+</li>
+</ul>
+<p>If the dataset has the endpoint under the variable auc, the syntax would be</p>
+<pre><code>output &#61; read_be&#40;data, :auc&#41;</code></pre>
+<p>If the id variable is named <code>subject_id</code> then the syntax would follow as</p>
+<pre><code>output &#61; read_be&#40;data, :auc, id &#61; :subject_id&#41;</code></pre>
+<p>Other arguments will be explained through the examples.</p>
+<p>The result may be queried in the following manner,</p>
+<pre><code>output.data
+output.design
+output.model
+output.result</code></pre>
+<p>The final section on additional information provides a complete summary.</p>
+<p>This section will cover the most common arguments for each of the supported designs:</p>
+<ul>
+<li><p>Parallel &#40;e.g., R|T, A|B|C&#41;</p>
+</li>
+<li><p>2x2 &#40;e.g., RT|TR&#41;</p>
+</li>
+<li><p>Balaam &#40;e.g., RR|RT|TR|TT&#41;</p>
+</li>
+<li><p>Dual &#40;e.g., RTT|TRR&#41;</p>
+</li>
+<li><p>2S4P1 &#40;e.g., RTTR|TRRT&#41;</p>
+</li>
+<li><p>2S4P2 &#40;e.g., RTRT|TRTR&#41;</p>
+</li>
+<li><p>WD3F &#40;e.g., ABC|ACB|BAC|BCA|CAB|CBA&#41;</p>
+</li>
+<li><p>WD4F &#40;e.g., ABCD|CADB|DCBA|BDAC&#41;</p>
+</li>
+</ul>
 <h3>Nonparametric</h3>
 <p>Nonparametric designs are included for analysis of endpoints such as Tmax.</p>
 <p>We can load data from a bioequivalence study by using the <code>CSV.read</code> function and giving itt the path to a file.</p>
@@ -749,7 +793,7 @@ T - R  -0.202733  0.346574  0.816497  1.41421
 
 
 <p>The first argument is the data and the second argument is which variable should be used as the endpoint.</p>
-<p>Variable names <code>DataFrame</code>s are symbols.</p>
+<p>Variable names in <code>DataFrame</code>s are symbols.</p>
 <p>When the name of the endpoint matches some form of Tmax &#40;case insensitive&#41; it defaults to nonparametric.</p>
 <p>Otherwise, it will attempt a parametric design. This can be overwriten through the <code>nonparametric</code> argument.</p>
 <p>Nonparametric analysis uses the Wilcoxon signed rank test.</p>
@@ -1404,7 +1448,7 @@ julia&gt; data &#61; join&#40;skeleton,
           <div class="footer"><p>
           Published from <a href="manual.jmd">manual.jmd</a> using
           <a href="http://github.com/mpastell/Weave.jl">Weave.jl</a>
-           on 2019-09-06.
+           on 2019-09-07.
           <p></div>
 
 

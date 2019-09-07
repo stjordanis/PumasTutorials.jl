@@ -59,6 +59,55 @@ using CSV, DataFrames, StatsBase, Bioequivalence
 
 We always recommend using a local environment for each application which allows for reproducibility. For learning more about environments, we recommend checking out the Julia [documentation](https://julialang.github.io/Pkg.jl/v1/environments/#Creating-your-own-projects-1).
 
+## Designs
+
+For each design, we well use the syntax `read_be(data, endpoint, kwargs...)`
+
+where the kewyword arguments allows to change some default behavior.
+
+For example, every data, should be a `DataFrame` with the following variables:
+
+- id: the subject ID
+- sequence: the sequence of formulations (e.g., "RT" for reference and test)
+- period: integers refering to the periods starting with the firsr period being 1
+- endpoint: the values for the endpoint (e.g., AUC)
+
+If the dataset has the endpoint under the variable auc, the syntax would be
+
+```
+output = read_be(data, :auc)
+```
+
+If the id variable is named `subject_id` then the syntax would follow as
+
+```
+output = read_be(data, :auc, id = :subject_id)
+```
+
+Other arguments will be explained through the examples.
+
+The result may be queried in the following manner,
+
+```
+output.data
+output.design
+output.model
+output.result
+```
+
+The final section on additional information provides a complete summary.
+
+This section will cover the most common arguments for each of the supported designs:
+
+- Parallel (e.g., R|T, A|B|C)
+- 2x2 (e.g., RT|TR)
+- Balaam (e.g., RR|RT|TR|TT)
+- Dual (e.g., RTT|TRR)
+- 2S4P1 (e.g., RTTR|TRRT)
+- 2S4P2 (e.g., RTRT|TRTR)
+- WD3F (e.g., ABC|ACB|BAC|BCA|CAB|CBA)
+- WD4F (e.g., ABCD|CADB|DCBA|BDAC)
+
 ### Nonparametric
 
 Nonparametric designs are included for analysis of endpoints such as Tmax.
@@ -85,7 +134,7 @@ Tmax = read_be(PJ31, :Tmax)
 
 The first argument is the data and the second argument is which variable should be used as the endpoint.
 
-Variable names `DataFrame`s are symbols.
+Variable names in `DataFrame`s are symbols.
 
 When the name of the endpoint matches some form of Tmax (case insensitive) it defaults to nonparametric.
 
