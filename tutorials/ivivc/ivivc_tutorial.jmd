@@ -16,7 +16,9 @@ The Basic workflow of IVIVC.jl is:
   3. Unit Impulse Response (UIR)
   4. Deconvolution of InVivo data
   5. Establishing InVitro InVivo Correlation Model
-  6. Validation
+  6. Prediction of InVivo
+  7. Validation
+  8. Automation, Plots and Reports (High level API)
 
 
 ## Installation
@@ -129,3 +131,289 @@ Optimized parameters are stored in `pmin` vector.
 ```julia
 vitro_fast_data.pmin
 ```
+Model the other formulations also, we will need it in later sections.
+
+```julia
+estimate_fdiss(vitro_data[1]["medium"], :emax)
+estimate_fdiss(vitro_data[1]["slow"], :emax);
+```
+
+## Unit Impulse Response (UIR)
+
+When the reference vivo data is `Solution` type, then we can fit `bateman` function which is available in the package.
+In result, we will get estimation of `ka` (absorption rate constant), `ke` (elimination rate constant) and `V` (volume of distribution).
+We will use this estimated `kel` in Wagner Nelson method. To do this step, use `estimate_uir` function. This function takes the object to uir data,
+Symbol to model or custom function and fraction of available dose. Default keyword arg is `frac` and is set to 1.
+
+
+```julia
+uir_data = read_uir("./uir_data.csv")
+estimate_uir(uir_data, :bateman);
+```
+To change fraction of available dose.
+
+```julia
+estimate_uir(uir_data, :bateman, frac=1.0);
+```
+All the estimates parameters are stored in `pmin` vector, similar to others.
+Note: the first entry is `ka`, the second is `kel`, and the third one is `V`.
+
+```julia
+ka, kel, V = uir_data.pmin
+@show ka
+@show kel
+@show V;
+```
+
+## Deconvolution of InVivo data
+
+Plasma Concentration profile is consist of absorption and elimination process, and from this, process to get absorption profile
+is known as deconvolution. In this tutorial, we will use the Wagner Nelson method, one of the traditional methods but is the most frequently used method in IVIVC.
+In a later tutorial, we will see more advanced methods like numerical deconvolution and Differential Equation based methods.
+To do this step, we will use `estimate_fabs` function, which takes `conc`, `time`, `kel` and `Symbol` to the deconvolution method. Symbol to Wagner Nelson
+method is `:wn`. In case of WN method, `estimate_fabs` returns `FAbs` profile and `AUC_Inf` (Area under plasma conc. curve from `time=0` to `time=Inf`).
+
+Let's apply the Wagner Nelson method on `fast` formulation data of the first subject.
+
+```julia
+time = vivo_fast_data.time
+conc = vivo_fast_data.conc
+fabs, conc_auc = estimate_fabs(conc, time, kel, :wn)
+@show fabs
+@show conc_auc;
+```
+we will need `FAbs` for all formulation in next step, so let's get it now.
+
+```julia
+all_fabs_dict = Dict(); all_conc_auc = Dict()
+for (formulation, profile) in vivo_data[1]
+  all_fabs_dict[formulation], all_conc_auc[formulation] = estimate_fabs(profile.conc,
+                                                              profile.time, kel, :wn)
+end
+```
+
+## Establishing InVitro InVivo Correlation Model
+
+Now, we have arrived at the main step, for which we did all the above steps from reading the data to deconvolution.
+Currently, there are three models available in the package, which includes time and amplitude scaling and shifting parameters.
+
+$$
+\begin{align}
+Fabs &= AbsScale * Fdiss(t * Tscale)\\
+Fabs(t) &= AbsScale * Fdiss(t * Tscale - Tshift)\\
+Fabs(t) &= AbsScale * Fdiss(t * Tscale - Tshift) - AbsBase
+\end{align}
+$$
+
+Let's establish first IVIVC model, which has two parameters (AbsScale and Tscale) to estimate.
+
+```julia
+ivivc_model = (form, time, x) -> x[1] * vitro_data[1][form](time * x[2])
+# initial estimates of parameters, upper_bounds and lower_bounds
+p0 = [0.8, 0.5]
+ub = [1.25, 1.25]
+lb = [0.0, 0.0];
+```
+Now, we will define our MSE (mean square error) function which we will optimize using `Optim.jl` package.
+
+```julia
+mse(x, y) = sum(abs2.(x .- y))/length(x)
+function errfun(x)
+  err = 0.0
+  for (form, prof) in vivo_data[1]   # (formulation => profile)
+    err = err + mse(ivivc_model(form, prof.time, x), all_fabs_dict[form])
+  end
+  return err
+end
+```
+
+Load the `Optim.jl`. If you don't have it, run this piece of code to install the pkg. `import Pkg; Pkg.add("Optim.jl")`
+
+```julia
+using Optim
+
+od = Optim.OnceDifferentiable(p->errfun(p), p0, autodiff=:finite)
+mfit = Optim.optimize(od, lb, ub, p0, Fminbox(LBFGS()))
+pmin = Optim.minimizer(mfit)
+```
+Estimated `AbsScale` and `Tscale` are
+
+```julia
+AbsScale, Tscale = pmin
+@show AbsScale
+@show Tscale;
+```
+
+## Prediction of InVivo
+
+Now, We have established IVIVC model; we can predict Plasma Concentration Profile for a formulation.
+Let's how well our model is to predict plasma conc. profile of fast formulation.
+Since, we have InVitro data of fast formulation, we first model this data to get a continuous relation between `time` and `Fdiss` which
+we already did in InVitro Modeling step.
+Note: for now, we are not predicting on external data.
+
+After this, we plug this `estimated Fdiss` to our IVIVC model and integrate the model over vivo time interval to predicted plasma conc. profile.
+
+Let's go into little bit mathematics of Wagner Nelson method and derive main equation for prediction.
+
+Our Main governing differential equation is (assuming first order elimination)
+$$
+\begin{align}
+\frac{dc}{dt} &= r(t) - kel * c
+\end{align}
+$$
+
+where `r(t)` is input rate.
+
+By Wagner Nelson method, we get the following expression
+
+$$
+\begin{align}
+Fabs &= \frac{c + kel * \int_{0}^{t} c(t)dt}{kel * \int_{0}^{\infty} c(t)dt}
+\end{align}
+$$
+
+And by our IVIVC model.
+
+$$
+\begin{align}
+Fabs &= AbsScale * Fdiss(t * Tscale) 
+\end{align}
+$$
+
+Using the above three equations, we can write the following expression
+
+$$
+\begin{align}
+\frac{dc}{dt} &= kel * AUC_0^\infty * AbsScale * \frac{d(Fdiss(t * Tscale))}{dt} - kel * c 
+\end{align}
+$$
+
+Above equation can be further simplified.
+
+$$
+\begin{align}
+\frac{dc}{dt} &= kel * AUC_0^\infty * AbsScale * (Tscale * g(t * Tscale)) - kel * c 
+\end{align}
+$$
+
+where `g(t)` is derivative of vitro model function and derivatives of all available vitro models are also available
+in the package. 
+
+So, to predict `c`, we just need to integrate the above differential equation with the initial value of `c` equals to `0`.
+We will do the integration using `OrdinaryDiffEq.jl` package. To install it, do this, `import Pkg; Pkg.add("OrdinaryDiffEq.jl")`.
+
+
+
+```julia
+using OrdinaryDiffEq
+# let grab the derivative of Emax function
+import Pumas.IVIVC: e_der
+g = e_der
+pmin = vitro_data[1]["fast"].pmin
+f(c, p, t) = kel * conc_auc * AbsScale * Tscale * g(t * Tscale, pmin) - kel * c
+c0 = 0.0
+tspan = (vivo_fast_data.time[1], vivo_fast_data.time[end])
+prob = ODEProblem(f, c0, tspan)
+sol = OrdinaryDiffEq.solve(prob, Tsit5(), reltol=1e-8, abstol=1e-8)
+sol
+```
+Now, Let's plot the predicted plasma conc. profile and original plasma conc. profile, so that we can visualize the performance of
+our IVIVC model.
+
+```julia
+scatter(vivo_fast_data.time, vivo_fast_data.conc, label="Original C (fast)")
+plot!(sol, label="Predicted C (fast)", xlabel="time", ylabel="Plasma Conc. Profile")
+```
+## Validation
+Validation is a very important step to see how well our IVIVC model is performing against internal data (known as Internal Validation)
+and External data (External Validation). We can see the error in predicting `Cmax` and `AUC` of plasma conc. profile.
+`percentage_prediction_error` function which is available in the pkg, a handy function to calculate `Cmax` and `AUC` error.
+According to the [FDA guidelines](https://www.fda.gov/media/70939/download), the predictability can be accepted when the average absolute percentage error in `Cmax` and `AUC` are 10% or less and
+are of 15% or less.
+
+
+```julia
+cmax_pe, auc_pe = percentage_prediction_error(vivo_fast_data.time, vivo_fast_data.conc,
+                              sol.t, sol.u)   # sol.u is just predicted c
+@show cmax_pe
+@show auc_pe;
+```
+## Automation, Plots and Reports
+
+We have gone through all the necessary steps to do IVIVC using the package, but now I will tell you `one-liner` to do all the steps from 2 to 5.
+`IVIVCModel` function will do all the above steps for you just in one line. `IVIVCModel` function takes data object for vitro, uir and vivo,
+and symbol to vitro model to fit. Others keyword args are `uir_frac=1.0` (fraction of dose available), `deconvo_method=:wn`,
+and `ivivc_model=:two` (two stands for the number of parameters in ivivc model and this is the first one of three models).
+
+```julia
+model = IVIVCModel(vitro_data, uir_data, vivo_data, vitro_model=:emax, uir_frac=1.0, deconvo_method=:wn);
+```
+Above line of code is equivalent to what we did the from step 2 to 5.
+
+### IVIVC Plot
+It is the plot between `Fabs` and `Fdiss` with established IVIVC model. `ivivc_plot` is a convenient plot recipe
+to plot the ivivc plot.
+
+```julia
+ivivc_plot(model)
+```
+
+### Levy Plot
+It is the plot, which is generally used in the inspecting time scale between `Fabs` and `Fdiss` profile.
+In this plot, we plot `TVitro` on the x-axis and `TVivo` on the y-axis at matched `Fdiss` and `Fdiss`.
+Note: We take time points at every 1/10th fraction of dissolved or absorbed, missing time points are filled using Linear Interpolation.
+
+```julia
+levy_plot(model)
+```
+
+### Prediction and Validation
+Now, let's predict the plasma conc. profile for fast formulation.
+
+```julia
+sol = predict_vivo(model, "fast");
+```
+plot the predicted plasma conc. profile vs original plasma conc. profile and `Cmax` and `AUC` predictio
+error.
+
+```julia
+time = vivo_data[1]["fast"].time
+conc = vivo_data[1]["fast"].conc
+cmax_pe, auc_pe = percentage_prediction_error(time, conc, sol.t, sol.u)
+@show cmax_pe, auc_pe;
+scatter(time, conc, label="Original C (fast)")
+plot!(sol, label="predicted C (fast)", xlabel="time", ylabel="Plasma Conc. Profile")
+```
+Add the plot for medium formulation and the percentage error in `Cmax` and `AUC`.
+
+```julia
+sol = predict_vivo(model, "medium")
+time = vivo_data[1]["medium"].time
+conc = vivo_data[1]["medium"].conc
+cmax_pe, auc_pe = percentage_prediction_error(time, conc, sol.t, sol.u)
+@show cmax_pe, auc_pe;
+scatter!(time, conc, label="Original C (medium)")
+plot!(sol, label="Predicted C (medium)")
+```
+Also, add plot for slow formulation and the percentage error in `Cmax` and `AUC`.
+
+```julia
+sol = predict_vivo(model, "slow")
+time = vivo_data[1]["slow"].time
+conc = vivo_data[1]["slow"].conc
+cmax_pe, auc_pe = percentage_prediction_error(time, conc, sol.t, sol.u)
+@show cmax_pe, auc_pe;
+scatter!(time, conc, label="Original C (slow)")
+plot!(sol, label="Predicted C (slow)")
+```
+### Reports
+You can save all the estimated parameters and intermediate results using `to_csv` function to csv files.
+By default, all the files will be saved to home directory. To save to another location, pass the path to location
+using the `path` keyword argument.
+
+```julia
+to_csv(model, path=homedir())
+```
+
+Note: This package is still in WIP; it might break.
