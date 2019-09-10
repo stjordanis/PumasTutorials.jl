@@ -125,7 +125,7 @@ cmax_pe, auc_pe = percentage_prediction_error(vivo_fast_data.time, vivo_fast_dat
 @show auc_pe;
 
 
-model = IVIVCModel(vitro_data, uir_data, vivo_data, vitro_model=:emax, uir_frac=1.0, deconvo_method=:wn);
+model = IVIVCModel(vitro_data, uir_data, vivo_data, vitro_model=:emax, uir_frac=1.0, deconvo_method=:wn, ivivc_model=:three);
 
 
 ivivc_plot(model)
