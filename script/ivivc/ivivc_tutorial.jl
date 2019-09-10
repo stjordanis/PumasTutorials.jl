@@ -103,7 +103,7 @@ AbsScale, Tscale = pmin
 
 
 using OrdinaryDiffEq
-# let grab the derivative of Emax function
+# grab the derivative of Emax function
 import Pumas.IVIVC: e_der
 g = e_der
 pmin = vitro_data[1]["fast"].pmin
@@ -125,7 +125,7 @@ cmax_pe, auc_pe = percentage_prediction_error(vivo_fast_data.time, vivo_fast_dat
 @show auc_pe;
 
 
-model = IVIVCModel(vitro_data, uir_data, vivo_data, vitro_model=:emax, uir_frac=1.0, deconvo_method=:wn);
+model = IVIVCModel(vitro_data, uir_data, vivo_data, vitro_model=:emax, uir_frac=1.0, deconvo_method=:wn, ivivc_model=:three);
 
 
 ivivc_plot(model)

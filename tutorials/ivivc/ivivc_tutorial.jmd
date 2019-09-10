@@ -58,7 +58,7 @@ For example, if we have time column header `conc` for plasma concentration colum
 vivo_data = read_vivo("./vivo_data.csv", conc=:conc);
 ```
 
-These functions return array of subject or batch sorted by their subject-id of batch-id.
+These functions return array of subject or batch sorted by their subject-id or batch-id.
 Each entry in this array is mapping of formulation type to corresponding data for a particular subject or batch of data.
 
 If you have your data already in DataFrame object, you can pass it instead of `path` and rest will follow the same.
@@ -70,7 +70,7 @@ df = CSV.read("./vivo_data.csv")
 vivo_data = read_vivo(df);
 ```
 
-Let's see how the data are packed inside `vivo_data` and take the `fast` formulation (one of the formulation types in our data) data for the first subject.
+Let's see how the data are packed inside `vivo_data` and take the `fast` formulation (one of the formulation types in our data) data of the first subject.
 
 
 ```julia
@@ -90,10 +90,10 @@ Similar syntax follows for `read_uir` and `read_vitro` functions.
 
 In InVitro data, We have time series data of fraction dissolved amount of drug. Using this data, we have to
 fit a predefined model, which, of course will be continuous. Standard models available in IVIVC.jl are
-Emax, Weibull, Double Weibull and Makoid banakar. You can also use custom model by passing function of the model.
+Emax, Weibull, Double Weibull and Makoid banakar. You can also use custom model by passing function to the model.
 
 `estimate_fdiss` function takes object to vitro data and `Symbol` to model to fit (which are available in the package)
-or function of the same. 
+or function to the same. 
 
 You can see available models using `get_avail_models` function. It returns dictionary of `Symbol` to model.
 
@@ -140,9 +140,9 @@ estimate_fdiss(vitro_data[1]["slow"], :emax);
 
 ## Unit Impulse Response (UIR)
 
-When the reference vivo data is `Solution` type, then we can fit `bateman` function which is available in the package.
+When the reference vivo data is `Solution` type, we can fit `bateman` function which is available in the package.
 In result, we will get estimation of `ka` (absorption rate constant), `ke` (elimination rate constant) and `V` (volume of distribution).
-We will use this estimated `kel` in Wagner Nelson method. To do this step, use `estimate_uir` function. This function takes the object to uir data,
+We will use this estimated `kel` in Wagner Nelson method. To do this step, we will use `estimate_uir` function. This function takes the object to uir data,
 Symbol to model or custom function and fraction of available dose. Default keyword arg is `frac` and is set to 1.
 
 
@@ -199,7 +199,7 @@ Currently, there are three models available in the package, which includes time 
 
 $$
 \begin{align}
-Fabs &= AbsScale * Fdiss(t * Tscale)\\
+Fabs(t) &= AbsScale * Fdiss(t * Tscale)\\
 Fabs(t) &= AbsScale * Fdiss(t * Tscale - Tshift)\\
 Fabs(t) &= AbsScale * Fdiss(t * Tscale - Tshift) - AbsBase
 \end{align}
@@ -247,7 +247,7 @@ AbsScale, Tscale = pmin
 ## Prediction of InVivo
 
 Now, We have established IVIVC model; we can predict Plasma Concentration Profile for a formulation.
-Let's how well our model is to predict plasma conc. profile of fast formulation.
+Let's see how well our model is to predict plasma conc. profile of fast formulation.
 Since, we have InVitro data of fast formulation, we first model this data to get a continuous relation between `time` and `Fdiss` which
 we already did in InVitro Modeling step.
 Note: for now, we are not predicting on external data.
@@ -269,7 +269,7 @@ By Wagner Nelson method, we get the following expression
 
 $$
 \begin{align}
-Fabs &= \frac{c + kel * \int_{0}^{t} c(t)dt}{kel * \int_{0}^{\infty} c(t)dt}
+Fabs(t) &= \frac{c + kel * \int_{0}^{t} c(t)dt}{kel * \int_{0}^{\infty} c(t)dt}
 \end{align}
 $$
 
@@ -277,7 +277,7 @@ And by our IVIVC model.
 
 $$
 \begin{align}
-Fabs &= AbsScale * Fdiss(t * Tscale) 
+Fabs(t) &= AbsScale * Fdiss(t * Tscale) 
 \end{align}
 $$
 
@@ -289,7 +289,7 @@ $$
 \end{align}
 $$
 
-Above equation can be further simplified.
+Above equation can be simplified further.
 
 $$
 \begin{align}
@@ -307,7 +307,7 @@ We will do the integration using `OrdinaryDiffEq.jl` package. To install it, do 
 
 ```julia
 using OrdinaryDiffEq
-# let grab the derivative of Emax function
+# grab the derivative of Emax function
 import Pumas.IVIVC: e_der
 g = e_der
 pmin = vitro_data[1]["fast"].pmin
@@ -330,7 +330,7 @@ Validation is a very important step to see how well our IVIVC model is performin
 and External data (External Validation). We can see the error in predicting `Cmax` and `AUC` of plasma conc. profile.
 `percentage_prediction_error` function which is available in the pkg, a handy function to calculate `Cmax` and `AUC` error.
 According to the [FDA guidelines](https://www.fda.gov/media/70939/download), the predictability can be accepted when the average absolute percentage error in `Cmax` and `AUC` are 10% or less and
-are of 15% or less.
+for every formulation, are of 15% or less.
 
 
 ```julia
@@ -347,7 +347,7 @@ and symbol to vitro model to fit. Others keyword args are `uir_frac=1.0` (fracti
 and `ivivc_model=:two` (two stands for the number of parameters in ivivc model and this is the first one of three models).
 
 ```julia
-model = IVIVCModel(vitro_data, uir_data, vivo_data, vitro_model=:emax, uir_frac=1.0, deconvo_method=:wn);
+model = IVIVCModel(vitro_data, uir_data, vivo_data, vitro_model=:emax, uir_frac=1.0, deconvo_method=:wn, ivivc_model=:three);
 ```
 Above line of code is equivalent to what we did the from step 2 to 5.
 
