@@ -163,7 +163,7 @@ model = @model begin
         ven = VEN
         Cvenn = VEN/Vve
         nca := @nca Cvenn
-        auc =  NCA.auc(nca, auctype = :last)
+        auc =  NCA.auc(nca, interval=(0,12))
         cmax = NCA.cmax(nca)
     end
 end
