@@ -2,75 +2,76 @@ using Pumas, LinearAlgebra, Plots
 using CSV, DataFrames, Query
 using GLM, DiffEqSensitivity, Random
 using DataStructures, DataFramesMeta, GLM
+using Serialization
+
 
 model = @model begin
 
     @param begin
-        fup ∈ ConstDomain(0.42)
-        fumic ∈ ConstDomain(0.711)
-        WEIGHT ∈ ConstDomain(73)
-        MPPGL ∈ ConstDomain(30.3)
-        MPPGI ∈ ConstDomain(0)
-        C_OUTPUT ∈ ConstDomain(6.5)
-        VmaxH ∈ ConstDomain(40)
-        VmaxG ∈ ConstDomain(40)
-        KmH ∈ ConstDomain(9.3)
-        KmG ∈ ConstDomain(9.3)
-        BP ∈ ConstDomain(1)
+        fup ∈ RealDomain(init = 0.42)
+        fumic ∈ RealDomain(init = 0.711)
+        WEIGHT ∈ RealDomain(init = 73)
+        MPPGL ∈ RealDomain(init = 30.3)
+        MPPGI ∈ RealDomain(init = 0)
+        C_OUTPUT ∈ RealDomain(init = 6.5)
+        VmaxH ∈ RealDomain(init = 40)
+        VmaxG ∈ RealDomain(init = 40)
+        KmH ∈ RealDomain(init = 9.3)
+        KmG ∈ RealDomain(init = 9.3)
+        BP ∈ RealDomain(init = 1)
 
-        Kpad ∈ ConstDomain(9.89)
-        Kpbo ∈ ConstDomain(7.91)
-        Kpbr ∈ ConstDomain(7.35)
-        Kpgu ∈ ConstDomain(5.82)
-        Kphe ∈ ConstDomain(1.95)
-        Kpki ∈ ConstDomain(2.9)
-        Kpli ∈ ConstDomain(4.66)
-        Kplu ∈ ConstDomain(0.83)
-        Kpmu ∈ ConstDomain(2.94)
-        Kpsp ∈ ConstDomain(2.96)
-        Kpre ∈ ConstDomain(4)
+        Kpad ∈ RealDomain(init = 9.89)
+        Kpbo ∈ RealDomain(init = 7.91)
+        Kpbr ∈ RealDomain(init = 7.35)
+        Kpgu ∈ RealDomain(init = 5.82)
+        Kphe ∈ RealDomain(init = 1.95)
+        Kpki ∈ RealDomain(init = 2.9)
+        Kpli ∈ RealDomain(init = 4.66)
+        Kplu ∈ RealDomain(init = 0.83)
+        Kpmu ∈ RealDomain(init = 2.94)
+        Kpsp ∈ RealDomain(init = 2.96)
+        Kpre ∈ RealDomain(init = 4)
 
+        MW ∈ RealDomain(init = 349.317)
+        logP ∈ RealDomain(init = 2.56)
+        S_lumen ∈ RealDomain(init = 0.39*1000)
+        L ∈ RealDomain(init = 280)
+        d ∈ RealDomain(init = 2.5)
+        PF ∈ RealDomain(init = 1.57)
+        VF ∈ RealDomain(init = 6.5)
+        MF ∈ RealDomain(init = 13)
+        ITT ∈ RealDomain(init = 3.32)
+        A ∈ RealDomain(init = 7440)
+        B ∈ RealDomain(init = 1e7)
+        alpha ∈ RealDomain(init = 0.6)
+        beta ∈ RealDomain(init = 4.395)
+        fabs ∈ RealDomain(init = 1)
+        fdis ∈ RealDomain(init = 1)
+        fperm ∈ RealDomain(init = 1)
 
-        MW ∈ ConstDomain(349.317)
-        logP ∈ ConstDomain(2.56)
-        S_lumen ∈ ConstDomain(0.39*1000)
-        L ∈ ConstDomain(280)
-        d ∈ ConstDomain(2.5)
-        PF ∈ ConstDomain(1.57)
-        VF ∈ ConstDomain(6.5)
-        MF ∈ ConstDomain(13)
-        ITT ∈ ConstDomain(3.32)
-        A ∈ ConstDomain(7440)
-        B ∈ ConstDomain(1e7)
-        alpha ∈ ConstDomain(0.6)
-        beta ∈ ConstDomain(4.395)
-        fabs ∈ ConstDomain(1)
-        fdis ∈ ConstDomain(1)
-        fperm ∈ ConstDomain(1)
+        Vad ∈ RealDomain(init = 18.2)
+        Vbo ∈ RealDomain(init =10.5)
+        Vbr ∈ RealDomain(init =1.45)
+        VguWall ∈ RealDomain(init =0.65)
+        VguLumen ∈ RealDomain(init =0.35)
 
-        Vad ∈ ConstDomain(18.2)
-        Vbo ∈ ConstDomain(10.5)
-        Vbr ∈ ConstDomain(1.45)
-        VguWall ∈ ConstDomain(0.65)
-        VguLumen ∈ ConstDomain(0.35)
+        Vhe ∈ RealDomain(init =0.33)
+        Vki ∈ RealDomain(init =0.31)
+        Vli ∈ RealDomain(init =1.8)
+        Vlu ∈ RealDomain(init =0.5)
+        Vmu ∈ RealDomain(init =29)
+        Vsp ∈ RealDomain(init =0.15)
+        Vbl ∈ RealDomain(init =5.6)
 
-        Vhe ∈ ConstDomain(0.33)
-        Vki ∈ ConstDomain(0.31)
-        Vli ∈ ConstDomain(1.8)
-        Vlu ∈ ConstDomain(0.5)
-        Vmu ∈ ConstDomain(29)
-        Vsp ∈ ConstDomain(0.15)
-        Vbl ∈ ConstDomain(5.6)
-
-        FQad ∈ ConstDomain(0.05)
-        FQbo ∈ ConstDomain(0.05)
-        FQbr ∈ ConstDomain(0.12)
-        FQgu ∈ ConstDomain(0.16)
-        FQhe ∈ ConstDomain(0.04)
-        FQki ∈ ConstDomain(0.19)
-        FQli ∈ ConstDomain(0.255)
-        FQmu ∈ ConstDomain(0.17)
-        FQsp ∈ ConstDomain(0.03)
+        FQad ∈ RealDomain(init = 0.05)
+        FQbo ∈ RealDomain(init = 0.05)
+        FQbr ∈ RealDomain(init = 0.12)
+        FQgu ∈ RealDomain(init = 0.16)
+        FQhe ∈ RealDomain(init = 0.04)
+        FQki ∈ RealDomain(init = 0.19)
+        FQli ∈ RealDomain(init = 0.255)
+        FQmu ∈ RealDomain(init = 0.17)
+        FQsp ∈ RealDomain(init = 0.03)
     end
 
     @pre begin
@@ -118,20 +119,29 @@ model = @model begin
     end
 
     @dynamics begin
-        GUTLUMEN' = -kd*VguLumen*(f*(GUTLUMEN/VguLumen) + (1-f)*S_lumen) - kt*GUTLUMEN
-        GUTWALL' = kd*VguLumen*(f*(GUTLUMEN/VguLumen) + (1-f)*S_lumen) - ka*GUTWALL - CLintGut*(GUTWALL/VguWall)
+        GUTLUMEN' = -kd*VguLumen*(f*(GUTLUMEN/VguLumen) + (1-f)*S_lumen) -
+            kt*GUTLUMEN
+        GUTWALL' = kd*VguLumen*(f*(GUTLUMEN/VguLumen) + (1-f)*S_lumen) -
+            ka*GUTWALL - CLintGut*(GUTWALL/VguWall)
         GUT' = ka*GUTWALL + Qgu*((ART/Var) - (GUT/VguWall)/(Kpgu/BP))
         ADIPOSE' = Qad*((ART/Var) - (ADIPOSE/Vad)/(Kpad/BP))
         BRAIN' = Qbr*((ART/Var) - (BRAIN/Vbr)/(Kpbr/BP))
         HEART' = Qhe*((ART/Var) - (HEART/Vhe)/(Kphe/BP))
-        KIDNEY' = Qki*((ART/Var) - (KIDNEY/Vki)/(Kpki/BP)) - CLrenal*(((KIDNEY/Vki)*fup)/(Kpki/BP))
-        LIVER' = Qgu*((GUT/VguWall)/(Kpgu/BP)) + Qsp*((SPLEEN/Vsp)/(Kpsp/BP)) + Qha*(ART/Var) - Qli*((LIVER/Vli)/(Kpli/BP)) - CLintHep*(((LIVER/Vli)*fup)/(Kpli/BP))
+        KIDNEY' = Qki*((ART/Var) - (KIDNEY/Vki)/(Kpki/BP)) -
+            CLrenal*(((KIDNEY/Vki)*fup)/(Kpki/BP))
+        LIVER' = Qgu*((GUT/VguWall)/(Kpgu/BP)) + Qsp*((SPLEEN/Vsp)/(Kpsp/BP)) +
+            Qha*(ART/Var) - Qli*((LIVER/Vli)/(Kpli/BP)) -
+            CLintHep*(((LIVER/Vli)*fup)/(Kpli/BP))
         LUNG' = Qlu*((VEN/Vve) - (LUNG/Vlu)/(Kplu/BP))
         MUSCLE' = Qmu*((ART/Var) - (MUSCLE/Vmu)/(Kpmu/BP))
         SPLEEN' = Qsp*((ART/Var) - (SPLEEN/Vsp)/(Kpsp/BP))
         BONE' = Qbo*((ART/Var) - (BONE/Vbo)/(Kpbo/BP))
         REST' = Qre*((ART/Var) - (REST/Vre)/(Kpre/BP))
-        VEN' = Qad*((ADIPOSE/Vad)/(Kpad/BP)) + Qbr*((BRAIN/Vbr)/(Kpbr/BP)) + Qhe*((HEART/Vhe)/(Kphe/BP)) + Qki*((KIDNEY/Vki)/(Kpki/BP)) + Qli*((LIVER/Vli)/(Kpli/BP)) + Qmu*((MUSCLE/Vmu)/(Kpmu/BP)) + Qbo*((BONE/Vbo)/(Kpbo/BP)) + Qre*((REST/Vre)/(Kpre/BP)) - Qlu*(VEN/Vve)
+        VEN' = Qad*((ADIPOSE/Vad)/(Kpad/BP)) + Qbr*((BRAIN/Vbr)/(Kpbr/BP)) +
+            Qhe*((HEART/Vhe)/(Kphe/BP)) + Qki*((KIDNEY/Vki)/(Kpki/BP)) +
+            Qli*((LIVER/Vli)/(Kpli/BP)) + Qmu*((MUSCLE/Vmu)/(Kpmu/BP)) +
+            Qbo*((BONE/Vbo)/(Kpbo/BP)) + Qre*((REST/Vre)/(Kpre/BP)) -
+            Qlu*(VEN/Vve)
         ART' = Qlu*((LUNG/Vlu)/(Kplu/BP) - (ART/Var))
     end
 
@@ -152,6 +162,9 @@ model = @model begin
         art = ART
         ven = VEN
         Cvenn = VEN/Vve
+        nca := @nca Cvenn
+        auc =  NCA.auc(nca, auctype = :last)
+        cmax = NCA.cmax(nca)
     end
 end
 
@@ -223,7 +236,7 @@ plot!(ZT.time, ZT[:ZT], linecolor = :lightgray, label = "ZT")
 xlabel!("time (h)")
 ylabel!("Plasma concentration (mg/L)")
 
-
+png("adult_1.png")
 #Table 1: This chunk tables out the prediction errors of different calculation methods
 #pad observed data till 12 hours
 
@@ -238,9 +251,9 @@ mod = coef(lm(@formula(obs ~ time), df_temp))
 
 #adding time 12 to data frame and predicting using lm
 st = DataFrame(time = [12])
-st2 = predict((lm(@formula(obs ~ time), df_temp)), st)
+st2 = GLM.predict((lm(@formula(obs ~ time), df_temp)), st)
 
-df_temp = DataFrame(Column1 = 14, time = 12, obs = st2, sd = missing)
+df_temp = DataFrame(Column1 = 14, time = 12, obs = st2, sd = 0)
 append!(obs, df_temp)
 
 ## calculate AUCs for all methods
@@ -272,12 +285,13 @@ sim = simobs(model, sub2, p_RR, obstimes = 0:0.1:12) #slightly different numbers
 obs = DataFrame(CSV.File("/Users/praneeth/Documents/juliatrial/obs.csv"))
 ZT = DataFrame(CSV.File("/Users/praneeth/Documents/juliatrial/ZT.csv"))
 
-plot(sim.times, sim[:Cvenn], linecolor = :black, label = "model 1", title = "a Adult 4 mg/kg IV")
+plot(sim.times, sim[:Cvenn], linecolor = :black, label = "model", title = "a Adult 4 mg/kg IV")
 plot!(obs.time, obs[:obs], seriestype=:scatter, yerror = obs[:sd], markercolor = :black, seriescolor = :black, label = "observed")
-plot!(ZT.time, ZT[:ZT], linecolor = :lightgray, label = "ZT")
+plot!(ZT.time, ZT[:ZT], linecolor = :blue, label = "ZT")
 xlabel!("time (h)")
 ylabel!("Plasma concentration (mg/L)")
 
+png("adult_1.png")
 
 ## Figure 3b; Model 2 with 4 mg/kg IV infusion
 obs = DataFrame(CSV.File("/Users/praneeth/Documents/juliatrial/Fig4a_obs.csv")) #obs data from fig 3a in the ZT paper
@@ -305,12 +319,13 @@ sub3 = Subject(id=1,evs=regimen3)
 sim = simobs(model, sub3, p_RR_ped, obstimes = 0:0.1:12)
 
 #Pediatric 4 mg/kg IV plot
-plot(sim.times, sim[:Cvenn], linecolor = :black, label = "model 2", title = "b Pediatric 4 mg/kg IV")
+plot(sim.times, sim[:Cvenn], linecolor = :black, label = "model", title = "b Pediatric 4 mg/kg IV")
 plot!(obs.time, obs[:obs], seriestype=:scatter, yerror = obs[:sd], markercolor = :black, seriescolor = :black, label = "observed")
-plot!(ZT.time, ZT[:ZT], linecolor = :lightgray, label = "ZT")
+plot!(ZT.time, ZT[:ZT], linecolor = :blue, label = "ZT")
 xlabel!("time (h)")
 ylabel!("Plasma concentration (mg/L)")
 
+png("ped_1.png")
 #Figure 3c; Model 1 with 200 mg PO
 obs = DataFrame(CSV.File("/Users/praneeth/Documents/juliatrial/Fig3b_obs.csv")) #observed data from fig 3b in the ZT paper
 ZT = DataFrame(CSV.File("/Users/praneeth/Documents/juliatrial/Fig3b_ZT.csv")) #predicted data from fig 3b in the ZT paper
@@ -322,10 +337,11 @@ sim = simobs(model, sub4, p_RR, obstimes = 0:0.1:12)
 
 plot(sim.times, sim[:Cvenn], linecolor = :black, label = "model 1", title = "c Adult 200 mg PO")
 plot!(obs.time, obs[:obs], seriestype=:scatter, yerror = obs[:sd], markercolor = :black, seriescolor = :black, label = "observed")
-plot!(ZT.time, ZT[:ZT], linecolor = :lightgray, label = "ZT")
+plot!(ZT.time, ZT[:ZT], linecolor = :blue, label = "ZT")
 xlabel!("time (h)")
 ylabel!("Plasma concentration (mg/L)")
 
+png("adult_1_po.png")
 
 #Figure 3d; Model 2 with 4 mg/kg PO
 obs = DataFrame(CSV.File("/Users/praneeth/Documents/juliatrial/Fig4d_obs.csv")) #observed data from fig 4d in ZT paper
@@ -338,13 +354,14 @@ sim = simobs(model, sub5, p_RR_ped, obstimes = 0:0.1:12)
 
 plot(sim.times, sim[:Cvenn], linecolor = :black, label = "model 1", title = "d Pediatric 4 mg/kg PO")
 plot!(obs.time, obs[:obs], seriestype=:scatter, yerror = obs[:sd], markercolor = :black, seriescolor = :black, label = "observed")
-plot!(ZT.time, ZT[:ZT], linecolor = :lightgray, label = "ZT")
+plot!(ZT.time, ZT[:ZT], linecolor = :blue, label = "ZT")
 xlabel!("time (h)")
 ylabel!("Plasma concentration (mg/L)")
 
+png("ped_1_po.png")
 
 ### sensitivity analyses for absorption parameters: permeability, intestinal transit time and solubility ###
-
+#####SENSITIVITY ANALYSIS STARTS HERE
 fixeffs = p
 
 regimen_s = DosageRegimen(200, time = 0, addl=13, ii=12, cmt=1, ss = 1)
@@ -363,9 +380,9 @@ _Kpmu1 = (fixeffs..., Kpmu = 1.5)
 _Kpmu2 = (fixeffs..., Kpmu = 3)
 _Kpmu3 = (fixeffs..., Kpmu = 6)
 
-pred_kpmu1 = simobs(model, sub_s, _Kpmu1, obstimes=0:0.1:12)
-pred_kpmu2 = simobs(model, sub_s, _Kpmu2, obstimes=0:0.1:12)
-pred_kpmu3 = simobs(model, sub_s, _Kpmu3, obstimes=0:0.1:12)
+pred_kpmu1 = simobs(model, sub_s, _Kpmu1)
+pred_kpmu2 = simobs(model, sub_s, _Kpmu2)
+pred_kpmu3 = simobs(model, sub_s, _Kpmu3)
 
 p1 = plot(pred_kpmu1.times, pred_kpmu1[:Cvenn], linecolor = :black, label = "1.5", legendtitle = "Kpmu", legendfontsize = 12)
 plot!(pred_kpmu2.times, pred_kpmu2[:Cvenn], linecolor = :black, line = :dash, label = "3")
@@ -374,13 +391,15 @@ xlabel!("Time (h)")
 ylabel!("Plasma concentration (mg/L)")
 p1
 
+#png("kpmu.png")
+
 
 #BP sensitivity analysis for abstract
 _BP1 = (fixeffs..., BP = 0.5)
 _BP2 = (fixeffs..., BP = 1)
 _BP3 = (fixeffs..., BP = 2)
 
-pred_BP1 = simobs(model, sub_s, _BP1, obstimes=0:0.1:12)
+pred_BP1 = simobs(model, sub_s, _BP1)
 pred_BP2 = simobs(model, sub_s, _BP2, obstimes=0:0.1:12)
 pred_BP3 = simobs(model, sub_s, _BP3, obstimes=0:0.1:12)
 
@@ -390,20 +409,36 @@ plot!(pred_BP3.times, pred_BP3[:Cvenn], linecolor = :black, line = :dot, label =
 xlabel!("Time (h)")
 ylabel!("Plasma concentration (mg/L)")
 
-gsa(model2, sub_p, fixeffs, DiffEqSensitivity.Sobol(N=100, order =[1]), [:Cvenn])
+#png("bp.png")
+
+#parameters - tissue:plasma partition coefficients based on: Poulin and Theil
+p = (fup = 0.42, fumic = 0.711, WEIGHT = 73, MPPGL = 30.3, MPPGI = 0,
+    C_OUTPUT = 6.5, VmaxH = 40, VmaxG = 40, KmH = 9.3, KmG = 9.3, BP = 1,
+    Kpad = 9.89, Kpbo = 7.91, Kpbr = 7.35, Kpgu = 5.82, Kphe = 1.95, Kpki = 2.9,
+    Kpli = 4.66, Kplu = 0.83, Kpmu = 2.94, Kpsp = 2.96, Kpre = 4, MW = 349.317,
+    logP = 2.56, S_lumen = 0.39*1000, L = 280, d = 2.5, PF = 1.57, VF = 6.5,
+    MF = 13, ITT = 3.32, A = 7440, B = 1e7, alpha = 0.6, beta = 4.395, fabs = 1,
+    fdis = 1, fperm = 1, Vad = 18.2, Vbo = 10.5, Vbr = 1.45, VguWall = 0.65,
+    VguLumen = 0.35, Vhe = 0.33, Vki = 0.31, Vli = 1.8, Vlu = 0.5, Vmu = 29,
+    Vsp = 0.15, Vbl = 5.6, FQad = 0.05, FQbo = 0.05, FQbr = 0.12, FQgu = 0.16,
+    FQhe = 0.04, FQki = 0.19, FQli = 0.255, FQmu = 0.17, FQsp = 0.03)
+
 sobol = gsa(model,
             sub_p,
             fixeffs,
-            DiffEqSensitivity.Sobol(N=10,order=[1]),
-            [:Cvenn])
+            DiffEqSensitivity.Sobol(N=2000,order=[0,1], nboot = 50),
+            [:auc],
+           (Kpmu = 1.5, BP=0.5, S_lumen=0.39*500, fperm=0.5, MPPGI=1.212/2, ITT=3.32/2),
+           (Kpmu = 6, BP=2, S_lumen=0.39*2000, fperm=2, MPPGI=1.212*2, ITT=3.32*2))
 
+serialize("sobolresult.jl", sobol)
 
 #changing S_lumen
 _fixeffs = (fixeffs...,S_lumen = 0.39*500)
 _fixeffs2 = (fixeffs...,S_lumen = 0.39*1000)
 _fixeffs3 = (fixeffs...,S_lumen = 0.39*2000)
 
-pred_1 = simobs(model, sub_s, _fixeffs, obstimes=0:0.1:12)
+pred_1 = simobs(model, sub_p, _fixeffs)
 pred_2 = simobs(model, sub_s, _fixeffs2, obstimes=0:0.1:12)
 pred_3 = simobs(model, sub_s, _fixeffs3, obstimes=0:0.1:12)
 
@@ -419,9 +454,11 @@ _fixeffs5 = (fixeffs...,fperm = 1)
 _fixeffs6 = (fixeffs...,fperm = 2)
 
 
-pred_4 = simobs(model, sub_s, _fixeffs4, obstimes=0:0.1:12)
+pred_4 = simobs(model, sub_s, _fixeffs4)
 pred_5 = simobs(model, sub_s, _fixeffs5, obstimes=0:0.1:12)
 pred_6 = simobs(model, sub_s, _fixeffs6, obstimes=0:0.1:12)
+
+#my_nca = read_nca(DataFrame(pred_4), id = :id, conc = :Cvenn, time = :time, amt = :amt)
 
 
 plot(pred_4.times, pred_4[:Cvenn], linecolor = :black, label = "0.073", title = "Peff x 10-4 (cm/s)")
@@ -430,6 +467,7 @@ plot!(pred_6.times, pred_6[:Cvenn], linecolor = :black, line = :dot, label = "0.
 xlabel!("time (h)")
 ylabel!("Plasma concentration (mg/L)")
 
+png("peff.png")
 
 
 #changing ITT
@@ -461,6 +499,8 @@ plot!(pred_11.times, pred_11[:Cvenn], linecolor = :black, line = :dash, label = 
 plot!(pred_12.times, pred_12[:Cvenn], linecolor = :black, line = :dot, label = "0.14")
 xlabel!("time (h)")
 ylabel!("Plasma concentration (mg/L)")
+
+png("clgu.png")
 
 
 ###Figure 7 - reproduces figure 5 plots
@@ -522,13 +562,21 @@ plot!(ZT.time, ZT[:ZT], linecolor = :lightgray, label = "ZT")
 xlabel!("time (h)")
 ylabel!("Plasma concentration (mg/L)")
 
+plot(sim.times, sim[:Cvenn], line = [:dash],linecolor = :black, label = "initial model", title = "Adult 200mg PO")
+plot!(sim_mppgi_fperm.times, sim_mppgi_fperm[:Cvenn], linecolor = :black, label = "model w/Clgu")
+plot!(obs.time, obs[:obs], seriestype=:scatter, yerror = obs[:sd], markercolor = :black, seriescolor = :black, label = "observed")
+plot!(ZT.time, ZT[:ZT], linecolor = :blue, label = "ZT")
+xlabel!("time (h)")
+ylabel!("Plasma concentration (mg/L)")
+
+png("adult_po_clgu.png")
 
 #Figure 5b; Model 4 with 4 mg/kg IV infusion
 obs = DataFrame(CSV.File("/Users/praneeth/Documents/juliatrial/Fig4d_obs.csv")) #observed data from fig 4d in ZT paper
 ZT_Gu = DataFrame(CSV.File("/Users/praneeth/Documents/juliatrial/Fig4e_ZT.csv")) #predicted data from fig 4d in ZT paper
 ZT = DataFrame(CSV.File("/Users/praneeth/Documents/juliatrial/Fig4d_ZT.csv")) #predicted data from fig 4d in the ZT paper
 
-#Weight = 19 kg, DOse = 4 mg/kg IV - pediatric
+#Weight = 19 kg, DOse = 4 mg/kg PO - pediatric
 regimen = DosageRegimen(76, time = 0, addl=7, ii=12, cmt=1, ss = 1)
 sub = Subject(id=1,evs=regimen)
 
@@ -548,6 +596,15 @@ plot!(ZT_Gu.time, ZT_Gu[:ZT], linecolor = :lightgray, line = :dash, label ="ZT_G
 xlabel!("time (h)")
 ylabel!("Plasma concentration (mg/L)")
 
+plot(sim.times, sim[:Cvenn], line = [:dash],linecolor = :black, label = "initial model", title = "Pediatric 4mg/kg PO")
+plot!(sim_mppgi_fperm.times, sim_mppgi_fperm[:Cvenn], linecolor = :black, label = "model w/Clgu")
+plot!(obs.time, obs[:obs], seriestype=:scatter, yerror = obs[:sd], markercolor = :black, seriescolor = :black, label = "observed")
+plot!(ZT.time, ZT[:ZT], linecolor = :blue, label = "ZT")
+xlabel!("time (h)")
+ylabel!("Plasma concentration (mg/L)")
+
+png("ped_po_clgu.png")
+
 ###Table 2
 obs = DataFrame(CSV.File("/Users/praneeth/Documents/juliatrial/obs.csv"))
 ZT = DataFrame(CSV.File("/Users/praneeth/Documents/juliatrial/ZT.csv"))
@@ -563,7 +620,7 @@ mod = coef(lm(@formula(obs ~ time), df_temp))
 st = DataFrame(time = [12])
 st2 = predict((lm(@formula(obs ~ time), df_temp)), st)
 
-df_temp = DataFrame(Column1 = 14, time = 12, obs = st2, sd = missing)
+df_temp = DataFrame(Column1 = 14, time = 12, obs = st2, sd = 0)
 append!(obs, df_temp)
 
 #Weight = 73 kg, Dose = 4 mg/kg IV
@@ -618,7 +675,7 @@ mod = coef(lm(@formula(obs ~ time), df_temp))
 st = DataFrame(time = [12])
 st2 = predict((lm(@formula(obs ~ time), df_temp)), st)
 
-df_temp = DataFrame(Column1 = 14, time = 12, obs = st2, sd = missing)
+df_temp = DataFrame(Column1 = 14, time = 12, obs = st2, sd = 0)
 append!(obs, df_temp)
 
 #Dose = 200 mg PO
@@ -650,6 +707,10 @@ cmax_pred_mppgi_fperm = NCA.cmax(pred_mppgi_fperm[:Cvenn], pred_mppgi_fperm.time
 #load pediatric data
 obs = DataFrame(CSV.File("/Users/praneeth/Documents/juliatrial/Fig4d_obs.csv"))
 ZT = DataFrame(CSV.File("/Users/praneeth/Documents/juliatrial/Fig4e_ZT.csv"))
+df_temp = DataFrame(Column1 = 0, time = 0, obs = 0, sd = 0)
+append!(obs, df_temp)
+sort!(obs)
+
 
 #Weight = 19 kg, Dose = 4mg/kg PO
 regimen = DosageRegimen(76, time = 0, addl=13, ii=12, cmt = 1, ss = 1)
@@ -667,6 +728,7 @@ auc_pred_mppgi = NCA.auc(pred_mppgi[:Cvenn], pred_mppgi.times, interval = (0,12)
 auc_pred_fperm = NCA.auc(pred_fperm[:Cvenn], pred_fperm.times, interval = (0,12))
 auc_pred_mppgi_fperm = NCA.auc(pred_mppgi_fperm[:Cvenn], pred_mppgi_fperm.times, interval = (0,12))
 
+obs
 
 cmax_obs = NCA.cmax(obs[:obs], obs[:time])
 cmax_ZT = NCA.cmax(ZT[:ZT], ZT[:time])
@@ -677,6 +739,8 @@ cmax_pred_mppgi_fperm = NCA.cmax(pred_mppgi_fperm[:Cvenn], pred_mppgi_fperm.time
 
 #need to make into dataframe and then use mutate
 
+
+###IGNORE code below
 #Figure 8
 
 #adults
