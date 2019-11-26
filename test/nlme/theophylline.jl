@@ -787,7 +787,7 @@ end
         conc = Central / SC
     end
 
-    @dynamics DepotCentral1
+    @dynamics Depots1Central1
 
     @derived begin
         dv ~ @. Normal(conc, sqrt(σ_add))
@@ -946,7 +946,7 @@ end
       conc = Central / SC
     end
 
-    @dynamics DepotCentral1
+    @dynamics Depots1Central1
 
     @derived begin
       dv ~ @. Normal(conc, sqrt(conc^2*σ_prop+σ_add))

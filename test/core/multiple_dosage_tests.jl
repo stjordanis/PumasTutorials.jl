@@ -35,7 +35,7 @@ m_analytic = @model begin
         CL = cl
         V  = v
     end
-    @dynamics DepotCentral1
+    @dynamics Depots1Central1 
 
     # we approximate the error by computing the conditional_nll
     @derived begin

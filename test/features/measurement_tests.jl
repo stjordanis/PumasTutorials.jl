@@ -211,7 +211,7 @@ end
             V  = θ[3]*exp(η[2])
         end
 
-        @dynamics DepotCentral1
+        @dynamics Depots1Central1 
 
         @derived begin
             cp = @. Central / V
