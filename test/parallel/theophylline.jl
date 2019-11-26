@@ -31,7 +31,7 @@ theopmodel_fo_a = @model begin
       conc = Central / SC
     end
 
-    @dynamics DepotCentral1
+    @dynamics Depots1Central1
 
     @derived begin
       dv ~ @. Normal(conc,sqrt(σ_add))
