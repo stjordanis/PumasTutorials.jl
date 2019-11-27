@@ -657,8 +657,7 @@ StatsBase.predict(insp::FittedPumasModelInspection, args...; kwargs...) = predic
 wresiduals(insp::FittedPumasModelInspection) = insp.wres
 empirical_bayes(insp::FittedPumasModelInspection) = insp.ebes
 
-function inspect(fpm; pred_approx=fpm.approx, infer_approx=fpm.approx,
-                    wres_approx=fpm.approx, ebes_approx=fpm.approx)
+function inspect(fpm; pred_approx=fpm.approx, wres_approx=fpm.approx, ebes_approx=fpm.approx)
   print("Calculating: ")
   print("predictions")
   pred = predict(fpm, pred_approx)

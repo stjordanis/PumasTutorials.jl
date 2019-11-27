@@ -159,9 +159,8 @@ function penalized_conditional_nll(m::PumasModel,
                                    randeffs::NamedTuple,
                                    args...;kwargs...)
 
-
   randeffstransform = totransform(m.random(param))
-  vrandeffsorth = TransformVariables.inverse(randeffstransform, vrandeffsorth)
+  vrandeffsorth = TransformVariables.inverse(randeffstransform, randeffs)
 
   return penalized_conditional_nll(m, subject, param, vrandeffsorth, args...; kwargs...)
 end
