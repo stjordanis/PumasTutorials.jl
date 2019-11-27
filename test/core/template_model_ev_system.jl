@@ -48,7 +48,7 @@ m_analytic = @model begin
         V  = θ[3]*exp(η[2])
     end
 
-    @dynamics Depots1Central1 
+    @dynamics Depots1Central1
 
     @derived cp = @. Central / V
 end
@@ -126,7 +126,7 @@ mlag_analytic = @model begin
         lags = θ[4]
     end
 
-    @dynamics Depots1Central1 
+    @dynamics Depots1Central1
 
     @derived cp = @. Central / V
 end
@@ -211,7 +211,7 @@ mlagbioav_analytic = @model begin
         bioav = θ[5]
     end
 
-    @dynamics Depots1Central1 
+    @dynamics Depots1Central1
 
     @derived cp = @. Central / V
 end
@@ -297,7 +297,7 @@ mbioav_analytic = @model begin
         bioav = θ[4]
     end
 
-    @dynamics Depots1Central1 
+    @dynamics Depots1Central1
 
     @derived cp = @. Central / V
 end
@@ -849,7 +849,7 @@ mbld_analytic = @model begin
         duration = θ[6]
     end
 
-    @dynamics Depots1Central1 
+    @dynamics Depots1Central1
 
     @derived cp = @. Central / V
 end
@@ -1084,7 +1084,7 @@ mparbl_analytic = @model begin
         lags = (0,θ[6],0)
     end
 
-    @dynamics TwoDepotsCentral1
+    @dynamics Depots2Central1
 
     @derived cp = @. Central / V
 end
@@ -1155,7 +1155,7 @@ mbl2_analytic = @model begin
         lags = SLVector(Central=θ[4])
     end
 
-    @dynamics Depots1Central1 
+    @dynamics Depots1Central1
 
     @derived cp = @. Central / V
 end
