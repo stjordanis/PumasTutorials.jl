@@ -170,18 +170,18 @@ _Λ(::Central1Periph1Metab1, a, b, c, d) = _Λ(Central1Periph1(), a+d, b, c)
 (m::Central1Periph1Metab1)(args...) = _analytical_solve(m, args...)
 @inline function LinearAlgebra.eigen(m::Central1Periph1Metab1, p)
   a = p.CL1/p.V1
-  b = p.Q11/p.V1
-  c = p.Q11/p.Vp1
-  d = p.Q12/p.V1
+  b = p.Q1/p.V1
+  c = p.Q1/p.Vp1
+  d = p.T/p.V1
   e = p.CL2/p.V2
 
   α = a + b + c + d
-  Λ = _Λ(m, a, b, c, d)
 
+  Λ = vcat(_Λ(m, a, b, c, d), @SVector([-e]))
 
-  v1_1 = (Λ[1] + ϵ)/d
+  v1_1 = (Λ[1] + e)/d
   v1_2 = (Λ[1] + α - c)*(Λ[1] + e)/(c*d)
-  v2_1 = (Λ[2] + ϵ)/d
+  v2_1 = (Λ[2] + e)/d
   v2_2 = (Λ[2] + α - c)*(Λ[2] + e)/(c*d)
 
   𝕍 = @SMatrix([v1_1 v2_1 0;
