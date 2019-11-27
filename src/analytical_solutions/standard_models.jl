@@ -175,9 +175,9 @@ _Λ(::Central1Periph1Metab1, a, b, c, d) = _Λ(Central1Periph1(), a+d, b, c)
   d = p.T/p.V1
   e = p.CL2/p.V2
 
-  α = a + b + c + d
+  α = a + b + c
 
-  Λ = vcat(_Λ(m, a, b, c, d), @SVector([-e]))
+  Λ = vcat(_Λ(Central1Periph1(), a, b, c), @SVector([-e]))
 
   v1_1 = (Λ[1] + e)/d
   v1_2 = (Λ[1] + α - c)*(Λ[1] + e)/(c*d)
