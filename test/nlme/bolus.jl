@@ -204,7 +204,7 @@ using Pumas, Test, CSV
     end
 
     @testset "FOCE estimation of $dyntype model" for dyntype in ("analytical", "solver")
-      result = fit(mdl_proportional_additive[dyntype], data, param_proportional_additive, Pumas.FOCE())
+      result = fit(mdl_proportional_additive[dyntype], data, param_proportional_additive, Pumas.FOCE(), alg=Tsit5())
       param = coef(result)
 
       @test param.θ      ≈ [4.12e-01, 7.20e+00] rtol=1e-3
