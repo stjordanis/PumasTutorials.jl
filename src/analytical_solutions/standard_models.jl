@@ -1,6 +1,6 @@
 export Central1, Depots1Central1, Depots2Central1,
        Central1Periph1, Depots1Central1Periph1 ,
-       Central1Periph1Metab1, Central1Periph1MetaPeriph1
+       Central1Periph1Meta1, Central1Periph1MetaPeriph1
 
 abstract type ExplicitModel end
 # Generic ExplicitModel solver. Uses an analytical eigen solution.
@@ -134,20 +134,19 @@ struct Central1Periph1MetaPeriph1 <: ExplicitModel end # 011?
   f = p.Q2/p.V2
   h = p.Q2/p.Vp2
 
-  a′ = a + d
-  α′ = a′ + b
-  ϵ = e + f
+  β = a + b
+  ϕ = e + f
 
   m′ = Central1Periph1()
-  Λ = vcat(_Λ(m′, a′, b, c),  _Λ(m′, e, f, h))
+  Λ = vcat(_Λ(m′, a, b, c),  _Λ(m′, e, f, h))
 
-  v1_3 = (Λ[1] + h)/f
-  v1_1 = ((Λ[1] + ϵ) * v1_3 - h)/d
-  v1_2 = (Λ[1] + α′) * v1_1/c
+  v1_3 = ( Λ[1] + h)/f
+  v1_1 = ((Λ[1] + ϕ) * v1_3 - h)/d
+  v1_2 = ( Λ[1] + β) * (v1_1 + h/d)/c - (Λ[1] + β)*h/(c*d)
 
-  v2_3 = (Λ[2] + h)/f
-  v2_1 = ((Λ[2] + ϵ) * v2_3 - h)/d
-  v2_2 = (Λ[2] + α′) * v2_1/c
+  v2_3 = ( Λ[2] + h)/f
+  v2_1 = ((Λ[2] + ϕ) * v2_3 - h)/d
+  v2_2 = ( Λ[2] + β) * (v2_1 + h/d)/c - (Λ[2] + β)*h/(c*d)
 
 
   v3_3 = (Λ[3] + h)/f
@@ -165,24 +164,22 @@ pk_init(::Central1Periph1MetaPeriph1) = SLVector(Central=0.0, CPeripheral=0.0, M
 )
 
 # use Vc and Vm
-struct Central1Periph1Metab1 <: ExplicitModel end # 011?
-_Λ(::Central1Periph1Metab1, a, b, c, d) = _Λ(Central1Periph1(), a+d, b, c)
-(m::Central1Periph1Metab1)(args...) = _analytical_solve(m, args...)
-@inline function LinearAlgebra.eigen(m::Central1Periph1Metab1, p)
+struct Central1Periph1Meta1 <: ExplicitModel end # 011?
+(m::Central1Periph1Meta1)(args...) = _analytical_solve(m, args...)
+@inline function LinearAlgebra.eigen(m::Central1Periph1Meta1, p)
   a = p.CL1/p.V1
   b = p.Q1/p.V1
   c = p.Q1/p.Vp1
   d = p.T/p.V1
   e = p.CL2/p.V2
 
-  α = a + b + c
-
+  β = a + b
   Λ = vcat(_Λ(Central1Periph1(), a, b, c), @SVector([-e]))
 
   v1_1 = (Λ[1] + e)/d
-  v1_2 = (Λ[1] + α - c)*(Λ[1] + e)/(c*d)
+  v1_2 = (Λ[1] + β)*v1_1/c
   v2_1 = (Λ[2] + e)/d
-  v2_2 = (Λ[2] + α - c)*(Λ[2] + e)/(c*d)
+  v2_2 = (Λ[2] + β)*v2_1/c
 
   𝕍 = @SMatrix([v1_1 v2_1 0;
                 v1_2 v2_2 0;
@@ -190,5 +187,5 @@ _Λ(::Central1Periph1Metab1, a, b, c, d) = _Λ(Central1Periph1(), a+d, b, c)
 
   return Λ, 𝕍
 end
-varnames(::Type{Central1Periph1Metab1}) = (:Central, :CPeripheral, :Metabolite)
-pk_init(::Central1Periph1Metab1) = SLVector(Central=0.0, CPeripheral=0.0, Metabolite=0.0)
+varnames(::Type{Central1Periph1Meta1}) = (:Central, :CPeripheral, :Metabolite)
+pk_init(::Central1Periph1Meta1) = SLVector(Central=0.0, CPeripheral=0.0, Metabolite=0.0)
