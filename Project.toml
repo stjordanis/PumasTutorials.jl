@@ -74,7 +74,7 @@ StochasticDiffEq = "6.10"
 Tables = "0.2"
 TransformVariables = "< 0.3.5"
 TreeViews = "0.3"
-Unitful = "0.17"
+Unitful = "0.17, 0.18"
 julia = "1.1"
 
 [extras]
