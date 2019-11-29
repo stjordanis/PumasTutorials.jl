@@ -108,14 +108,14 @@ conditional_nll(m::PumasModel,
                 subject::Subject,
                 param::NamedTuple,
                 randeffs::NamedTuple,
-                approx::Union{FOI,FOCEI,LaplaceI},
+                approx::Union{FOI,FOCE,FOCEI,LaplaceI},
                 args...; kwargs...) = conditional_nll(m, subject, param, randeffs, args...; kwargs...)
 
 function conditional_nll(m::PumasModel,
                          subject::Subject,
                          param::NamedTuple,
                          randeffs::NamedTuple,
-                         approx::Union{FO,FOCE,Laplace},
+                         approx::Union{FO,Laplace},
                          args...; kwargs...)
 
   collated_numtype = numtype(m.pre(param, randeffs, subject))
@@ -780,11 +780,7 @@ function ∂²l∂η²(m::PumasModel,
   dv_dist = NamedTuple{dv_keys}(_derived_dist)
   dv_zip = NamedTuple{dv_keys}(zip(dv_keys, subject.observations, dv_dist))
 
-  if approx isa FOCE
-    return map(d -> _∂²l∂η²(d[1], d[2], d[3], m, subject, param, vrandeffsorth, approx, args...; kwargs...), dv_zip)
-  else
-    return map(d -> _∂²l∂η²(d[2], d[3], approx), dv_zip)
-  end
+  return map(d -> _∂²l∂η²(d[2], d[3], approx), dv_zip)
 end
 
 function _∂²l∂η²(obsdv::AbstractVector, dv::AbstractVector{<:Normal}, ::FO)
@@ -853,78 +849,33 @@ end
 
 # Helper function to detect homoscedasticity. For now, it is assumed the input dv vecotr containing
 # a vector of distributions with ForwardDiff element types.
-function _is_homoscedastic(dv::AbstractVector{<:Union{Normal,LogNormal}})
-  # FIXME! Eventually we should support more dependent variables instead of hard coding for dv
-  v1 = ForwardDiff.value(first(dv).σ)
-  return all(t -> ForwardDiff.value(t.σ) == v1, dv)
-end
+_is_homoscedastic(dv::AbstractVector{<:Union{Normal{<:ForwardDiff.Dual},LogNormal{<:ForwardDiff.Dual}}}) =
+  iszero(sum(ForwardDiff.partials(last(dv).σ).values))
+_is_homoscedastic(dv::AbstractVector{<:Union{Normal{<:AbstractFloat},LogNormal{<:AbstractFloat}}}) =
+  first(dv).σ == last(dv).σ
+_is_homoscedastic(dv::AbstractVector{Gamma{<:ForwardDiff.Dual}}) =
+  iszero(sum(ForwardDiff.partials(last(dv).α).values))
+_is_homoscedastic(dv::AbstractVector{<:Union{Bernoulli,Binomial,Poisson}}) = true
 _is_homoscedastic(::Any) = throw(ArgumentError("Distribution not supported"))
-
-function _∂²l∂η²(dv_name::Symbol,
-                 obsdv,
-                 dv_d::AbstractVector{<:Union{Normal,LogNormal}},
-                 m::PumasModel,
-                 subject::Subject,
-                 param::NamedTuple,
-                 vrandeffsorth::AbstractVector,
-                 ::FOCE,
-                 args...; kwargs...)
-
-  # Compute the conditional likelihood and the conditional distributions of the dependent variable per observation for η=0
-  # If the model is homoscedastic, it is not necessary to recompute the variances at η=0
-  if _is_homoscedastic(dv_d)
-    return _∂²l∂η²(obsdv, dv_d, first(dv_d), FOCE())
-  else # in the Heteroscedastic case, compute the variances at η=0
-    randeffstransform = totransform(m.random(param))
-    # should just pass this in from the outside to only calculate once
-    dist_0 = _derived(
-      m,
-      subject,
-      param,
-      TransformVariables.transform(randeffstransform, zero(vrandeffsorth)),
-      args...;
-      kwargs...
-      )
-
-    # Compute the Hessian approxmation in the random effect vector η
-    return _∂²l∂η²(obsdv, dv_d, dist_0[dv_name], FOCE())
-  end
-end
 
 _ofdisttype(dμ, dσ) = _ofdisttype(dμ; σ=dσ.σ)
 _ofdisttype(d::Normal; μ=d.μ, σ=d.σ)    = Normal(μ, σ)
 _ofdisttype(d::LogNormal; μ=d.μ, σ=d.σ) = LogNormal(μ, σ)
 
-# Homoscedastic case
-function _∂²l∂η²(obsdv::AbstractVector, dv_d::AbstractVector{<:Union{Normal,LogNormal}}, dv0::Union{Normal,LogNormal}, ::FOCE)
-  # Loop through the distribution vector and extract derivative information
-  nrfx = length(ForwardDiff.partials(first(dv_d).μ))
+_mean(d::Union{Normal,Bernoulli,Binomial,Poisson,Gamma}) = mean(d)
+_mean(d::LogNormal) = d.μ
+_var(d::Union{Normal,Bernoulli,Binomial,Poisson,Gamma}) = var(d)
+_var(d::LogNormal) = d.σ^2
 
-  # Initialize Hessian matrix and gradient vector
-  ## FIXME! Careful about hardcoding for Float64 here
-  H    = @SMatrix zeros(nrfx, nrfx)
-  nl   = 0.0
-  σ = ForwardDiff.value(dv0.σ)
+function _∂²l∂η²(obsdv::AbstractVector, dv_d::AbstractVector{<:Distribution}, ::FOCE)
 
-  for j in eachindex(dv_d)
-    obj = obsdv[j]
-    if ismissing(obj)
-      continue
-    end
-    dvj = dv_d[j]
-    f = SVector(ForwardDiff.partials(dvj.μ).values)/σ
-
-    H  += f*f'
-    nl -= _lpdf(_ofdisttype(dvj; μ=ForwardDiff.value(dvj.μ), σ=σ), obj)
+  # FOCE is restricted to models where the dispersion parameter doesn't depend on the random effects
+  if !_is_homoscedastic(dv_d)
+    throw(ArgumentError("dispersion parameter is not allowed to depend on the random effects when using FOCE"))
   end
 
-  return nl, nothing, H
-end
-
-# Heteroscedastic case
-function _∂²l∂η²(obsdv::AbstractVector, dv_d::AbstractVector{<:Normal}, dv0::AbstractVector{<:Normal}, ::FOCE)
   # Loop through the distribution vector and extract derivative information
-  nrfx = length(ForwardDiff.partials(first(dv_d).μ))
+  nrfx = length(ForwardDiff.partials(mean(first(dv_d))))
 
   # Initialize Hessian matrix and gradient vector
   ## FIXME! Careful about hardcoding for Float64 here
@@ -937,10 +888,10 @@ function _∂²l∂η²(obsdv::AbstractVector, dv_d::AbstractVector{<:Normal}, d
       continue
     end
     dvj = dv_d[j]
-    σ   = dv0[j].σ
-    f   = SVector(ForwardDiff.partials(dvj.μ).values)/σ
-    H  += f*f'
-    nl -= _lpdf(_ofdisttype(dvj; μ=ForwardDiff.value(dvj.μ), σ=σ), obj)
+    f = SVector(ForwardDiff.partials(_mean(dvj)).values)
+
+    H  += f/ForwardDiff.value(_var(dvj))*f'
+    nl -= ForwardDiff.value(_lpdf(dvj, obj))
   end
 
   return nl, nothing, H
@@ -1004,7 +955,11 @@ function ∂²l∂η²(m::PumasModel,
   return map(x -> (nl, nothing, W), subject.observations)
 end
 
-# Fallbacks for a usful error message when distribution isn't supported
+# Fallbacks
+## FIXME! Maybe write an optimized version of this one if the scalar dv case ens up being common
+_∂²l∂η²(obsdv::AbstractVector, dv_d::Distribution, approx::Union{FOCE,FOCEI}) =
+  _∂²l∂η²(obsdv, fill(dv_d, length(obsdv)), approx)
+# for a usful error message when distribution isn't supported
 _∂²l∂η²(dv_name::Symbol,
         dv_d::Any,
         obsdv,

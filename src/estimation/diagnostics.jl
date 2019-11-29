@@ -166,18 +166,24 @@ function cwres(m::PumasModel,
   end
 
   randeffstransform = totransform(m.random(param))
-  randeffs0   = TransformVariables.transform(randeffstransform, zero(vrandeffsorth))
   randeffsEBE = TransformVariables.transform(randeffstransform, vrandeffsorth)
 
-  dist0   = _derived(m, subject, param, randeffs0)
   distEBE = _derived(m, subject, param, randeffsEBE)
+
+  _dv_keys = keys(subject.observations)
+  foreach(_dv_keys) do _key
+    if !_is_homoscedastic(distEBE[_key])
+      throw(ArgumentError("dispersion parameter is not allowed to depend on the random effects when using FOCE"))
+    end
+    nothing
+  end
 
   F = _mean_derived_vηorth_jacobian(m, subject, param, vrandeffsorth, args...; kwargs...)
 
   randeffstransform = totransform(m.random(param))
-  _dv_keys = keys(subject.observations)
+
   return map(NamedTuple{_dv_keys}(_dv_keys)) do name
-          V = Symmetric(F[name]*F[name]' + Diagonal(var.(dist0[name])))
+          V = Symmetric(F[name]*F[name]' + Diagonal(var.(distEBE[name])))
           return cholesky(V).U'\(residuals(subject, distEBE)[name] .+ F[name]*vrandeffsorth)
         end
 end
@@ -355,14 +361,20 @@ function icwres(m::PumasModel,
   end
 
   randeffstransform = totransform(m.random(param))
-  randeffs0   = TransformVariables.transform(randeffstransform, zero(vrandeffsorth))
   randeffsEBE = TransformVariables.transform(randeffstransform, vrandeffsorth)
-  dist0 = _derived(m, subject, param, randeffs0)
   dist = _derived(m, subject, param, randeffsEBE)
 
   _dv_keys = keys(subject.observations)
+
+  foreach(_dv_keys) do _key
+    if !_is_homoscedastic(dist[_key])
+      throw(ArgumentError("dispersion parameter is not allowed to depend on the random effects when using FOCE"))
+    end
+    nothing
+  end
+
   _res = residuals(subject, dist)
-  return map(name -> _res[name] ./ std.(dist0[name]), NamedTuple{_dv_keys}(_dv_keys))
+  return map(name -> _res[name] ./ std.(dist[name]), NamedTuple{_dv_keys}(_dv_keys))
 end
 
 """

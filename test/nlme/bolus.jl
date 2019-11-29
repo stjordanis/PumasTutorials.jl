@@ -85,12 +85,7 @@ using Pumas, Test, CSV
     end
 
     @testset "FOCE estimation of $dyntype model" for dyntype in ("analytical", "solver")
-      result = fit(mdl_proportional[dyntype], data, param_proportional, Pumas.FOCE())
-      param = coef(result)
-
-      @test param.θ      ≈ [3.19e-01, 9.22e+00] rtol=1e-3
-      @test param.Ω.diag ≈ [2.28e-01, 2.72e-01] rtol=1e-3
-      @test param.σ_prop ≈ 9.41e-02 rtol=1e-3
+      @test_throws ArgumentError deviance(mdl_proportional[dyntype], data, param_proportional, Pumas.FOCE())
     end
 
     @testset "FOCEI estimation of $dyntype model" for dyntype in ("analytical", "solver")
@@ -204,13 +199,7 @@ using Pumas, Test, CSV
     end
 
     @testset "FOCE estimation of $dyntype model" for dyntype in ("analytical", "solver")
-      result = fit(mdl_proportional_additive[dyntype], data, param_proportional_additive, Pumas.FOCE(), alg=Tsit5())
-      param = coef(result)
-
-      @test param.θ      ≈ [4.12e-01, 7.20e+00] rtol=1e-3
-      @test param.Ω.diag ≈ [1.73e-01, 2.02e-01] rtol=5e-3
-      @test param.σ_add  ≈ 7.32e+00             rtol=1e-3
-      @test param.σ_prop ≈ 2.41e-02             rtol=1e-3
+      @test_throws ArgumentError deviance(mdl_proportional_additive[dyntype], data, param_proportional_additive, Pumas.FOCE())
     end
 
     @testset "FOCEI estimation of $dyntype model" for dyntype in ("analytical", "solver")

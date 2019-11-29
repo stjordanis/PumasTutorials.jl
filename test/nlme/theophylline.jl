@@ -696,64 +696,8 @@ end
              σ_prop = 0.3
             )
 
-  foce_estimated_params = (
-    θ₁ = 3.9553E+00, #Ka MEAN ABSORPTION RATE CONSTANT for SEX = 1(1/HR)
-    θ₂ = 8.2427E-02, #K MEAN ELIMINATION RATE CONSTANT (1/HR)
-    θ₃ = 3.9067E-02, #SLP  SLOPE OF CLEARANCE VS WEIGHT RELATIONSHIP (LITERS/HR/KG)
-    θ₄ = 3.2303E+00, #Ka MEAN ABSORPTION RATE CONSTANT for SEX=0 (1/HR)
-
-    Ω = Diagonal([6.1240E+00, 2.5828E-01]),
-    σ_add = 1.1300E-01,
-    σ_prop = 9.9131E-03
-  )
-
-  foce_ebes = [-2.69137E+00 -1.04910E+00
-               -1.88515E+00  7.40755E-02
-               -1.49661E+00  5.53721E-02
-               -2.76850E+00 -1.92248E-01
-               -2.51714E+00  1.60970E-01
-               -2.68118E+00  5.20821E-01
-               -2.44728E+00  4.57302E-01
-               -1.72057E+00  3.20183E-01
-                3.67973E+00 -6.68444E-01
-               -2.59685E+00 -2.81286E-01
-                8.06659E-01  7.37918E-01
-               -2.25546E+00 -8.58804E-02]
-
-  foce_ebes_cov = [2.15812E-02  3.05777E-03  3.05777E-03  3.85196E-03
-                   1.29718E-01  1.70524E-02  1.70524E-02  1.59179E-02
-                   1.92297E-01  1.99138E-02  1.99138E-02  1.41525E-02
-                   3.48411E-02  6.72686E-03  6.72686E-03  1.16407E-02
-                   6.10760E-02  7.92937E-03  7.92937E-03  1.00273E-02
-                   6.72710E-02  1.55304E-02  1.55304E-02  3.32063E-02
-                   2.24280E-02  6.89943E-03  6.89943E-03  2.28644E-02
-                   7.18688E-02  1.36676E-02  1.36676E-02  2.10787E-02
-                   2.25386E+00  4.60507E-02  4.60507E-02  8.15125E-03
-                   7.32259E-03  2.11950E-03  2.11950E-03  5.87831E-03
-                   7.04045E-01  5.72781E-02  5.72781E-02  2.61573E-02
-                   2.21674E-02  4.24659E-03  4.24659E-03  8.75169E-03]
-
-  # Elapsed estimation time in seconds:     0.34
-  # Elapsed covariance time in seconds:     0.31
-
-  o = fit(theopmodel_foce, theopp, param, Pumas.FOCE())
-
-  o_estimates = coef(o)
-
-  @test deviance(o) ≈ 102.871158475488 rtol=1e-5
-
-  @testset "test parameter $k" for k in keys(o_estimates)
-    @test _extract(getfield(o_estimates, k)) ≈ _extract(getfield(foce_estimated_params, k)) rtol=1e-3
-  end
-
-  @testset "test stored empirical Bayes estimates. Subject: $i" for (i, ebe) in enumerate(empirical_bayes(o))
-    @test ebe.ebes.η ≈ foce_ebes[i,:] rtol=1e-3
-  end
-
-  ebe_cov = Pumas.empirical_bayes_dist(o)
-  @testset "test covariance of empirical Bayes estimates. Subject: $i" for i in 1:length(theopp)
-    @test ebe_cov[i].η.Σ.mat[:] ≈ foce_ebes_cov[i,:] atol=1e-3
-  end
+  # FOCE is not allowed for models where dispersion parameter depends on the random effects
+  @test_throws ArgumentError deviance(theopmodel_foce, theopp[1], param, Pumas.FOCE())
 end
 
 @testset "run5.mod Laplace without interaction, diagonal omega and additive error" begin

@@ -1,6 +1,8 @@
 using Test
 using Pumas
 
+@testset "T-distributed error model" begin
+
 data = read_pumas(example_data("sim_data_model1"))
 
 #likelihood tests from NLME.jl
@@ -47,3 +49,5 @@ end
 @test_throws ArgumentError deviance(tdist, data, param, Pumas.FOCE())
 @test_throws ArgumentError deviance(tdist, data, param, Pumas.FOCEI())
 @test deviance(tdist, data, param, Pumas.LaplaceI()) ≈ 57.112537604068990 rtol=1e-6
+
+end
