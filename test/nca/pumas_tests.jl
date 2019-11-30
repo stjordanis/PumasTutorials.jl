@@ -59,9 +59,19 @@ p = (  θ = [1.5,  #Ka
 
 sim = @test_nowarn simobs(m_diffeq, ev2, p; abstol=1e-14, reltol=1e-14)
 for i in eachindex(sim)
-  @test NCA.auc(sim[i].observed.cp, sim[i].times) === sim[i].observed.auc
+  @test NCA.auc(sim[i].observed.cp, sim[i].times)   === sim[i].observed.auc
   @test NCA.thalf(sim[i].observed.cp, sim[i].times) === sim[i].observed.thalf
-  @test NCA.cmax(sim[i].observed.cp, sim[i].times) === sim[i].observed.cmax
+  @test NCA.cmax(sim[i].observed.cp, sim[i].times)  === sim[i].observed.cmax
+
+  ncasubj = NCASubject(
+    Subject(
+      id   = 1,
+      obs  = (dv=sim[i].observed.cp,),
+      time = sim[i].times,
+      evs  = sim[i].subject.events))
+  @test NCA.auc(ncasubj)   === sim[i].observed.auc
+  @test NCA.thalf(ncasubj) === sim[i].observed.thalf
+  @test NCA.cmax(ncasubj)  === sim[i].observed.cmax
 end
 
 pop = Population(map(i->sim[i].subject, eachindex(sim)))
