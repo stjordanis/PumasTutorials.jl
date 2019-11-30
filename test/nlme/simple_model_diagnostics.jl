@@ -81,23 +81,7 @@ for (_pnpde, _ref) in zip(pnpde, pnpde_ref)
   @test _pnpde.dv == _ref
 end
 
-[Pumas.epred(
-  mdsl_proportional,
-  data[i],
-  param,
-  Pumas.TransformVariables.transform(
-    Pumas.totransform(
-      mdsl_proportional.random(param)
-    ),
-    Pumas._orth_empirical_bayes(
-      mdsl_proportional,
-      data[i],
-      param,
-      Pumas.FOCE()
-    )
-  ),
-  10000
-) for i in 1:10]
+[Pumas.epred(mdsl_proportional, data[i], param, 10000) for i in 1:10]
 [Pumas.cpred(mdsl_proportional, data[i], param) for i in 1:10]
 [Pumas.cpredi(mdsl_proportional, data[i], param) for i in 1:10]
 

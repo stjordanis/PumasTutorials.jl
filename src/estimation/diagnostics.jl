@@ -306,16 +306,15 @@ function cpredi(m::PumasModel,
 end
 
 """
-  epred(model, subject, param[, rfx], simulations_count)
+  epred(model, subject, param, simulations_count)
 
 To calculate the Expected Simulation based Population Predictions.
 """
 function epred(m::PumasModel,
                subject::Subject,
                param::NamedTuple,
-               randeffs::NamedTuple,
                nsim::Integer)
-  sims = [simobs(m, subject, param, randeffs).observed for i in 1:nsim]
+  sims = [simobs(m, subject, param).observed for i in 1:nsim]
   _dv_keys = keys(subject.observations)
   return map(name -> mean(getproperty.(sims, name)), NamedTuple{_dv_keys}(_dv_keys))
 end
@@ -401,7 +400,7 @@ function icwresi(m::PumasModel,
 end
 
 """
-  eiwres(model, subject, param[, rfx], simulations_count)
+  eiwres(model, subject, param, simulations_count)
 
 To calculate the Expected Simulation based Individual Weighted Residuals (EIWRES).
 """
@@ -612,8 +611,8 @@ function _ipredict(model, subject, param, approx::Union{FOCEI, LaplaceI}, vvrand
   cipredi(model, subject, param, vvrandeffsorth)
 end
 
-function epredict(fpm, subject, vvrandeffsorth, nsim::Integer)
-  epred(fpm.model, subjects, coef(fpm), TransformVariables.transform(totransform(fpm.model.random.coef(fpm)), vvrandeffsorth), nsim)
+function epredict(fpm, subject, nsim::Integer)
+  epred(fpm.model, subjects, coef(fpm), nsim)
 end
 
 function DataFrames.DataFrame(vpred::Vector{<:SubjectPrediction}; include_covariates=true)
