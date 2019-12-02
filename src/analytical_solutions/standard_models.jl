@@ -16,8 +16,8 @@ function _analytical_solve(m::M, t, t₀, amounts, doses, p, rates) where M<:Exp
   # Dp = Diagonal(expm1.(Λ * (t - t₀)) ./ Λ)
   # Dh = Dp .* Λ + I
   # but Diagonal{StaticVector} falls back to Array operations. Instead we write:
-  Dp = expm1.(Λ * (t - t₀)) ./ Λ
-  Dh = Dp .* Λ .+ 1
+  dp = expm1.(Λ * (t - t₀)) ./ Λ
+  dh = dp .* Λ .+ 1
 
   # We cannot * here because of Array fallback for Diagonal{StaticVector}
   # amtₜ = 𝕍*(Dp*(𝕍\rates) + Dh*(𝕍\amt₀)) # could derive inverse here
