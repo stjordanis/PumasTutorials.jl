@@ -175,10 +175,8 @@ to be repeated in the other API functions
                           # observation time series
                           obstimes = subject.time,
                           kwargs...)
-
   # collate that arguments
   collated = m.pre(param, randeffs, subject)
-
   # create solution object. By passing saveat=obstimes, we compute the solution only
   # at obstimes such that we can simply pass solution.u to m.derived
   _saveat = obstimes === nothing ? Float64[] : obstimes

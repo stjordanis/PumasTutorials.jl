@@ -2,7 +2,64 @@ export Central1, Depots1Central1, Depots2Central1,
        Central1Periph1, Depots1Central1Periph1 ,
        Central1Periph1Meta1, Central1Periph1MetaPeriph1
 
+export ImmediateAbsorptionModel, OneCompartmentModel, OneCompartmentParallelModel
+
 abstract type ExplicitModel end
+
+struct ImmediateAbsorptionModel <: ExplicitModel end
+function (::ImmediateAbsorptionModel)(t,t0,C0,dose,p,rate)
+Ke = p.CL/p.V
+C0 += dose
+rKe = rate/Ke
+rKe + exp(-(t-t0)*Ke) * (-rKe + C0)
+end
+varnames(::Type{ImmediateAbsorptionModel}) = [:Central]
+pk_init(::ImmediateAbsorptionModel) = SLVector(Central=0.0)
+
+struct OneCompartmentModel <: ExplicitModel end
+function (::OneCompartmentModel)(t,t0,amounts,doses,p,rates)
+  Ka = p.Ka
+  Ke = p.CL/p.V           # elimination rate
+  amt = amounts + doses   # initial values for cmt's + new doses
+  Sa = exp(-(t-t0)*Ka)
+  Se = exp(-(t-t0)*Ke)
+  rKa = rates[1]/Ka
+  Depot  = (amt[1] * Sa) + (1-Sa)*rates[1]/(Ka)          # next depot (cmt==1)
+  Central =  Ka / (Ka - Ke) * (amt[1] * (Se - Sa) + rates[1]*((1-Se)/Ke - (1-Sa)/Ka)) +
+    amt[2] * Se + (1-Se)*rates[2]/Ke # next central (cmt==2)
+
+  return LabelledArrays.SLVector(Depot=Depot, Central=Central)
+end
+varnames(::Type{OneCompartmentModel}) = [:Depot, :Central]
+pk_init(::OneCompartmentModel) = SLVector(Depot=0.0,Central=0.0)
+
+OneCompartmentParallelVector = @SLVector (:Depot1, :Depot2, :Central)
+
+struct OneCompartmentParallelModel <: ExplicitModel end
+function (::OneCompartmentParallelModel)(t,t0,amounts,doses,p,rates)
+  ka1 = p.Ka1
+  ka2 = p.Ka2
+  CL = p.CL
+  V = p.V
+  ke = CL/V         # elimination rate
+  amt = amounts + doses  # initial
+  Sa1 = exp(-(t-t0)*ka1)
+  Sa2 = exp(-(t-t0)*ka2)
+  Se = exp(-(t-t0)*ke)
+
+  Depot1  = amt[1] * Sa1 + rates[1]/ka1*(1-Sa1)          # next depot1 (cmt==1)
+
+  Depot2  = amt[2] * Sa2 + rates[2]/ka2*(1-Sa2)          # next depot2 (cmt==2)
+
+  Central =  ka1 / (ka1 - ke) * (amt[1] * (Se - Sa1) + rates[1]*((1-Se)/ke - (1-Sa1)/ka1)) +
+  ka2 / (ka2 - ke) * (amt[2] * (Se - Sa2) + rates[2]*((1-Se)/ke - (1-Sa2)/ka2)) +
+  amt[3] * Se + rates[3]/ke*(1-Se) # next central (cmt==3)
+  OneCompartmentParallelVector(Depot1,Depot2,Central)
+end
+
+pk_init(::OneCompartmentParallelModel) = SLVector(Depot1=0.0,Depot2=0.0,Central=0.0)
+varnames(::Type{OneCompartmentParallelModel}) = [:Depot1, :Depot2, :Central]
+
 # Generic ExplicitModel solver. Uses an analytical eigen solution.
 function _analytical_solve(m::M, t, t₀, amounts, doses, p, rates) where M<:ExplicitModel
   amt₀ = amounts + doses   # initial values for cmt's + new doses
@@ -11,10 +68,16 @@ function _analytical_solve(m::M, t, t₀, amounts, doses, p, rates) where M<:Exp
   # We avoid the extra exp calls, but could have written:
   # Dh  = Diagonal(@SVector(exp.(λ * (_t - _t₀)))
   # Dp  = Diagonal(@SVector(expm1.(λ * (_t - _t₀))./λ))
-  # Instead we write:
-  Dp = Diagonal(expm1.(Λ * (t - t₀)) ./ Λ)
-  Dh = Dp .* Λ + I
-  amtₜ = 𝕍*(Dp*(𝕍\rates) + Dh*(𝕍\amt₀)) # could derive inverse here
+  # We could also have written:
+  # Dp = Diagonal(expm1.(Λ * (t - t₀)) ./ Λ)
+  # Dh = Dp .* Λ + I
+  # but Diagonal{StaticVector} falls back to Array operations. Instead we write:
+  Dp = expm1.(Λ * (t - t₀)) ./ Λ
+  Dh = Dp .* Λ .+ 1
+
+  # We cannot * here because of Array fallback for Diagonal{StaticVector}
+  # amtₜ = 𝕍*(Dp*(𝕍\rates) + Dh*(𝕍\amt₀)) # could derive inverse here
+  amtₜ = 𝕍*(dp.*(𝕍\rates) + dh.*(𝕍\amt₀)) # could derive inverse here
 
   return SLVector(NamedTuple{varnames(M)}(amtₜ))
 end
@@ -45,7 +108,6 @@ struct Depots1Central1 <: ExplicitModel end
     v = e/a - 1
     𝕍 = @SMatrix([v 0;
                   1 1])
-
     return Λ, 𝕍
 end
 varnames(::Type{Depots1Central1}) = (:Depot, :Central)
