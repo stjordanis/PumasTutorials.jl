@@ -55,7 +55,7 @@ mdsl_proportional = @model begin
         conc = Central / V
     end
 
-    @dynamics ImmediateAbsorptionModel
+    @dynamics Central1
 
     @derived begin
         dv ~ @. Normal(conc,conc*σ+eps())

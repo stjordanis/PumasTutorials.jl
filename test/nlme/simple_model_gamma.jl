@@ -28,7 +28,7 @@ mdsl = @model begin
         conc = Central / V + 1e-10
     end
 
-    @dynamics ImmediateAbsorptionModel
+    @dynamics Central1
 
     @derived begin
         dv ~ @. Gamma(ν, conc/ν)
