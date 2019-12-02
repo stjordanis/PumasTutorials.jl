@@ -488,6 +488,128 @@ end
   @testset "test covariance of empirical Bayes estimates. Subject: $i" for i in 1:length(theopp)
     @test ebe_cov[i].η.Σ.mat[:] ≈ foce_ebes_cov[i,:] atol=1e-3
   end
+
+  @test length(Pumas.epred(theopmodel_foce, theopp[1], param, 1000).dv) == 11
+  @test Pumas.cpred(  theopmodel_foce, theopp[1], param).dv ≈ [
+    0.0
+    4.9049755499300955
+    7.779812894972983
+    8.664908079363599
+    7.34893115201493
+    5.402130960948489
+    4.744864876005044
+    4.0473577932698825
+    3.4538453107724867
+    2.717339295201133
+    1.0438615786511665]
+  @test Pumas.cpredi( theopmodel_foce, theopp[1], param).dv ≈ [
+    0.0
+    4.9049755499300955
+    7.779812894972983
+    8.664908079363599
+    7.34893115201493
+    5.402130960948489
+    4.744864876005044
+    4.0473577932698825
+    3.4538453107724867
+    2.717339295201133
+    1.0438615786511665]
+  @test Pumas.pred(   theopmodel_foce, theopp[1], param).dv ≈ [
+    0.0
+    4.275044896193946
+    6.67731216398507
+    7.754622724333498
+    7.568031859501575
+    6.604016774252041
+    5.975950613840706
+    5.139785095454612
+    4.389649021685277
+    3.4538248683011945
+    1.3267830785309427]
+  @test Pumas.wres(   theopmodel_foce, theopp[1], param).dv ≈ [
+     1.1879984032756807
+    -0.5121540697427261
+     1.177641761770986
+     1.8748275064478963
+    -1.0811008285733203
+    -0.4855189971946874
+     0.5270429165085201
+     0.7926973976555282
+     1.38286211294743
+     1.8217361795780522
+     2.2749279342557145]
+  @test Pumas.cwres(  theopmodel_foce, theopp[1], param).dv ≈ [
+     1.1879984032756807
+    -0.40449239905538514
+     1.4078834621663032
+     1.7442967882790288
+    -1.7930916166374602
+    -0.7377491261762943
+     0.41236539881072987
+     0.6557677791850915
+     1.229426426138302
+     1.6689875690147757
+     2.207038336508923]
+  @test Pumas.cwresi( theopmodel_foce, theopp[1], param).dv ≈ [ 1.1879984032756807
+   -0.40449239905538514
+    1.4078834621663032
+    1.7442967882790288
+   -1.7930916166374602
+   -0.7377491261762943
+    0.41236539881072987
+    0.6557677791850915
+    1.229426426138302
+    1.6689875690147757
+    2.207038336508923]
+  @test Pumas.iwres(  theopmodel_foce, theopp[1], param).dv ≈ [
+     1.1879984032756807
+    -2.303825736901788
+    -0.1722792965761087
+     4.407437594433976
+     3.358452446778005
+     3.172249887956898
+     3.827360627145415
+     3.740934575525829
+     4.014071580900914
+     3.9913136307052524
+     3.1357007891301087]
+  @test Pumas.icwres( theopmodel_foce, theopp[1], param).dv ≈ [
+     1.1879984032756807
+    -1.3784646740678743
+    -0.24469855308692548
+     1.9520535480092391
+    -1.0273947656943232
+    -1.4358103741729111
+    -0.3983711793143639
+     0.09734551444138731
+     0.9017172486653547
+     1.5424519077826466
+     2.194973069154764]
+  @test Pumas.icwresi(theopmodel_foce, theopp[1], param).dv ≈ [
+     1.1879984032756807
+    -1.3784646740678743
+    -0.24469855308692548
+     1.9520535480092391
+    -1.0273947656943232
+    -1.4358103741729111
+    -0.3983711793143639
+     0.09734551444138731
+     0.9017172486653547
+     1.5424519077826466
+     2.194973069154764]
+  @test Pumas.eiwres( theopmodel_foce, theopp[1], param, 1000) isa NamedTuple
+  @test Pumas.cwres(  theopmodel_foce, theopp[1], param).dv ≈ [
+     1.1879984032756807
+    -0.40449239905538514
+     1.4078834621663032
+     1.7442967882790288
+    -1.7930916166374602
+    -0.7377491261762943
+     0.41236539881072987
+     0.6557677791850915
+     1.229426426138302
+     1.6689875690147757
+     2.207038336508923]
 end
 
 @testset "run4.mod FOCEI, diagonal omega and additive + proportional error" begin
@@ -619,34 +741,93 @@ end
     @test ebe_cov[i].η.Σ.mat[:] ≈ focei_ebes_cov[i,:] atol=1e-3
   end
 
-  Pumas.epred(
-    theopmodel_focei,
-    theopp[1],
-    param,
-      Pumas.TransformVariables.transform(
-        Pumas.totransform(
-          theopmodel_focei.random(param)
-        ),
-        Pumas._orth_empirical_bayes(
-          theopmodel_focei,
-          theopp[1],
-          param,
-          Pumas.FOCEI()
-        )
-      ),
-    1000
-  )
-  Pumas.cpred(  theopmodel_focei, theopp[1], param)
-  Pumas.cpredi( theopmodel_focei, theopp[1], param)
-  Pumas.pred(   theopmodel_focei, theopp[1], param)
-  Pumas.wres(   theopmodel_focei, theopp[1], param)
-  Pumas.cwres(  theopmodel_focei, theopp[1], param)
-  Pumas.cwresi( theopmodel_focei, theopp[1], param)
-  Pumas.iwres(  theopmodel_focei, theopp[1], param)
-  Pumas.icwres( theopmodel_focei, theopp[1], param)
-  Pumas.icwresi(theopmodel_focei, theopp[1], param)
-  Pumas.eiwres( theopmodel_focei, theopp[1], param, 1000)
-  Pumas.cwres(  theopmodel_focei, theopp[1], param)
+  @test length(Pumas.epred(theopmodel_focei, theopp[1], param, 1000).dv) == 11
+  @test Pumas.cpred(  theopmodel_focei, theopp[1], param).dv ≈ [
+    0.0
+    5.068341459357763
+    8.443563123891462
+   10.037122038452848
+    8.944352418175603
+    6.402624012061738
+    5.482260711623049
+    4.611559621549391
+    3.9247518752173303
+    3.0865429675088953
+    1.185669082816525]
+  @test Pumas.cpredi( theopmodel_focei, theopp[1], param).dv ≈ [
+    0.0
+    5.068341459357763
+    8.443563123891462
+   10.037122038452848
+    8.944352418175603
+    6.402624012061738
+    5.482260711623049
+    4.611559621549391
+    3.9247518752173303
+    3.0865429675088953
+    1.185669082816525]
+  @test Pumas.pred(   theopmodel_focei, theopp[1], param).dv ≈ [
+    0.0
+    4.275044896193946
+    6.67731216398507
+    7.754622724333498
+    7.568031859501575
+    6.604016774252041
+    5.975950613840706
+    5.139785095454612
+    4.389649021685277
+    3.4538248683011945
+    1.3267830785309427]
+  @test Pumas.wres(   theopmodel_focei, theopp[1], param).dv ≈ [
+     1.1879984032756807
+    -0.39299505013030017
+     0.16842737988346182
+     0.6720210050845926
+     0.406187009843474
+     0.3813592513772635
+     0.5047498527549048
+     0.5421470902094254
+     0.6842313630989655
+     0.866326879877313
+     1.667259055010247]
+  @test_throws ArgumentError Pumas.cwres(  theopmodel_focei, theopp[1], param)
+  @test Pumas.cwresi( theopmodel_focei, theopp[1], param).dv ≈ [
+   1.1879984032756807
+  -0.4660532896569592
+   0.30402244275648965
+   0.6449237449945702
+   0.3044150909651889
+   0.33203669572444244
+   0.4203515581077581
+   0.4278768983990183
+   0.5204742127712235
+   0.6506387271130077
+   1.3748928119024197]
+  @test Pumas.iwres(  theopmodel_focei, theopp[1], param).dv ≈ [ 1.1879984032756807
+   -0.5922659254289279
+   -0.028925269913169835
+    0.6395285872285701
+    0.49907131896046675
+    0.5383548707639977
+    0.715521262325209
+    0.80818616332361
+    1.006709008521727
+    1.2482988777536315
+    2.0406927145826876]
+  @test_throws ArgumentError Pumas.icwres( theopmodel_focei, theopp[1], param)
+  @test Pumas.icwresi(theopmodel_focei, theopp[1], param).dv ≈ [1.1879984032756807
+    0.06960158205526236
+    0.5083448884321163
+    0.7692001749717815
+    0.23983260753879304
+    0.10697777173751535
+    0.23456187417479818
+    0.30756958787462435
+    0.47263581944050936
+    0.680189149628738
+    1.4895796376772368]
+  @test Pumas.eiwres( theopmodel_focei, theopp[1], param, 1000) isa NamedTuple
+  @test_throws ArgumentError Pumas.cwres(  theopmodel_focei, theopp[1], param)
 end
 
 @testset "run4_foce.mod FOCE, diagonal omega and additive + proportional error" begin
@@ -696,64 +877,8 @@ end
              σ_prop = 0.3
             )
 
-  foce_estimated_params = (
-    θ₁ = 3.9553E+00, #Ka MEAN ABSORPTION RATE CONSTANT for SEX = 1(1/HR)
-    θ₂ = 8.2427E-02, #K MEAN ELIMINATION RATE CONSTANT (1/HR)
-    θ₃ = 3.9067E-02, #SLP  SLOPE OF CLEARANCE VS WEIGHT RELATIONSHIP (LITERS/HR/KG)
-    θ₄ = 3.2303E+00, #Ka MEAN ABSORPTION RATE CONSTANT for SEX=0 (1/HR)
-
-    Ω = Diagonal([6.1240E+00, 2.5828E-01]),
-    σ_add = 1.1300E-01,
-    σ_prop = 9.9131E-03
-  )
-
-  foce_ebes = [-2.69137E+00 -1.04910E+00
-               -1.88515E+00  7.40755E-02
-               -1.49661E+00  5.53721E-02
-               -2.76850E+00 -1.92248E-01
-               -2.51714E+00  1.60970E-01
-               -2.68118E+00  5.20821E-01
-               -2.44728E+00  4.57302E-01
-               -1.72057E+00  3.20183E-01
-                3.67973E+00 -6.68444E-01
-               -2.59685E+00 -2.81286E-01
-                8.06659E-01  7.37918E-01
-               -2.25546E+00 -8.58804E-02]
-
-  foce_ebes_cov = [2.15812E-02  3.05777E-03  3.05777E-03  3.85196E-03
-                   1.29718E-01  1.70524E-02  1.70524E-02  1.59179E-02
-                   1.92297E-01  1.99138E-02  1.99138E-02  1.41525E-02
-                   3.48411E-02  6.72686E-03  6.72686E-03  1.16407E-02
-                   6.10760E-02  7.92937E-03  7.92937E-03  1.00273E-02
-                   6.72710E-02  1.55304E-02  1.55304E-02  3.32063E-02
-                   2.24280E-02  6.89943E-03  6.89943E-03  2.28644E-02
-                   7.18688E-02  1.36676E-02  1.36676E-02  2.10787E-02
-                   2.25386E+00  4.60507E-02  4.60507E-02  8.15125E-03
-                   7.32259E-03  2.11950E-03  2.11950E-03  5.87831E-03
-                   7.04045E-01  5.72781E-02  5.72781E-02  2.61573E-02
-                   2.21674E-02  4.24659E-03  4.24659E-03  8.75169E-03]
-
-  # Elapsed estimation time in seconds:     0.34
-  # Elapsed covariance time in seconds:     0.31
-
-  o = fit(theopmodel_foce, theopp, param, Pumas.FOCE())
-
-  o_estimates = coef(o)
-
-  @test deviance(o) ≈ 102.871158475488 rtol=1e-5
-
-  @testset "test parameter $k" for k in keys(o_estimates)
-    @test _extract(getfield(o_estimates, k)) ≈ _extract(getfield(foce_estimated_params, k)) rtol=1e-3
-  end
-
-  @testset "test stored empirical Bayes estimates. Subject: $i" for (i, ebe) in enumerate(empirical_bayes(o))
-    @test ebe.ebes.η ≈ foce_ebes[i,:] rtol=1e-3
-  end
-
-  ebe_cov = Pumas.empirical_bayes_dist(o)
-  @testset "test covariance of empirical Bayes estimates. Subject: $i" for i in 1:length(theopp)
-    @test ebe_cov[i].η.Σ.mat[:] ≈ foce_ebes_cov[i,:] atol=1e-3
-  end
+  # FOCE is not allowed for models where dispersion parameter depends on the random effects
+  @test_throws ArgumentError deviance(theopmodel_foce, theopp[1], param, Pumas.FOCE())
 end
 
 @testset "run5.mod Laplace without interaction, diagonal omega and additive error" begin

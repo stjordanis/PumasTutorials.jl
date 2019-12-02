@@ -1,16 +1,18 @@
 using Test
 using Pumas
 using Random
+
+@testset "diagnostics" begin
 Random.seed!(4)
 data = read_pumas(example_data("sim_data_model1"))
 
 #likelihood tests from NLME.jl
 #-----------------------------------------------------------------------# Test 1
-mdsl1 = @model begin
+mdsl_additive = @model begin
     @param begin
         θ ∈ VectorDomain(1, init=[0.5])
         Ω ∈ PDiagDomain(init=[0.04])
-        Σ ∈ ConstDomain(0.1)
+        σ ∈ ConstDomain(sqrt(0.1))
     end
 
     @random begin
@@ -29,13 +31,40 @@ mdsl1 = @model begin
     @dynamics Central1
 
     @derived begin
-        dv ~ @. Normal(conc,conc*sqrt(Σ)+eps())
+        dv ~ @. Normal(conc, σ)
     end
 end
 
-param = init_param(mdsl1)
+mdsl_proportional = @model begin
+    @param begin
+        θ ∈ VectorDomain(1, init=[0.5])
+        Ω ∈ PDiagDomain(init=[0.04])
+        σ ∈ ConstDomain(sqrt(0.1))
+    end
 
-pnpde = [Pumas.npde(mdsl1, data[i], param, 10000) for i in 1:10]
+    @random begin
+        η ~ MvNormal(Ω)
+    end
+
+    @pre begin
+        CL = θ[1] * exp(η[1])
+        V  = 1.0
+    end
+
+    @vars begin
+        conc = Central / V
+    end
+
+    @dynamics ImmediateAbsorptionModel
+
+    @derived begin
+        dv ~ @. Normal(conc,conc*σ+eps())
+    end
+end
+
+param = init_param(mdsl_proportional)
+
+pnpde = [Pumas.npde(mdsl_proportional, data[i], param, 10000) for i in 1:10]
 
 pnpde_ref = [[0.18962882237487352, 1.7201784995140674],
  [-1.3773631497105263, -0.252570666427693],
@@ -52,25 +81,9 @@ for (_pnpde, _ref) in zip(pnpde, pnpde_ref)
   @test _pnpde.dv == _ref
 end
 
-[Pumas.epred(
-  mdsl1,
-  data[i],
-  param,
-  Pumas.TransformVariables.transform(
-    Pumas.totransform(
-      mdsl1.random(param)
-    ),
-    Pumas._orth_empirical_bayes(
-      mdsl1,
-      data[i],
-      param,
-      Pumas.FOCE()
-    )
-  ),
-  10000
-) for i in 1:10]
-[Pumas.cpred(mdsl1, data[i], param) for i in 1:10]
-[Pumas.cpredi(mdsl1, data[i], param) for i in 1:10]
+[Pumas.epred(mdsl_proportional, data[i], param, 10000) for i in 1:10]
+[Pumas.cpred(mdsl_proportional, data[i], param) for i in 1:10]
+[Pumas.cpredi(mdsl_proportional, data[i], param) for i in 1:10]
 
 @testset "pred" for
     (sub_pred, dt) in zip([[10.0000000, 6.06530660],
@@ -84,7 +97,7 @@ end
                            [10.0000000, 6.06530660],
                            [10.0000000, 6.06530660]], data)
 
-    @test Pumas.pred(mdsl1, dt, param).dv ≈ sub_pred rtol=1e-6
+    @test Pumas.pred(mdsl_proportional, dt, param).dv ≈ sub_pred rtol=1e-6
 end
 
 @testset "wres" for
@@ -99,22 +112,24 @@ end
                            [-1.38172560 , 0.984121759],
                            [ 0.905043866, 0.302785305]], data)
 
-    @test Pumas.wres(mdsl1, dt, param).dv ≈ sub_wres
+    @test Pumas.wres(mdsl_proportional, dt, param).dv ≈ sub_wres
 end
 
-@testset "cwres" for
-    (sub_cwres, dt) in zip([[ 0.180566054, 1.75204867 ],
-                            [-1.35845124 ,-0.274353057],
-                            [ 0.310535666, 0.611748221],
-                            [ 0.394652252, 1.41420526 ],
-                            [ 0.607473539,-1.68142230 ],
-                            [ 0.858874613,-0.768408883],
-                            [ 0.245708974, 1.75234831 ],
-                            [-0.169086986, 0.609009620],
-                            [-1.38172560 , 0.985428904],
-                            [ 0.905043866, 0.302910385]], data)
+@testset "cwres" begin
+    for (sub_cwres, dt) in zip([[  1.8056605439561435, 6.35847069362139   ],
+                                [-13.584512372551321 , -0.7859197550457881],
+                                [  3.105356662285346 , 1.925994243881485  ],
+                                [  3.946522519890135 , 4.922598941391171  ],
+                                [  6.0747353851834545, -4.439084764794151 ],
+                                [  8.588746125017316 , -2.116293405692951 ],
+                                [  2.457089741950828 , 6.359788099833816  ],
+                                [ -1.690869864892035 , 1.916741606669153  ],
+                                [-13.817256008339715 , 3.249017333791544  ],
+                                [  9.050438663401902 , 0.9200622059620783]], data)
 
-    @test Pumas.cwres(mdsl1, dt, param).dv ≈ sub_cwres
+      @test Pumas.cwres(mdsl_additive, dt, param).dv ≈ sub_cwres
+    end
+    @test_throws ArgumentError Pumas.cwres(mdsl_proportional, data[1], param)
 end
 
 @testset "cwresi" for
@@ -129,7 +144,7 @@ end
                              [-1.3817256  , 0.962485383],
                              [ 0.905043866, 0.302554671]], data)
 
-   @test Pumas.cwresi(mdsl1, dt, param).dv ≈ sub_cwresi rtol=1e-6
+   @test Pumas.cwresi(mdsl_proportional, dt, param).dv ≈ sub_cwresi rtol=1e-6
 end
 
 @testset "iwres" for
@@ -144,22 +159,25 @@ end
                             [-1.38172560 , 1.03215561 ],
                             [ 0.905043866, 0.317563907]], data)
 
-    @test Pumas.iwres(mdsl1, dt, param).dv ≈ sub_iwres
+    @test Pumas.iwres(mdsl_proportional, dt, param).dv ≈ sub_iwres
 end
 
-@testset "icwres" for
-    (sub_icwres, dt) in zip([[ 0.180566054, 1.67817359 ],
-                             [-1.35845124 ,-0.261387432],
-                             [ 0.310535666, 0.584242548],
-                             [ 0.394652252, 1.35343113 ],
-                             [ 0.607473539,-1.59554270 ],
-                             [ 0.858874613,-0.731080208],
-                             [ 0.245708974, 1.67846183 ],
-                             [-0.169086986, 0.581622858],
-                             [-1.38172560 , 0.942045331],
-                             [ 0.905043866, 0.289051786]], data)
+@testset "icwres" begin
+    for (sub_icwres, dt) in zip([
+      [  1.8056605439561437,  4.4147744872867865],
+      [-13.584512372551323 , -0.3448880160816745],
+      [  3.105356662285346 , 1.0249555597465865 ],
+      [  3.9465225198901352, 3.1844111981243173 ],
+      [  6.0747353851834545, -1.7642741052120818],
+      [  8.588746125017316 , -0.8660754784374615],
+      [  2.457089741950828 , 4.415945534472785  ],
+      [ -1.690869864892035 , 1.0193403639202951 ],
+      [-13.817256008339715 , 1.8980127284645392 ],
+      [  9.050438663401902 , 0.4545489978903738 ]], data)
+      @test Pumas.icwres(mdsl_additive, dt, param).dv ≈ sub_icwres
+    end
 
-    @test Pumas.icwres(mdsl1, dt, param).dv ≈ sub_icwres rtol=1e-5
+    @test_throws ArgumentError Pumas.icwres(mdsl_proportional, data[1], param).dv
 end
 
 @testset "icwresi" for
@@ -174,13 +192,14 @@ end
                               [-1.38172560 , 0.925641802],
                               [ 0.905043866, 0.314343255]], data)
 
-    @test Pumas.icwresi(mdsl1, dt, param).dv ≈ sub_icwresi rtol=1e-5
+    @test Pumas.icwresi(mdsl_proportional, dt, param).dv ≈ sub_icwresi rtol=1e-5
 end
 
-[Pumas.eiwres(mdsl1, data[i], param, 10000).dv for i in 1:10]
+[Pumas.eiwres(mdsl_proportional, data[i], param, 10000).dv for i in 1:10]
 
-param = (θ = [0.340689], Ω = Diagonal([0.000004]), Σ = 0.0752507)
-@test ηshrinkage(mdsl1, data, param, Pumas.FOCEI()).η ≈ [0.997574] rtol=1e-6
-ϵshrinkage(mdsl1, data, param, Pumas.FOCEI())
-@test aic(mdsl1, data, param, Pumas.FOCEI()) ≈ 94.30968177483996 rtol=1e-6 #regression test
-@test bic(mdsl1, data, param, Pumas.FOCEI()) ≈ 96.30114632194794 rtol=1e-6 #regression test
+param = (θ = [0.340689], Ω = Diagonal([0.000004]), σ = sqrt(0.0752507))
+@test ηshrinkage(mdsl_proportional, data, param, Pumas.FOCEI()).η ≈ [0.997574] rtol=1e-6
+ϵshrinkage(mdsl_proportional, data, param, Pumas.FOCEI())
+@test aic(mdsl_proportional, data, param, Pumas.FOCEI()) ≈ 94.30968177483996 rtol=1e-6 #regression test
+@test bic(mdsl_proportional, data, param, Pumas.FOCEI()) ≈ 96.30114632194794 rtol=1e-6 #regression test
+end

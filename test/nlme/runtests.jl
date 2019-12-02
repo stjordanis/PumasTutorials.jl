@@ -17,16 +17,16 @@ if group == "All" || group == "NLME_ML1"
     @time @safetestset "Theophylline NLME.jl"                        begin include("theop_nlme.jl")                end
     @time @safetestset "Theophylline"                                begin include("theophylline.jl")              end
     @time @safetestset "Wang"                                        begin include("wang.jl")                      end
-    @time @safetestset "Poisson"                                     begin include("poisson_model.jl")             end
-    @time @safetestset "Information matrix"                          begin include("information.jl")               end
-    @time @safetestset "Missing observations"                        begin include("missings.jl")                  end
-    @time @safetestset "Global Sensitivity Analysis"                 begin include("gsa.jl")                       end
   end
 end
 
 if group == "All" || group == "NLME_ML2"
   @time @safetestset "Maximum-likelihood models 2" begin
+    @time @safetestset "Poisson"                                     begin include("poisson_model.jl")             end
     @time @safetestset "Bolus"                                       begin include("bolus.jl")                     end
+    @time @safetestset "Information matrix"                          begin include("information.jl")               end
+    @time @safetestset "Missing observations"                        begin include("missings.jl")                  end
+    @time @safetestset "Global Sensitivity Analysis"                 begin include("gsa.jl")                       end
   end
 end
 

@@ -41,7 +41,7 @@ for (ηstar, dt) in zip([-0.114654,0.0350263,-0.024196,-0.0870518,0.0750881,0.05
 end
 
 @test deviance(mdsl1, data, param, Pumas.FO())        ≈ 56.474912258255571 rtol=1e-6
-@test deviance(mdsl1, data, param, Pumas.FOCE())      ≈ 56.476216665029462 rtol=1e-6
+@test_throws ArgumentError deviance(mdsl1, data, param, Pumas.FOCE())
 @test deviance(mdsl1, data, param, Pumas.FOCEI())     ≈ 56.410938825140313 rtol=1e-6
 @test deviance(mdsl1, data, param, Pumas.Laplace())   ≈ 56.613069180382027 rtol=1e-6
 @test deviance(mdsl1, data, param, Pumas.LaplaceI())  ≈ 56.810343602063618 rtol=1e-6

@@ -50,7 +50,7 @@ function DiffEqBase.solve(prob::PKPDAnalyticalProblem,
   times = prob.times
 
   u = Vector{typeof(Tu0)}(undef, length(times))
-  doses = Vector{typeof(Tu0)}(undef, length(times))
+  doses = zeros(typeof(Tu0), length(times))
   rates = Vector{typeof(Tu0)}(undef, length(times))
 
   t0 = times[1]
@@ -95,7 +95,7 @@ function DiffEqBase.solve(prob::PKPDAnalyticalProblem,
         (t0 != t) && cur_ev.evid < 3 && (Tu0 = f(t,t0,Tu0,last_dose,col,rate))
         rate = _rate
         u[i] = Tu0
-        doses[i] = dose
+        doses[i] += dose
         last_dose = dose
         rates[i] = rate
       else # handle steady state
@@ -158,7 +158,7 @@ function DiffEqBase.solve(prob::PKPDAnalyticalProblem,
           rate = _rate
           cur_ev.ss == 2 && (Tu0 += Tu0_cache)
           u[i] = Tu0
-          doses[i] = dose
+          doses[i] += dose
           last_dose = dose
           rates[i] = rate
 
