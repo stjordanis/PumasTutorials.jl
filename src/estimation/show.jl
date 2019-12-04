@@ -1,5 +1,5 @@
-const _subscriptvector = ["₁", "₂", "₃", "₄", "₅", "₆", "₇", "₈", "₉"]
-_to_subscript(number) = join([_subscriptvector[parse(Int32, dig)] for dig in string(number)])
+const _subscriptvector = ["₀", "₁", "₂", "₃", "₄", "₅", "₆", "₇", "₈", "₉"]
+_to_subscript(number) = join([_subscriptvector[parse(Int32, dig)+1] for dig in string(number)])
 
 function _print_fit_header(io, fpm)
   println(io, string("Successful minimization:",

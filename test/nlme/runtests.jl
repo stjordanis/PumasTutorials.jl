@@ -5,6 +5,7 @@ if group == "All" || group == "NLME_Basic"
   @time @safetestset "Maximum-likelihood interface" begin
     @time @safetestset "Types (constructors, api, etc...)"           begin include("types.jl")                     end
     @time @safetestset "Naive estimation"                            begin include("single_subject.jl")            end
+    @time @safetestset "Show methods"                                begin include("show.jl")                      end
   end
 end
 
