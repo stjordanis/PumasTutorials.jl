@@ -40,3 +40,5 @@
      include("ad_tests.jl") end
 @time @safetestset "Analytical models" begin
      include("analytical_models.jl") end
+@time @safetestset "User experience" begin
+     include("user_experience.jl") end

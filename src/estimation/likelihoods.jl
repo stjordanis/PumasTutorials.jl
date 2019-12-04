@@ -1046,6 +1046,10 @@ function _fixed_to_constanttransform(trf, param, fixed)
   new_param = NamedTuple{_keys}(_paramval)
   return new_param, TransformVariables.TransformTuple(NamedTuple{_keys}(_vals))
 end
+function Distributions.fit(m::PumasModel, p::Population, param::NamedTuple; kwargs...)
+  throw(ArgumentError("No valid estimation method was provided."))
+end
+
 function Distributions.fit(m::PumasModel,
                            population::Population,
                            param::NamedTuple,
