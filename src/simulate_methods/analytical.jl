@@ -128,19 +128,22 @@ function DiffEqBase.solve(prob::PKPDAnalyticalProblem,
           cur_ev.ss == 2 && (Tu0 += Tu0_cache)
 
           u[i] = Tu0
-          doses[i] = dose
+          doses[i] += dose
           last_dose = dose
           rates[i] = rate
           if cur_ev.amt != 0
             old_length = length(times)
             ss_overlap_duration == 0 ? start_val = 1 : start_val = 0
-            resize!(times,old_length+Int(ss_rate_multiplier))
-            resize!(u,    old_length+Int(ss_rate_multiplier))
-            resize!(doses,old_length+Int(ss_rate_multiplier))
-            resize!(rates,old_length+Int(ss_rate_multiplier))
-            for j in start_val:Int(ss_rate_multiplier)-1+start_val
-              times[old_length+j+1-start_val] = ss_time + ss_overlap_duration + j*cur_ev.ii
+            resize!(times, old_length + Int(ss_rate_multiplier))
+            resize!(u    , old_length + Int(ss_rate_multiplier))
+            resize!(doses, old_length + Int(ss_rate_multiplier))
+            resize!(rates, old_length + Int(ss_rate_multiplier))
+            for j in start_val:(Int(ss_rate_multiplier) - 1 + start_val)
+              times[old_length + j + 1 - start_val] = ss_time + ss_overlap_duration + j*cur_ev.ii
+              # The newly added memory is uninitialized so we explicitly initialize to zero
+              doses[old_length + j + 1 - start_val] = zero(dose)
             end
+
             post_ss_counter = start_val
             times = sort!(times)
           end
