@@ -868,6 +868,8 @@ _mean(d::LogNormal) = d.μ
 _var(d::Union{Normal,Bernoulli,Binomial,Poisson,Gamma}) = var(d)
 _var(d::LogNormal) = d.σ^2
 
+# This version handles the exponential family and LogNormal (through the special _mean
+# and _var methods.)
 function _∂²l∂η²(obsdv::AbstractVector, dv_d::AbstractVector{<:Distribution}, ::FOCE)
 
   # FOCE is restricted to models where the dispersion parameter doesn't depend on the random effects
@@ -875,7 +877,6 @@ function _∂²l∂η²(obsdv::AbstractVector, dv_d::AbstractVector{<:Distributi
     throw(ArgumentError("dispersion parameter is not allowed to depend on the random effects when using FOCE"))
   end
 
-  # Loop through the distribution vector and extract derivative information
   nrfx = length(ForwardDiff.partials(mean(first(dv_d))))
 
   # Initialize Hessian matrix and gradient vector
@@ -889,9 +890,35 @@ function _∂²l∂η²(obsdv::AbstractVector, dv_d::AbstractVector{<:Distributi
       continue
     end
     dvj = dv_d[j]
-    f = SVector(ForwardDiff.partials(_mean(dvj)).values)
-
+    f   = SVector(ForwardDiff.partials(_mean(dvj)).values)
     H  += f/ForwardDiff.value(_var(dvj))*f'
+    nl -= ForwardDiff.value(_lpdf(dvj, obj))
+  end
+
+  return nl, nothing, H
+end
+
+# Categorical
+function _∂²l∂η²(obsdv::AbstractVector, dv_d::AbstractVector{<:Categorical}, ::FOCE)
+
+  nrfx = length(ForwardDiff.partials(mean(first(dv_d))))
+
+  # Initialize Hessian matrix and gradient vector
+  ## FIXME! Careful about hardcoding for Float64 here
+  H    = @SMatrix zeros(nrfx, nrfx)
+  nl   = 0.0
+
+  for j in eachindex(dv_d)
+    obj = obsdv[j]
+    if ismissing(obj)
+      continue
+    end
+    dvj = dv_d[j]
+    # Loop through probabilities and add contributions to Hessian
+    for pl in probs(dvj)
+      f  = SVector(ForwardDiff.partials(pl).values)
+      H += f/ForwardDiff.value(pl)*f'
+    end
     nl -= ForwardDiff.value(_lpdf(dvj, obj))
   end
 
