@@ -32,6 +32,6 @@ if group == "All" || group == "NLME_ML2"
   end
 end
 
-if group == "All" || group == "NLME_BAYES"
+if group == "All" || group == "NLME_Bayes"
   @time @safetestset "Bayesian models"                               begin include("bayes.jl")       end
 end

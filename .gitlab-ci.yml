@@ -23,125 +23,64 @@ build:
   - external
   - pushes
 
+.template: &template
+  stage: test
+  script:
+    - julia -e 'using InteractiveUtils;
+                versioninfo()'
+    - julia --project -e 'using Pkg;
+                          Pkg.test("Pumas"; coverage=true);'
+    - julia -e 'using Pkg;
+                Pkg.add("Coverage");
+                using Coverage;
+                Codecov.submit_local(process_folder())'
+  only:
+  - master
+  - tags
+  - external
+  - pushes
 
 test-core:
-  stage: test
+  <<: *template
   variables:
     GROUP: "Core"
-  script:
-    - julia -e 'using InteractiveUtils;
-                versioninfo()'
-    - julia --project -e 'using Pkg;
-                          Pkg.test("Pumas"; coverage=true);'
-  only:
-  - master
-  - tags
-  - external
-  - pushes
 
 test-parallel:
-  stage: test
+  <<: *template
   variables:
     GROUP: "Parallel"
-  script:
-    - julia -e 'using InteractiveUtils;
-                versioninfo()'
-    - julia --project -e 'using Pkg;
-                          Pkg.test("Pumas"; coverage=true);'
-  only:
-  - master
-  - tags
-  - external
-  - pushes
 
 test-nca:
-  stage: test
+  <<: *template
   variables:
     GROUP: "NCA"
-  script:
-    - julia -e 'using InteractiveUtils;
-                versioninfo()'
-    - julia --project -e 'using Pkg;
-                          Pkg.test("Pumas"; coverage=true);'
-  only:
-  - master
-  - tags
-  - external
-  - pushes
-
 
 test-nlme-basic:
-  stage: test
+  <<: *template
   variables:
     GROUP: "NLME_Basic"
-  script:
-    - julia -e 'using InteractiveUtils;
-                versioninfo()'
-    - julia --project -e 'using Pkg;
-                          Pkg.test("Pumas"; coverage=true);'
-  only:
-    - master
-    - tags
-    - external
-    - pushes
 
 test-nlme-ml1:
-  stage: test
+  <<: *template
   variables:
     GROUP: "NLME_ML1"
-  script:
-    - julia -e 'using InteractiveUtils;
-                versioninfo()'
-    - julia --project -e 'using Pkg;
-                          Pkg.test("Pumas"; coverage=true);'
-  only:
-    - master
-    - tags
-    - external
-    - pushes
 
 test-nlme-ml2:
-  stage: test
+  <<: *template
   variables:
     GROUP: "NLME_ML2"
-  script:
-    - julia -e 'using InteractiveUtils;
-                versioninfo()'
-    - julia --project -e 'using Pkg;
-                          Pkg.test("Pumas"; coverage=true);'
-  only:
-    - master
-    - tags
-    - external
-    - pushes
 
 test-nlme-bayes:
-  stage: test
+  <<: *template
   variables:
-    GROUP: "NLME_BAYES"
-  script:
-    - julia -e 'using InteractiveUtils;
-                versioninfo()'
-    - julia --project -e 'using Pkg;
-                          Pkg.test("Pumas"; coverage=true);'
-  only:
-    - master
-    - tags
-    - external
-    - pushes
-
+    GROUP: "NLME_Bayes"
 
 test-features:
-  stage: test
+  <<: *template
   variables:
     GROUP: "Features"
-  script:
-    - julia -e 'using InteractiveUtils;
-                versioninfo()'
-    - julia --project -e 'using Pkg;
-                          Pkg.test("Pumas"; coverage=true);'
-  only:
-  - master
-  - tags
-  - external
-  - pushes
+
+test-ivivc:
+  <<: *template
+  variables:
+    GROUP: "IVIVC"
