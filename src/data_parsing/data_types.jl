@@ -124,8 +124,9 @@ mutable struct DosageRegimen
     evid == 0 && throw(ArgumentError("observations are not allowed"))
     ii ≥ zero(ii) || throw(ArgumentError("ii must be non-negative"))
     addl ≥ 0 || throw(ArgumentError("addl must be non-negative"))
-    addl > 0 && ii == zero(ii) && throw(ArgumentError("ii must be positive for addl > 0"))
-    rate ≥ zero(rate) || rate == -2 || throw(ArgumentError("rate is invalid"))
+    addl > 0          && ii   == zero(time) && throw(ArgumentError("ii must be positive for addl > 0"))
+    ii   > zero(time) && addl == zero(addl) && ss == 0 && throw(ArgumentError("addl must be positive for ii > 0 and ss = 0"))
+    rate ≥ zero(rate) || rate == -2         || throw(ArgumentError("rate is invalid"))
     ss ∈ 0:2 || throw(ArgumentError("ss is invalid"))
     if iszero(duration) && amt > zero(amt) && rate > zero(rate)
       duration = amt / rate

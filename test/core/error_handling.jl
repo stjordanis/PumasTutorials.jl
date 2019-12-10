@@ -92,3 +92,10 @@ param = (θ = θ,
 @test_throws MethodError conditional_nll(model, population[1], param, (η=zeros(9),))
 @test_throws MethodError conditional_nll(model, population[1])
 @test_nowarn simobs(model, population[1], param,obstimes=0.1:0.1:300.0)
+
+@testset "DosageRegiment error handling" begin
+    @test_throws ArgumentError DosageRegimen(0)
+    @test_throws ArgumentError DosageRegimen(0; ii=1,addl=0)
+    @test_throws ArgumentError DosageRegimen(1; ii=0,addl=1)
+    @test_throws ArgumentError DosageRegimen(1; ii=0,addl=1)
+end

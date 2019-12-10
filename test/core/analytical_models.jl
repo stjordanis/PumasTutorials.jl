@@ -107,8 +107,8 @@ model732 = @model begin
 end
 
 
-doses_R = DosageRegimen(43, cmt=1, time=3, ii=12, addl=0, rate=5)
-doses_D = DosageRegimen(43, cmt=1, time=3, ii=12, addl=0, rate=0)
+doses_R = DosageRegimen(43, cmt=1, time=3, rate=5)
+doses_D = DosageRegimen(43, cmt=1, time=3, rate=0)
 
 doses_DD = DosageRegimen(doses_D, doses_D)
 doses_DR = DosageRegimen(doses_D, doses_R)
