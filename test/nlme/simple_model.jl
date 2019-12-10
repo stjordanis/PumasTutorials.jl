@@ -55,7 +55,7 @@ FittedPumasModel
 Successful minimization:                true
 
 Likelihood approximation:        Pumas.FOCEI
-Objective function value:          45.623789
+Deviance:                          54.490036
 Total number of observation records:      20
 Number of active observation records:     20
 Number of subjects:                       10
@@ -67,5 +67,26 @@ Number of subjects:                       10
 Ω₁,₁      0.04
 Σ         0.1
 ------------------
+"""
+
+@test sprint((io, t) -> show(io, MIME"text/plain"(), t), infer(ft)) ==
+"""
+FittedPumasModelInference
+
+Successful minimization:                true
+
+Likelihood approximation:        Pumas.FOCEI
+Deviance:                          54.490036
+Total number of observation records:      20
+Number of active observation records:     20
+Number of subjects:                       10
+
+-----------------------------------------------------
+        Estimate       RSE              95.0% C.I.
+-----------------------------------------------------
+θ₁       0.36476    21.52         [0.21091; 0.51861]
+Ω₁,₁     0.04        NaN          [ NaN   ;  NaN     ]
+Σ        0.1         NaN          [ NaN   ;  NaN     ]
+-----------------------------------------------------
 """
 end# testset
