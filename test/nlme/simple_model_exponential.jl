@@ -1,7 +1,7 @@
 using Test
 using Pumas
 
-@testset "Gamma-distributed error model" begin
+@testset "Exponentially distributed error model" begin
 
 data = read_pumas(example_data("sim_data_model1"))
 
@@ -11,7 +11,6 @@ mdsl = @model begin
     @param begin
         θ  ∈ RealDomain(init=0.5)
         Ω  ∈ PSDDomain(Matrix{Float64}(fill(0.04, 1, 1)))
-        ν  ∈ RealDomain(lower=0.01, init=1.0)
     end
 
     @random begin
@@ -24,14 +23,14 @@ mdsl = @model begin
     end
 
     @vars begin
-        # Currently, Gamma is a bit picky about zeros in the parameters
+        # Currently, Exponential is a bit picky about zeros in the parameters
         conc = Central / V + 1e-10
     end
 
     @dynamics Central1
 
     @derived begin
-        dv ~ @. Gamma(ν, conc/ν)
+        dv ~ @. Exponential(conc)
     end
 end
 
@@ -45,7 +44,7 @@ param = init_param(mdsl)
 @test deviance(mdsl, data, param, Pumas.FOCE())     ≈ 88.9136079338946 rtol=1e-6
 @test deviance(mdsl, data, param, Pumas.LaplaceI()) ≈ 88.9571564205892 rtol=1e-6
 
-@test deviance(fit(mdsl, data, param, Pumas.FOCE()))     ≈ 56.11354389316806 rtol=1e-6
-@test deviance(fit(mdsl, data, param, Pumas.LaplaceI())) ≈ 55.96605418561208 rtol=1e-6
+@test deviance(fit(mdsl, data, param, Pumas.FOCE()))     ≈ 88.61049219271284 rtol=1e-6
+@test deviance(fit(mdsl, data, param, Pumas.LaplaceI())) ≈ 88.61017570108888 rtol=1e-6
 
 end

@@ -854,18 +854,18 @@ _is_homoscedastic(dv::AbstractVector{<:Union{Normal{<:ForwardDiff.Dual},LogNorma
   iszero(sum(ForwardDiff.partials(last(dv).σ).values))
 _is_homoscedastic(dv::AbstractVector{<:Union{Normal{<:AbstractFloat},LogNormal{<:AbstractFloat}}}) =
   first(dv).σ == last(dv).σ
-_is_homoscedastic(dv::AbstractVector{Gamma{<:ForwardDiff.Dual}}) =
+_is_homoscedastic(dv::AbstractVector{<:Gamma{<:ForwardDiff.Dual}}) =
   iszero(sum(ForwardDiff.partials(last(dv).α).values))
-_is_homoscedastic(dv::AbstractVector{<:Union{Bernoulli,Binomial,Poisson}}) = true
+_is_homoscedastic(dv::AbstractVector{<:Union{Bernoulli,Binomial,Exponential,Poisson}}) = true
 _is_homoscedastic(::Any) = throw(ArgumentError("Distribution not supported"))
 
 _ofdisttype(dμ, dσ) = _ofdisttype(dμ; σ=dσ.σ)
 _ofdisttype(d::Normal; μ=d.μ, σ=d.σ)    = Normal(μ, σ)
 _ofdisttype(d::LogNormal; μ=d.μ, σ=d.σ) = LogNormal(μ, σ)
 
-_mean(d::Union{Normal,Bernoulli,Binomial,Poisson,Gamma}) = mean(d)
+_mean(d::Union{Bernoulli,Binomial,Exponential,Gamma,Normal,Poisson}) = mean(d)
 _mean(d::LogNormal) = d.μ
-_var(d::Union{Normal,Bernoulli,Binomial,Poisson,Gamma}) = var(d)
+_var(d::Union{Bernoulli,Binomial,Exponential,Gamma,Normal,Poisson}) = var(d)
 _var(d::LogNormal) = d.σ^2
 
 # This version handles the exponential family and LogNormal (through the special _mean
