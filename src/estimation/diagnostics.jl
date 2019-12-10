@@ -597,10 +597,10 @@ function _ipredict(model, subject, param, approx::FO, vvrandeffsorth)
   ipred(model, subject, param, vvrandeffsorth)
 end
 
-function _predict(model, subject, param, approx::Union{FOCE, Laplace}, vvrandeffsorth)
+function _predict(model, subject, param, approx::FOCE, vvrandeffsorth)
   cpred(model, subject, param, vvrandeffsorth)
 end
-function _ipredict(model, subject, param, approx::Union{FOCE, Laplace}, vvrandeffsorth)
+function _ipredict(model, subject, param, approx::FOCE, vvrandeffsorth)
   cipred(model, subject, param, vvrandeffsorth)
 end
 

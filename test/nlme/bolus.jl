@@ -97,20 +97,6 @@ using Pumas, Test, CSV
       @test param.σ_prop ≈ 1.01e-1 rtol=1e-3
     end
 
-    @testset "Laplace estimation of $dyntype model" for dyntype in ("analytical", "solver")
-      # FIXME! This should also work for solver based version
-      if dyntype == "analytical"
-        result = fit(mdl_proportional[dyntype], data, param_proportional, Pumas.Laplace())
-        param = coef(result)
-
-        @test param.θ      ≈ [3.1616e-01, 9.2127e+00] rtol=1e-3
-        @test param.Ω.diag ≈ [2.2490e-01, 2.7376e-01] rtol=3e-3
-        @test param.σ_prop ≈ 9.3744E-02               rtol=1e-3
-      else
-        @warn("Laplace estimation of $dyntype model is still broken")
-      end
-    end
-
     @testset "LaplaceI estimation of $dyntype model" for dyntype in ("analytical", "solver")
       result = fit(mdl_proportional[dyntype], data, param_proportional, Pumas.LaplaceI())
       param = coef(result)
@@ -210,16 +196,6 @@ using Pumas, Test, CSV
       @test param.Ω.diag ≈ [1.71e-01, 1.98e-01] rtol=5e-3
       @test param.σ_add  ≈ 8.57e+00             rtol=1e-3
       @test param.σ_prop ≈ 1.47e-02             rtol=3e-3
-    end
-
-    @testset "Laplace estimation of $dyntype model" for dyntype in ("analytical", "solver")
-      result = fit(mdl_proportional_additive[dyntype], data, param_proportional_additive, Pumas.Laplace())
-      param = coef(result)
-
-      @test param.θ      ≈ [4.0791e-01, 7.2004e+00] rtol=1e-3
-      @test param.Ω.diag ≈ [1.7321e-01, 2.0335e-01] rtol=5e-3
-      @test param.σ_add  ≈ 7.3030e+00               rtol=1e-3
-      @test param.σ_prop ≈ 2.4050e-02               rtol=3e-3
     end
 
     @testset "LaplaceI estimation of $dyntype model" for dyntype in ("analytical", "solver")

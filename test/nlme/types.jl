@@ -143,7 +143,7 @@ end
 
      @testset "testing model: $_model, with $_approx approximation" for
        _model in ("additive", "proportional", "exponential"),
-         _approx in (Pumas.FO(), Pumas.FOCE(), Pumas.FOCEI(), Pumas.Laplace(), Pumas.LaplaceI())
+         _approx in (Pumas.FO(), Pumas.FOCE(), Pumas.FOCEI(), Pumas.LaplaceI())
 
        if _model == "proportional" && _approx == Pumas.FOCE()
         @test_throws ArgumentError deviance(fit(model[_model], data, param, _approx))

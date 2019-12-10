@@ -881,7 +881,7 @@ end
   @test_throws ArgumentError deviance(theopmodel_foce, theopp[1], param, Pumas.FOCE())
 end
 
-@testset "run5.mod Laplace without interaction, diagonal omega and additive error" begin
+@testset "run5.mod LaplaceI without interaction, diagonal omega and additive error" begin
 
   theopmodel_laplace = @model begin
     @param begin
@@ -944,10 +944,10 @@ end
 
   @testset "Empirical Bayes estimates" begin
     for (i,η) in enumerate(nonmem_ebes_initial)
-      @test sqrt(param.Ω)*Pumas._orth_empirical_bayes(theopmodel_laplace, theopp[i], param, Pumas.Laplace()) ≈ η rtol=1e-4
+      @test sqrt(param.Ω)*Pumas._orth_empirical_bayes(theopmodel_laplace, theopp[i], param, Pumas.LaplaceI()) ≈ η rtol=1e-4
     end
 
-    @test deviance(theopmodel_laplace, theopp, param, Pumas.Laplace()) ≈ 141.296 atol=1e-3
+    @test deviance(theopmodel_laplace, theopp, param, Pumas.LaplaceI()) ≈ 141.296 atol=1e-3
   end
 
   laplace_estimated_params = (
@@ -998,10 +998,10 @@ end
   # Elapsed estimation time in seconds:     0.23
   # Elapsed covariance time in seconds:     0.17
 
-  @test deviance(theopmodel_laplace, theopp, laplace_estimated_params, Laplace()) ≈ 123.76439574418291 atol=1e-3
+  @test deviance(theopmodel_laplace, theopp, laplace_estimated_params, Pumas.LaplaceI()) ≈ 123.76439574418291 atol=1e-3
 
   @testset "Test optimization" begin
-    o = fit(theopmodel_laplace, theopp, param, Pumas.Laplace())
+    o = fit(theopmodel_laplace, theopp, param, Pumas.LaplaceI())
 
     o_estimates = coef(o)
     o_stderror  = stderror(o)

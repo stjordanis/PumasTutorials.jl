@@ -9,12 +9,13 @@ struct FO <: LikelihoodApproximation end
 struct FOI <: LikelihoodApproximation end
 struct FOCE <: LikelihoodApproximation end
 struct FOCEI <: LikelihoodApproximation end
-struct Laplace <: LikelihoodApproximation end
 struct LaplaceI <: LikelihoodApproximation end
 struct LLQuad{T} <: LikelihoodApproximation
   quadalg::T
 end
 LLQuad() = LLQuad(HCubatureJL())
+
+@deprecate Laplace() LaplaceI()
 
 zval(d) = 0.0
 zval(d::Distributions.Normal{T}) where {T} = zero(T)
@@ -115,7 +116,7 @@ function conditional_nll(m::PumasModel,
                          subject::Subject,
                          param::NamedTuple,
                          randeffs::NamedTuple,
-                         approx::Union{FO,Laplace},
+                         approx::FO,
                          args...; kwargs...)
 
   collated_numtype = numtype(m.pre(param, randeffs, subject))
@@ -125,22 +126,7 @@ function conditional_nll(m::PumasModel,
     return collated_numtype(Inf)
   end
 
-  clean_dist = NamedTuple{keys(subject.observations)}(dist)
-
-  # this can potentially be calculated multiple times (in ∂l∂η as well), is that
-  # a performance concern?
-  homoscedastic_check = map(_is_homoscedastic, clean_dist)
-  # If homoscedastic, simply call the generic conditional_nll
-  dist0 = all(homoscedastic_check) ? dist : _derived(m, subject, param, map(zero, randeffs), args...; kwargs...)
-  σ_dists = map(NamedTuple{keys(clean_dist)}(keys(clean_dist))) do dv_key
-              if homoscedastic_check[dv_key]
-                return dist[dv_key]
-              else
-                return _ofdisttype.(dist[dv_key], dist0[dv_key])
-              end
-            end
-
-  return conditional_nll(m, subject, param, randeffs, σ_dists)::collated_numtype
+  return conditional_nll(m, subject, param, randeffs, dist)::collated_numtype
 end
 
 """
@@ -228,7 +214,7 @@ function _orth_empirical_bayes!(
   m::PumasModel,
   subject::Subject,
   param::NamedTuple,
-  approx::Union{FOCE,FOCEI,Laplace,LaplaceI},
+  approx::Union{FOCE,FOCEI,LaplaceI},
   args...;
   # We explicitly use reltol to compute the right step size for finite difference based gradient
   reltol=DEFAULT_ESTIMATION_RELTOL,
@@ -273,7 +259,7 @@ function empirical_bayes_dist(m::PumasModel,
                               subject::Subject,
                               param::NamedTuple,
                               vrandeffsorth::AbstractVector,
-                              approx::Union{FOCE,FOCEI,Laplace,LaplaceI},
+                              approx::Union{FOCE,FOCEI,LaplaceI},
                               args...; kwargs...)
 
   parset = m.random(param)
@@ -445,7 +431,7 @@ function marginal_nll(m::PumasModel,
                       subject::Subject,
                       param::NamedTuple,
                       vrandeffsorth::AbstractVector,
-                      approx::Union{FOCE,FOCEI,Laplace,LaplaceI},
+                      approx::Union{FOCE,FOCEI,LaplaceI},
                       args...; kwargs...)::promote_type(numtype(param), numtype(vrandeffsorth))
 
   dv_∂²l∂η² = ∂²l∂η²(m, subject, param, vrandeffsorth, approx, args...; kwargs...)
@@ -453,7 +439,7 @@ function marginal_nll(m::PumasModel,
   sum(map(_dv_∂²l∂η² -> _marginal_nll(_dv_∂²l∂η², vrandeffsorth, approx), dv_∂²l∂η²))
 end
 
-function _marginal_nll(_dv_∂²l∂η², vrandeffsorth, approx::Union{FOCE,FOCEI,Laplace,LaplaceI})
+function _marginal_nll(_dv_∂²l∂η², vrandeffsorth, approx::Union{FOCE,FOCEI,LaplaceI})
   nl, _, W = _dv_∂²l∂η²
   if isfinite(nl)
     # If the factorization succeeded then compute the approximate marginal likelihood. Otherwise, return Inf.
@@ -543,7 +529,7 @@ function marginal_nll_gradient!(g::AbstractVector,
                                 subject::Subject,
                                 vparam::AbstractVector,
                                 vrandeffsorth::AbstractVector,
-                                approx::Union{FOCE,FOCEI,Laplace,LaplaceI},
+                                approx::Union{FOCE,FOCEI,LaplaceI},
                                 trf::TransformVariables.TransformTuple,
                                 args...;
                                 # We explicitly use reltol to compute the right step size for finite difference based gradient
@@ -645,7 +631,7 @@ function _fdrelstep(model::PumasModel, param, reltol, ::Val{:central})
   end
 end
 
-# Similar to the version for FOCE, FOCEI, Laplace, and LaplaceI
+# Similar to the version for FOCE, FOCEI, and LaplaceI
 # but much simpler since the expansion point in η is fixed. Hence,
 # the gradient is simply the partial derivative in θ
 function marginal_nll_gradient!(g::AbstractVector,
@@ -861,10 +847,6 @@ _is_homoscedastic(dv::Vector{<:NegativeBinomial{<:ForwardDiff.Dual}}) =
 _is_homoscedastic(dv::AbstractVector{<:Union{Bernoulli,Binomial,Exponential,Poisson}}) = true
 _is_homoscedastic(::Any) = throw(ArgumentError("Distribution not supported"))
 
-_ofdisttype(dμ, dσ) = _ofdisttype(dμ; σ=dσ.σ)
-_ofdisttype(d::Normal; μ=d.μ, σ=d.σ)    = Normal(μ, σ)
-_ofdisttype(d::LogNormal; μ=d.μ, σ=d.σ) = LogNormal(μ, σ)
-
 _mean(d::Union{Bernoulli,Binomial,Exponential,Gamma,Normal,Poisson}) = mean(d)
 _mean(d::LogNormal) = d.μ
 _mean(d::NegativeBinomial) = (1 - d.p)/d.p*d.r
@@ -955,16 +937,16 @@ function _∂²l∂η²(obsdv::AbstractVector, dv::AbstractVector{<:Union{Normal
   return nl, nothing, H
 end
 
-# FIXME Laplace(I) only support one dv.
+# FIXME LaplaceI only support one dv.
 function ∂²l∂η²(m::PumasModel,
                 subject::Subject,
                 param::NamedTuple,
                 vrandeffsorth::AbstractVector,
-                approx::Union{Laplace,LaplaceI},
+                approx::LaplaceI,
                 args...; kwargs...)
 
   if length(subject.observations) > 1
-    throw("Laplace and LaplaceI currently do not support multiple DVs, use FOCEI instead.")
+    throw("LaplaceI currently does not support multiple DVs, use FOCEI instead.")
   end
   # Initialize HessianResult for computing Hessian, gradient and value of negative loglikelihood in one go
   diffres = DiffResults.HessianResult(vrandeffsorth)

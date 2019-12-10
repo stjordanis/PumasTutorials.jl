@@ -38,7 +38,7 @@ using Pumas, Test, StatsFuns
     end
 
     @testset "testing with $approx approximation" for
-        approx in (Pumas.FO(), Pumas.FOCE(), Pumas.FOCEI(), Pumas.Laplace(), Pumas.LaplaceI())
+        approx in (Pumas.FO(), Pumas.FOCE(), Pumas.FOCEI(), Pumas.LaplaceI())
 
         if approx ∈ (Pumas.FOCE(), Pumas.LaplaceI())
             _param = coef(fit(mdsl, data, param, approx))
