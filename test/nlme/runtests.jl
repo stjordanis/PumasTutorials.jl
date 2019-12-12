@@ -26,6 +26,7 @@ end
 if group == "All" || group == "NLME_ML2"
   @time @safetestset "Maximum-likelihood models 2" begin
     @time @safetestset "Poisson"                                     begin include("poisson_model.jl")             end
+    @time @safetestset "Negative binomial"                           begin include("negativebinomial.jl")          end
     @time @safetestset "Ordinal"                                     begin include("ordinal.jl")                   end
     @time @safetestset "Bolus"                                       begin include("bolus.jl")                     end
     @time @safetestset "Information matrix"                          begin include("information.jl")               end

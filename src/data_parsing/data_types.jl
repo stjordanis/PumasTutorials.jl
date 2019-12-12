@@ -273,7 +273,6 @@ struct Subject{T1,T2,T3,T4}
   end
 end
 
-
 function DataFrames.DataFrame(subject::Subject; include_covariates=true, include_dvs=true)
   # Build a DataFrame that holds the events
   df_events = DataFrame(build_event_list(subject.events, true))

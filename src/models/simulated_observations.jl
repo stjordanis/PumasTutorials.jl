@@ -12,6 +12,19 @@ end
   obs.observed[I...] = x
 end
 
+# Convert to Subject
+function Subject(simsubject::SimulatedObservations)
+  dvnames = keys(simsubject.subject.observations)
+  subject = Subject(
+    id         = simsubject.subject.id,
+    obs        = NamedTuple{dvnames}(map(k -> simsubject.observed[k], dvnames)),
+    cvs        = map(copy, simsubject.subject.covariates),
+    evs        = copy(simsubject.subject.events),
+    time       = copy(simsubject.times),
+    event_data = !isnothing(simsubject.subject.events))
+  return subject
+end
+
 # DataFrame conversion
 function DataFrames.DataFrame(obs::SimulatedObservations;
   include_events=true, event_order_reverse=true,
