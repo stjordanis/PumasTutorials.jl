@@ -325,7 +325,7 @@ end
                          # Elapsed estimation time in seconds:     0.45
                          # Elapsed covariance time in seconds:     0.18
 
-  o = fit(theopmodel_solver_fo, theopp, param, Pumas.FO())
+  o = @time fit(theopmodel_solver_fo, theopp, param, Pumas.FO())
 
   o_estimates = coef(o)
   o_stderror  = stderror(o)
@@ -356,7 +356,7 @@ end
   end
 
   @testset "test stderror of $k" for k in keys(o_estimates)
-    @test _extract(getfield(o_stderror, k))  ≈ _extract(getfield(fo_stderr, k))           rtol=2e-2
+    @test _extract(getfield(o_stderror, k))  ≈ _extract(getfield(fo_stderr, k))           rtol=2.5e-2
   end
 
   @testset "test stored empirical Bayes estimates. Subject: $i" for i in 1:length(theopp)

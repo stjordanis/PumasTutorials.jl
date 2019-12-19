@@ -27,7 +27,7 @@ using Pumas, LinearAlgebra
       Ka   = Tvka*exp(η[3])
     end
 
-    @dynamics Depots1Central1 
+    @dynamics Depots1Central1
 
     @vars begin
       conc = Central/V
@@ -165,5 +165,5 @@ end
 
   _sub = Subject(id=1, evs=peg_inf_dr, time=t, obs=(yPK=zeros(length(t)), yPD=zeros(length(t))))
 
-  @test logdet(Pumas._expected_information_fd(peg_inf_model, _sub, param_PKPD, zeros(7), Pumas.FO())*30) ≈ 92.21128100630904 rtol=1e-7
+  @test logdet(Pumas._expected_information_fd(peg_inf_model, _sub, param_PKPD, zeros(7), Pumas.FO())*30) ≈ 92.21128100630904 rtol=1e-6
 end

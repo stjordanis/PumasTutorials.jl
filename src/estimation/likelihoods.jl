@@ -531,52 +531,34 @@ function marginal_nll_gradient!(g::AbstractVector,
                                 vrandeffsorth::AbstractVector,
                                 approx::Union{FOCE,FOCEI,LaplaceI},
                                 trf::TransformVariables.TransformTuple,
-                                args...;
-                                # We explicitly use reltol to compute the right step size for finite difference based gradient
-                                reltol=DEFAULT_ESTIMATION_RELTOL,
-                                fdtype=Val{:central}(),
-                                fdrelstep=_fdrelstep(model, vparam, reltol, fdtype),
-                                fdabsstep=fdrelstep^2,
-                                kwargs...
-                                )
+                                args...; kwargs...)
 
   param = TransformVariables.transform(trf, vparam)
 
-  # Compute first order derivatives of the marginal likelihood function
-  # with finite differencing to save compute time
-  ∂ℓᵐ∂θ = DiffEqDiffTools.finite_difference_gradient(
+  ∂ℓᵐ∂θ = ForwardDiff.gradient(
     _vparam -> marginal_nll(
       model,
       subject,
       TransformVariables.transform(trf, _vparam),
       vrandeffsorth,
       approx,
-      args...;
-      reltol=reltol,
-      kwargs...
+      args...; kwargs...
     ),
     vparam,
-    relstep=fdrelstep,
-    absstep=fdabsstep
   )
 
-  ∂ℓᵐ∂η = DiffEqDiffTools.finite_difference_gradient(
+  ∂ℓᵐ∂η = ForwardDiff.gradient(
     vηorth -> marginal_nll(
       model,
       subject,
       param,
       vηorth,
       approx,
-      args...;
-      reltol=reltol,
-      kwargs...
+      args...; kwargs...
     ),
     vrandeffsorth,
-    relstep=fdrelstep,
-    absstep=fdabsstep
   )
 
-  # Compute second order derivatives in high precision with ForwardDiff
   ∂²ℓᵖ∂η² = ForwardDiff.hessian(
     vηorth -> penalized_conditional_nll(
       model,
@@ -584,9 +566,7 @@ function marginal_nll_gradient!(g::AbstractVector,
       param,
       vηorth,
       approx,
-      args...;
-      reltol=reltol,
-      kwargs...),
+      args...; kwargs...),
     vrandeffsorth
   )
 
@@ -600,9 +580,7 @@ function marginal_nll_gradient!(g::AbstractVector,
           _param,
           vηorth,
           approx,
-          args...;
-          reltol=reltol,
-          kwargs...),
+          args...; kwargs...),
         vrandeffsorth
       )
     end,
@@ -620,14 +598,14 @@ function _fdrelstep(model::PumasModel, param, reltol, ::Val{:forward})
   if model.prob isa ExplicitModel
     return sqrt(eps(numtype(param)))
   else
-    return max(norm(reltol), sqrt(eps(numtype(param))))
+    return sqrt(reltol)
   end
 end
 function _fdrelstep(model::PumasModel, param, reltol, ::Val{:central})
   if model.prob isa ExplicitModel
     return cbrt(eps(numtype(param)))
   else
-    return max(norm(reltol), cbrt(eps(numtype(param))))
+    return cbrt(reltol)
   end
 end
 
@@ -641,13 +619,7 @@ function marginal_nll_gradient!(g::AbstractVector,
                                 vrandeffsorth::AbstractVector,
                                 approx::Union{NaivePooled,FO,FOI,LLQuad},
                                 trf::TransformVariables.TransformTuple,
-                                args...;
-                                # We explicitly use reltol to compute the right step size for finite difference based gradient
-                                reltol=DEFAULT_ESTIMATION_RELTOL,
-                                fdtype=Val{:central}(),
-                                fdrelstep=_fdrelstep(model, vparam, reltol, fdtype),
-                                fdabsstep=fdrelstep^2,
-                                kwargs...
+                                args...; kwargs...
                                 )
 
   # Compute first order derivatives of the marginal likelihood function
@@ -659,14 +631,9 @@ function marginal_nll_gradient!(g::AbstractVector,
       TransformVariables.transform(trf, _vparam),
       vrandeffsorth,
       approx,
-      args...;
-      reltol=reltol,
-      kwargs...
+      args...; kwargs...
     ),
     vparam,
-    typeof(fdtype);
-    relstep=fdrelstep,
-    absstep=fdabsstep
   )
 
   return g
@@ -949,7 +916,9 @@ function ∂²l∂η²(m::PumasModel,
     throw("LaplaceI currently does not support multiple DVs, use FOCEI instead.")
   end
   # Initialize HessianResult for computing Hessian, gradient and value of negative loglikelihood in one go
-  diffres = DiffResults.HessianResult(vrandeffsorth)
+  T = promote_type(numtype(param), numtype(vrandeffsorth))
+  _vrandeffsorth = convert(AbstractVector{T}, vrandeffsorth)
+  diffres = DiffResults.HessianResult(_vrandeffsorth)
 
   # Compute the derivates
   ForwardDiff.hessian!(diffres,

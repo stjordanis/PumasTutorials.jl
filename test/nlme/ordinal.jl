@@ -54,9 +54,19 @@ using CSV
 
   ftFOCE = fit(ordinal_model, data, init_param(ordinal_model), Pumas.FOCE())
   @test deviance(ftFOCE) ≈ 467.75689376720766
-  @test [coef(ftFOCE)...] ≈ [3.360148753447197, -3.0319526108461274, -2.766509146981229, -0.43405083623620827, 1.6381356642400862]
+  @test [coef(ftFOCE)...] ≈ [
+    3.360148753447197,
+   -3.0319526108461274,
+   -2.766509146981229,
+   -0.43405083623620827,
+    1.6381356642400862]
 
   ftLaplaceI = fit(ordinal_model, data, init_param(ordinal_model), Pumas.LaplaceI())
   @test deviance(ftLaplaceI) ≈ 469.41275685648816
-  @test [coef(ftLaplaceI)...] ≈ [3.3986644908770676, -3.0661307996640788, -2.799626243079106, -0.4385596030538111, 1.6536305476627144]
+  @test [coef(ftLaplaceI)...] ≈ [
+    3.398664660546355,
+   -3.066129779368099,
+   -2.799622921843607,
+   -0.4385581902207373,
+    1.6536338748877772]
 end
