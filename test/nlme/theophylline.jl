@@ -366,7 +366,7 @@ end
   # Test that the types work on both stiff and non-stiff solver methods
   o = fit(theopmodel_solver_fo, theopp, param, Pumas.FO(), alg=Tsit5())
   o = fit(theopmodel_solver_fo, theopp, param, Pumas.FO(), alg=Rosenbrock23(autodiff=false))
-  @test_broken o = fit(theopmodel_solver_fo, theopp, param, Pumas.FO(), alg=Rosenbrock23()) isa Pumas.FittedPumasModel
+  @test o = fit(theopmodel_solver_fo, theopp, param, Pumas.FO(), alg=Rosenbrock23()) isa Pumas.FittedPumasModel
 end
 
 @testset "run3.mod FOCE without interaction, diagonal omega and additive error" begin
