@@ -304,8 +304,8 @@ end
 totransform(p::ParamSet) = as(map(totransform, p.params))
 
 # When computing the Hessian of the population parameters, we'd like to convert
-# fixeffs back and forth between a NamedTyple and a Vector in order to utilize
-# numerical or automatic differentiation of a all population parameters. For that
+# fixeffs back and forth between a NamedTuple and a Vector in order to utilize
+# numerical or automatic differentiation of all population parameters. For that
 # we need some convenience functions
 toidentitytransform(p::ParamSet) = as(map(toidentitytransform, p.params))
 toidentitytransform(p::ConstDomain) = totransform(p)

@@ -2,125 +2,137 @@ function DiffEqSensitivity.gsa(m::PumasModel, subject::Subject, params::NamedTup
     vlowparam = TransformVariables.inverse(toidentitytransform(m.param), p_range_low)
     vhighparam = TransformVariables.inverse(toidentitytransform(m.param), p_range_high)
     p_range = [[vlowparam[i], vhighparam[i]] for i in 1:length(vlowparam)]
+
     trf_ident = toidentitytransform(m.param)
+
     sim_ = simobs(m, subject, params, args...; kwargs...)
-    length_vars = append!([0], cumsum([length(sim_.observed[key]) for key in vars]))
+    length_vars = [length(sim_[1].observed[key]) for key in vars]
+
     function f(p)
         param = TransformVariables.transform(trf_ident, p)
         sim = simobs(m, subject, param, args...; kwargs...)
         collect(Iterators.flatten([sim.observed[key] for key in vars])) 
     end
-    sensitivity = DiffEqSensitivity.gsa(f, p_range, method)
-    return sens_result(sensitivity, params, vars, length_vars, trf_ident)
+
+    sensitivity = DiffEqSensitivity.gsa(f, method, p_range; kwargs...)
+
+    return sens_result(sensitivity, p_range_low, vars, length_vars)
 end
 
 function DiffEqSensitivity.gsa(m::PumasModel, population::Population, params::NamedTuple, method::DiffEqSensitivity.GSAMethod, vars = [:dv], p_range_low=NamedTuple{keys(params)}([par.*0.05 for par in values(params)]), p_range_high=NamedTuple{keys(params)}([par.*1.95 for par in values(params)]), args...; kwargs...)
     vlowparam = TransformVariables.inverse(toidentitytransform(m.param), p_range_low)
     vhighparam = TransformVariables.inverse(toidentitytransform(m.param), p_range_high)
     p_range = [[vlowparam[i], vhighparam[i]] for i in 1:length(vlowparam)]
+
     trf_ident = toidentitytransform(m.param)
+
     sim_ = simobs(m, population, params, args...; kwargs...)
-    length_vars = append!([0], cumsum([length(sim_[1].observed[key]) for key in vars]))
+    length_vars = [length(sim_[1].observed[key]) for key in vars]
+
     function f(p)
         param = TransformVariables.transform(trf_ident, p)
         sim = simobs(m, population, param, args...; kwargs...)
         mean([collect(Iterators.flatten([sim[i].observed[key] for key in vars])) for i in 1:length(sim)])
     end
-    sensitivity = DiffEqSensitivity.gsa(f, p_range, method)
-    return sens_result(sensitivity, params, vars, length_vars, trf_ident)
+
+    sensitivity = DiffEqSensitivity.gsa(f, method, p_range; kwargs...)
+
+    return sens_result(sensitivity, p_range_low, vars, length_vars)
 end
 
-struct SobolOutput{T1, T2, T3, T4}
+struct SobolOutput{T1, T2, T3, T4, T5, T6}
     first_order::T1
     total_order::T2
-    first_order_conf_int::T3
-    total_order_conf_int::T4
+    second_order::T3
+    first_order_conf_int::T4
+    total_order_conf_int::T5
+    second_order_conf_int::T6
 end
 
-function sens_result(sens::DiffEqSensitivity.SobolResult, params::NamedTuple, vars::AbstractVector, length_vars::AbstractVector, trf_ident)
-    first = NamedTuple()
-    total = NamedTuple()
-    first_ci_l = NamedTuple()
-    first_ci_h = NamedTuple()
-    tot_ci_l = NamedTuple()
-    tot_ci_h = NamedTuple()
-    sensi_1 = []
-    sensi_ci_l = []
-    sensi_ci_h = []
-    sensi_T = []
-    sensiT_ci_l = []
-    sensiT_ci_h = []
-    if length(sens.S1) > 0
-        for ind in 1:length(length_vars)-1
-            val_par = []
-            conf_ints_low = []
-            conf_ints_high = []
-            for sen_p in sens.S1
-                push!(val_par, sen_p[length_vars[ind]+1:length_vars[ind+1]])
-            end
-            push!(sensi_1, TransformVariables.transform(trf_ident, collect(Iterators.flatten(val_par))))
-            if length(sens.S1_Conf_Int) > 0 
-                for (conf_int_low, conf_int_high) in zip(sens.S1_Conf_Int[1], sens.S1_Conf_Int[2])
-                    push!(conf_ints_low, conf_int_low[length_vars[ind]+1:length_vars[ind+1]])
-                    push!(conf_ints_high, conf_int_high[length_vars[ind]+1:length_vars[ind+1]])
-                end
-                push!(sensi_ci_l, TransformVariables.transform(trf_ident, collect(Iterators.flatten(conf_ints_low))))
-                push!(sensi_ci_h, TransformVariables.transform(trf_ident, collect(Iterators.flatten(conf_ints_high))))
-            end
-            
-        end
-        first = NamedTuple{Tuple(vars)}(sensi_1)
-        if length(sens.S1_Conf_Int) > 0 
-            first_ci_l = NamedTuple{Tuple(vars)}(sensi_ci_l)
-            first_ci_h = NamedTuple{Tuple(vars)}(sensi_ci_h)
+function sens_result(sens::DiffEqSensitivity.SobolResult, p_range_low::NamedTuple, vars::AbstractVector, length_vars::AbstractVector)
+    s1 = sens.S1
+    st = sens.ST
+    s2 = sens.S2 === nothing ? nothing : sens.S2
+
+    var_name = []
+    for i in 1:length(vars)
+        len_var = length_vars[i]
+        if len_var > 1
+            append!(var_name,[string(vars[i], "[$j]") for j in 1:len_var])
+        else
+            push!(var_name,string(vars[i]))
         end
     end
-    if length(sens.ST) > 0
-        for ind in 1:length(length_vars)-1
-            val_par = []
-            conf_ints_low = []
-            conf_ints_high = []
-            for sen_p in sens.ST
-                push!(val_par, sen_p[length_vars[ind]+1:length_vars[ind+1]])
-            end
-            push!(sensi_T, TransformVariables.transform(trf_ident, collect(Iterators.flatten(val_par))))
-            if length(sens.ST_Conf_Int) > 0 
-                for (conf_int_low, conf_int_high) in zip(sens.ST_Conf_Int[1], sens.ST_Conf_Int[2])
-                    push!(conf_ints_low, conf_int_low[length_vars[ind]+1:length_vars[ind+1]])
-                    push!(conf_ints_high, conf_int_high[length_vars[ind]+1:length_vars[ind+1]])
-                end
-                push!(sensiT_ci_l, TransformVariables.transform(trf_ident, collect(Iterators.flatten(conf_ints_low))))
-                push!(sensiT_ci_h, TransformVariables.transform(trf_ident, collect(Iterators.flatten(conf_ints_high))))
-            end
-            
-        end
-        total = NamedTuple{Tuple(vars)}(sensi_T)
-        if length(sens.ST_Conf_Int) > 0 
-            tot_ci_l = NamedTuple{Tuple(vars)}(sensiT_ci_l)
-            tot_ci_h = NamedTuple{Tuple(vars)}(sensiT_ci_h)
+
+    par_name = []
+    for i in 1:length(p_range_low)
+        len_par = length(p_range_low[i])
+        if len_par > 1
+            append!(par_name, [string(keys(p_range_low)[i],"$j") for j in 1:len_par])
+        else
+            push!(par_name, string(keys(p_range_low)[i]))
         end
     end
-    return SobolOutput(first, total, (max_conf_int = first_ci_h, min_conf_int = first_ci_l, ), (max_conf_int = tot_ci_h, min_conf_int = tot_ci_l, ))
+
+    S1 = DataFrame(dv_name = var_name)
+    ST = DataFrame(dv_name = var_name)
+
+    for i in 1:length(par_name)
+        insertcols!(S1, i+1, Symbol(par_name[i]) => s1[:,i])
+        insertcols!(ST, i+1, Symbol(par_name[i]) => st[:,i])
+    end
+    if s2 != nothing
+        par_name_sec = [string(par_name[i],"*" ,par_name[j]) for i in 1:length(par_name) for j in i+1:length(par_name)]
+        S2 = DataFrame(dv_name = var_name)
+        for i in 1:length(par_name_sec)
+            insertcols!(S2, i+1, Symbol(par_name_sec[i]) => s2[:,i])
+        end
+    end
+
+    return SobolOutput(S1, ST, s2 === nothing ? nothing : S2 , nothing, nothing, nothing)
 end
 
 
-struct MorrisOutput{T}
-    μ::T
-    variances::T
+struct MorrisOutput{T1, T2, T3}
+    means::T1
+    means_star::T2
+    variances::T3
 end
 
-function sens_result(sens::DiffEqSensitivity.MorrisResult, params::NamedTuple, vars::AbstractVector, length_vars::AbstractVector, trf_ident)
-    sensi_mean = []
-    sensi_var = []
-    for ind in 1:length(length_vars)-1
-        means = []
-        variances = []
-        for (sen_p_mean, sen_p_var) in zip(sens.means, sens.variances)
-            push!(means, sen_p_mean[length_vars[ind]+1:length_vars[ind+1]])
-            push!(variances, sen_p_var[length_vars[ind]+1:length_vars[ind+1]])
+function sens_result(sens::DiffEqSensitivity.MorrisResult, p_range_low::NamedTuple, vars::AbstractVector, length_vars::AbstractVector)
+    means = sens.means
+    means_star = sens.means_star
+    variances = sens.variances
+
+    var_name = []
+    for i in 1:length(vars)
+        len_var = length_vars[i]
+        if len_var > 1
+            append!(var_name,[string(vars[i], "[$j]") for j in 1:len_var])
+        else
+            push!(var_name,string(vars[i]))
         end
-        push!(sensi_mean, TransformVariables.transform(trf_ident, collect(Iterators.flatten(means))))
-        push!(sensi_var, TransformVariables.transform(trf_ident, collect(Iterators.flatten(variances))))
     end
-    return MorrisOutput(NamedTuple{Tuple(vars)}(sensi_mean), NamedTuple{Tuple(vars)}(sensi_var))
+
+    par_name = []
+    for i in 1:length(p_range_low)
+        len_par = length(p_range_low[i])
+        if len_par > 1
+            append!(par_name, [string(keys(p_range_low)[i],"$j") for j in 1:len_par])
+        else
+            push!(par_name, string(keys(p_range_low)[i]))
+        end
+    end
+
+    μ = DataFrame(dv_name = var_name)
+    μ_star = DataFrame(dv_name = var_name)
+    variance = DataFrame(dv_name = var_name)
+
+    for i in 1:length(par_name)
+        insertcols!(μ, i+1, Symbol(par_name[i]) => means[:,i])
+        insertcols!(μ_star, i+1, Symbol(par_name[i]) => means_star[:,i])
+        insertcols!(variance, i+1, Symbol(par_name[i]) => variances[:,i])
+    end
+
+    return MorrisOutput(μ, μ_star, variance)
 end

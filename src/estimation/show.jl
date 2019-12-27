@@ -195,58 +195,23 @@ function Base.show(io::IO, mime::MIME"text/plain", pmi::FittedPumasModelInspecti
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", sens::SobolOutput)
-  first_ord = isempty(sens.first_order) ? false : true
-  first_ord_conf = length(sens.first_order_conf_int.max_conf_int) > 0 ? true : false
-  if first_ord || first_ord_conf
-    println(io, "First Order Indices\n")
-    if first_ord_conf
-      for ((key, value), ci_h, ci_l) in zip(pairs(sens.first_order), sens.first_order_conf_int.max_conf_int, sens.first_order_conf_int.min_conf_int)
-        println(io, "Derived Variable: ", key, "\n")
-        println(io, "Parameter ", "first order indices ", "min c.i. ", "max c.i.", "\n")
-        for ((par, sens), ci_h_val, ci_l_val) in zip(pairs(value), ci_h, ci_l)
-          println(io, par, " "^10, sens, " "^10, ci_h_val, " "^10, ci_l_val, "\n")
-        end
-      end
-    else
-      for (key, value) in pairs(sens.first_order)
-        println(io, "Derived Variable: ", key, "\n")
-        println(io, "Parameter ", "first order indices ", "\n")
-        for (par, sens) in pairs(value)
-          println(io, par, " "^10, sens, "\n")
-        end
-      end
-    end
-  end
-  total_ord = isempty(sens.total_order) ? false : true
-  total_ord_conf = length(sens.total_order_conf_int.max_conf_int) > 0 ? true : false
-  if total_ord || total_ord_conf
-    println(io, "Total Order Indices\n")
-    if total_ord_conf
-      for ((key, value), ci_h, ci_l) in zip(pairs(sens.total_order), sens.total_order_conf_int.max_conf_int, sens.total_order_conf_int.min_conf_int)
-        println(io, "Derived Variable: ", key, "\n")
-        println(io, "Parameter ", "total order indices ", "min c.i. ", "max c.i.", "\n")
-        for ((par, sens), ci_h_val, ci_l_val) in zip(pairs(value), ci_h, ci_l)
-          println(io, par, " "^10, sens, " "^10, ci_h_val, " "^10, ci_l_val, "\n")
-        end
-      end
-    else
-      for (key, value) in pairs(sens.total_order)
-        println(io, "Derived Variable: ", key, "\n")
-        println(io, "Parameter ", "total order indices ", "\n")
-        for (par, sens) in pairs(value)
-          println(io, par, " "^10, sens, "\n")
-        end
-      end
-    end
+  println(io, "Sobol Sensitivity Analysis", "\n")
+  println(io, "First Order Indices")
+  println(io, sens.first_order, "\n")
+  println(io, "Total Order Indices")
+  println(io, sens.total_order, "\n")
+  if sens.second_order != nothing
+    println(io, "Second Order Indices")
+    println(io, sens.second_order, "\n")    
   end
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", sens::MorrisOutput)
-  for ((key, value), varnce) in zip(pairs(sens.μ),sens.variances)
-    println(io, "Derived Variable: ", key, "\n")
-    println(io, "Parameter ", " "^5, "μ ", " "^5 ,"variance", "\n")
-    for ((par, sens), varn) in zip(pairs(value), varnce)
-      println(io, par, " "^10, sens, " ", varn, "\n")
-    end
-  end
+  println(io, "Morris Sensitivity Analysis", "\n")
+  println(io, "Means (μ)")
+  println(io, sens.means, "\n")
+  println(io, "Means star (μ*)")
+  println(io, sens.means_star, "\n")
+  println(io, "Variances")
+  println(io, sens.variances, "\n")
 end
