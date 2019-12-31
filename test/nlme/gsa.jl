@@ -82,6 +82,39 @@ Second Order Indices
 
 """
 
+sobol_sub = gsa(m_diffeq,
+            ev2[1],
+            p,
+            DiffEqSensitivity.Sobol(order=[0,1,2]),
+            [:auc], (θ1 = 0.1, θ2 = 0.5, θ3 = 10); N=1000)
+
+
+@test sprint((io, t) -> show(io, MIME"text/plain"(), t), sobol_sub) ==
+"""Sobol Sensitivity Analysis
+
+First Order Indices
+1×4 DataFrame
+│ Row │ dv_name │ θ1      │ θ2      │ θ3          │
+│     │ Any     │ Float64 │ Float64 │ Float64     │
+├─────┼─────────┼─────────┼─────────┼─────────────┤
+│ 1   │ auc     │ 0.0     │ 1.01175 │ -8.67356e-6 │
+
+Total Order Indices
+1×4 DataFrame
+│ Row │ dv_name │ θ1      │ θ2       │ θ3         │
+│     │ Any     │ Float64 │ Float64  │ Float64    │
+├─────┼─────────┼─────────┼──────────┼────────────┤
+│ 1   │ auc     │ 0.0     │ 0.994045 │ 5.43116e-6 │
+
+Second Order Indices
+1×4 DataFrame
+│ Row │ dv_name │ θ1*θ2   │ θ1*θ3      │ θ2*θ3   │
+│     │ Any     │ Float64 │ Float64    │ Float64 │
+├─────┼─────────┼─────────┼────────────┼─────────┤
+│ 1   │ auc     │ 1.0029  │ 4.28388e-7 │ 1.0029  │
+
+"""
+
 morris = gsa(m_diffeq,
                    ev2,
                    p,

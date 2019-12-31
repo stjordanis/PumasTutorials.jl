@@ -6,7 +6,7 @@ function DiffEqSensitivity.gsa(m::PumasModel, subject::Subject, params::NamedTup
     trf_ident = toidentitytransform(m.param)
 
     sim_ = simobs(m, subject, params, args...; kwargs...)
-    length_vars = [length(sim_[1].observed[key]) for key in vars]
+    length_vars = [length(sim_.observed[key]) for key in vars]
 
     function f(p)
         param = TransformVariables.transform(trf_ident, p)
