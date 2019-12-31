@@ -57,23 +57,23 @@ sobol = gsa(m_diffeq,
 
 
 @test sprint((io, t) -> show(io, MIME"text/plain"(), t), sobol) == 
-"""Sobol indices
+"""Sobol Sensitivity Analysis
 
-First Order
+First Order Indices
 1×4 DataFrame
 │ Row │ dv_name │ θ1      │ θ2      │ θ3          │
 │     │ Any     │ Float64 │ Float64 │ Float64     │
 ├─────┼─────────┼─────────┼─────────┼─────────────┤
 │ 1   │ auc     │ 0.0     │ 1.01175 │ -8.67356e-6 │
 
-Total Order
+Total Order Indices
 1×4 DataFrame
 │ Row │ dv_name │ θ1      │ θ2       │ θ3         │
 │     │ Any     │ Float64 │ Float64  │ Float64    │
 ├─────┼─────────┼─────────┼──────────┼────────────┤
 │ 1   │ auc     │ 0.0     │ 0.994045 │ 5.43116e-6 │
 
-Second Order
+Second Order Indices
 1×4 DataFrame
 │ Row │ dv_name │ θ1*θ2   │ θ1*θ3      │ θ2*θ3   │
 │     │ Any     │ Float64 │ Float64    │ Float64 │
@@ -89,12 +89,12 @@ morris = gsa(m_diffeq,
                    [:auc],(θ1 = 0.1, θ2 = 0.5, θ3 = 10))
 
 @test morris.means[!, :θ1][1] ≈ 0.0 rtol = 1e-12
-@test morris.means[!, :θ2][1] ≈ -0.877494 atol = 1e-2
-@test morris.means[!, :θ3][1] ≈ -5.18611e-5 atol = 1e-2
+@test morris.means[!, :θ2][1] ≈ -0.877494 atol = 5e-2
+@test morris.means[!, :θ3][1] ≈ -5.18611e-5 atol = 5e-2
 @test [morris.means_star[!, :θ1][1], morris.means_star[!, :θ2][1], morris.means_star[!, :θ3][1]] ≈ abs.([morris.means[!, :θ1][1], morris.means[!, :θ2][1], morris.means[!, :θ3][1]]) rtol = 1e-12
 @test morris.variances[!, :θ1][1] ≈ 0.0 rtol = 1e-12
-@test morris.variances[!, :θ2][1] ≈ 0.14922 atol = 1e-2
-@test morris.variances[!, :θ3][1] ≈ 8.56573e-9 atol = 1e-2
+@test morris.variances[!, :θ2][1] ≈ 0.14922 atol = 5e-2
+@test morris.variances[!, :θ3][1] ≈ 8.56573e-9 atol = 5e-2
 
 @test sprint((io, t) -> show(io, MIME"text/plain"(), t), morris) ==
 """Morris Sensitivity Analysis
