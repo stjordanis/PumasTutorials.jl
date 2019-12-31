@@ -136,3 +136,43 @@ function sens_result(sens::DiffEqSensitivity.MorrisResult, p_range_low::NamedTup
 
     return MorrisOutput(μ, μ_star, variance)
 end
+
+struct eFASTOutput{T1, T2}
+    first_order::T1
+    total_order::T2
+end
+
+function sens_result(sens::DiffEqSensitivity.eFASTResult, p_range_low::NamedTuple, vars::AbstractVector, length_vars::AbstractVector)
+    s1 = sens.first_order
+    st = sens.total_order
+
+    var_name = []
+    for i in 1:length(vars)
+        len_var = length_vars[i]
+        if len_var > 1
+            append!(var_name,[string(vars[i], "[$j]") for j in 1:len_var])
+        else
+            push!(var_name,string(vars[i]))
+        end
+    end
+
+    par_name = []
+    for i in 1:length(p_range_low)
+        len_par = length(p_range_low[i])
+        if len_par > 1
+            append!(par_name, [string(keys(p_range_low)[i],"$j") for j in 1:len_par])
+        else
+            push!(par_name, string(keys(p_range_low)[i]))
+        end
+    end
+
+    S1 = DataFrame(dv_name = var_name)
+    ST = DataFrame(dv_name = var_name)
+
+    for i in 1:length(par_name)
+        insertcols!(S1, i+1, Symbol(par_name[i]) => s1[:,i])
+        insertcols!(ST, i+1, Symbol(par_name[i]) => st[:,i])
+    end
+
+    return eFASTOutput(S1, ST)
+end

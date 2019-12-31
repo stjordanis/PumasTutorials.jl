@@ -215,3 +215,11 @@ function Base.show(io::IO, mime::MIME"text/plain", sens::MorrisOutput)
   println(io, "Variances")
   println(io, sens.variances, "\n")
 end
+
+function Base.show(io::IO, mime::MIME"text/plain", sens::eFASTOutput)
+  println(io, "eFAST Sensitivity Analysis", "\n")
+  println(io, "First Order Indices")
+  println(io, sens.first_order, "\n")
+  println(io, "Total Order Indices")
+  println(io, sens.total_order, "\n")
+end

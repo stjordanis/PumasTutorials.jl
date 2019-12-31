@@ -55,7 +55,6 @@ sobol = gsa(m_diffeq,
             DiffEqSensitivity.Sobol(order=[0,1,2]),
             [:auc], (θ1 = 0.1, θ2 = 0.5, θ3 = 10); N=1000)
 
-
 @test sprint((io, t) -> show(io, MIME"text/plain"(), t), sobol) == 
 """Sobol Sensitivity Analysis
 
@@ -87,7 +86,6 @@ sobol_sub = gsa(m_diffeq,
             p,
             DiffEqSensitivity.Sobol(order=[0,1,2]),
             [:auc], (θ1 = 0.1, θ2 = 0.5, θ3 = 10); N=1000)
-
 
 @test sprint((io, t) -> show(io, MIME"text/plain"(), t), sobol_sub) ==
 """Sobol Sensitivity Analysis
@@ -152,6 +150,31 @@ Variances
 │     │ Any     │ Float64 │ Float64  │ Float64    │
 ├─────┼─────────┼─────────┼──────────┼────────────┤
 │ 1   │ auc     │ 0.0     │ $(round(morris.variances[!,:θ2][1], sigdigits=6)) │ $(round(morris.variances[!,:θ3][1], sigdigits=6)) │
+
+"""
+
+efast = gsa(m_diffeq,
+            ev2,
+            p,
+            DiffEqSensitivity.eFAST(),
+            [:auc], (θ1 = 0.1, θ2 = 0.5, θ3 = 10))
+
+@test sprint((io, t) -> show(io, MIME"text/plain"(), t), efast) ==
+"""eFAST Sensitivity Analysis
+
+First Order Indices
+1×4 DataFrame
+│ Row │ dv_name │ θ1         │ θ2       │ θ3         │
+│     │ Any     │ Float64    │ Float64  │ Float64    │
+├─────┼─────────┼────────────┼──────────┼────────────┤
+│ 1   │ auc     │ $(round(efast.first_order[!,:θ1][1], sigdigits=6)) │ $(round(efast.first_order[!,:θ2][1], sigdigits=6)) │ $(round(efast.first_order[!,:θ3][1], sigdigits=6)) │
+
+Total Order Indices
+1×4 DataFrame
+│ Row │ dv_name │ θ1         │ θ2       │ θ3        │
+│     │ Any     │ Float64    │ Float64  │ Float64   │
+├─────┼─────────┼────────────┼──────────┼───────────┤
+│ 1   │ auc     │ $(round(efast.total_order[!,:θ1][1], sigdigits=6)) │ $(round(efast.total_order[!,:θ2][1], sigdigits=6)) │ $(round(efast.total_order[!,:θ3][1], sigdigits=6)) │
 
 """
 end
