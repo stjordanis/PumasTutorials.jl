@@ -1,6 +1,6 @@
 using Test
 using Pumas
-using LinearAlgebra, DiffEqSensitivity
+using LinearAlgebra, DiffEqSensitivity, Random
 
 @testset "GSA Tests" begin
 choose_covariates() = (isPM = rand([1, 0]),
@@ -113,6 +113,7 @@ Second Order Indices
 
 """
 
+Random.seed!(123)
 morris = gsa(m_diffeq,
                    ev2,
                    p,
@@ -135,24 +136,25 @@ Means (μ)
 │ Row │ dv_name │ θ1      │ θ2        │ θ3          │
 │     │ Any     │ Float64 │ Float64   │ Float64     │
 ├─────┼─────────┼─────────┼───────────┼─────────────┤
-│ 1   │ auc     │ 0.0     │ $(round(morris.means[!,:θ2][1], sigdigits=6)) │ $(round(morris.means[!,:θ3][1], sigdigits=6)) │
+│ 1   │ auc     │ 0.0     │ -0.883422 │ -5.07704e-5 │
 
 Means star (μ*)
 1×4 DataFrame
 │ Row │ dv_name │ θ1      │ θ2       │ θ3         │
 │     │ Any     │ Float64 │ Float64  │ Float64    │
 ├─────┼─────────┼─────────┼──────────┼────────────┤
-│ 1   │ auc     │ 0.0     │ $(round(morris.means_star[!,:θ2][1], sigdigits=6)) │ $(round(morris.means_star[!,:θ3][1], sigdigits=6)) │
+│ 1   │ auc     │ 0.0     │ 0.883422 │ 5.07704e-5 │
 
 Variances
 1×4 DataFrame
 │ Row │ dv_name │ θ1      │ θ2       │ θ3         │
 │     │ Any     │ Float64 │ Float64  │ Float64    │
 ├─────┼─────────┼─────────┼──────────┼────────────┤
-│ 1   │ auc     │ 0.0     │ $(round(morris.variances[!,:θ2][1], sigdigits=6)) │ $(round(morris.variances[!,:θ3][1], sigdigits=6)) │
+│ 1   │ auc     │ 0.0     │ 0.148674 │ 8.09321e-9 │
 
 """
 
+Random.seed!(123)
 efast = gsa(m_diffeq,
             ev2,
             p,
@@ -167,14 +169,14 @@ First Order Indices
 │ Row │ dv_name │ θ1         │ θ2       │ θ3         │
 │     │ Any     │ Float64    │ Float64  │ Float64    │
 ├─────┼─────────┼────────────┼──────────┼────────────┤
-│ 1   │ auc     │ $(round(efast.first_order[!,:θ1][1], sigdigits=6)) │ $(round(efast.first_order[!,:θ2][1], sigdigits=6)) │ $(round(efast.first_order[!,:θ3][1], sigdigits=6)) │
+│ 1   │ auc     │ 2.26511e-8 │ 0.982978 │ 3.48522e-7 │
 
 Total Order Indices
 1×4 DataFrame
-│ Row │ dv_name │ θ1         │ θ2       │ θ3        │
-│     │ Any     │ Float64    │ Float64  │ Float64   │
-├─────┼─────────┼────────────┼──────────┼───────────┤
-│ 1   │ auc     │ $(round(efast.total_order[!,:θ1][1], sigdigits=6)) │ $(round(efast.total_order[!,:θ2][1], sigdigits=6)) │ $(round(efast.total_order[!,:θ3][1], sigdigits=6)) │
+│ Row │ dv_name │ θ1        │ θ2       │ θ3        │
+│     │ Any     │ Float64   │ Float64  │ Float64   │
+├─────┼─────────┼───────────┼──────────┼───────────┤
+│ 1   │ auc     │ 7.8894e-6 │ 0.998808 │ 0.0170702 │
 
 """
 end
