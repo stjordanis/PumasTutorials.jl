@@ -1,0 +1,175 @@
+---
+title: Bioequivalence
+author: José Bayoán Santiago Calderón
+date: December 19th, 2019
+---
+
+# Introduction
+
+In this tutorial we will go over how to perform bioequivalence analysis with
+the Pumas ecosystem. Bioequivalence analysis relies on using a pharmacokinetic
+endpoints such as the area under the curve (AUC) or peak concentration (Cmax).
+From a clinical study data, you can obtain these parameters using the Pumas
+NCA module (`Pumas.NCA`). See the NCA section for more details.
+
+In order to perform an average bioequivalence analysis, we will use the
+Bioequivalence.jl package, part of the Pumas ecosystem. This module allows
+to compute various designs such as:
+- Nonparameteric
+- Parallel (e.g., R|T, A|B|C)
+- Crossover 2x2 (e.g., RT|TR)
+- Balaam (e.g., RR|RT|TR|TT)
+- Dual (e.g., RTT|TRR)
+- 2S4P1 (e.g., RTTR|TRRT)
+- 2S4P2 (e.g., RTRT|TRTR)
+- Williams Design (3) WD3F (e.g., ABC|ACB|BAC|BCA|CAB|CBA)
+- Williams Design (4) WD4F (e.g., ABCD|CADB|DCBA|BDAC)
+
+## Data Schema
+
+Every bioequivalence design must conform to the following schema,
+
+- `id`: a subject ID
+- `sequence`: the sequence of treatments (as a string, e.g., `"TR"`)
+- `period`: the current period in the sequence (as an integer, `1`)
+- `endpoint`: the value of the pharmacokinetic endpoint of interest (as a real number, e.g., `0.5 mg hr L^-1`)
+
+Let us see a few examples.
+
+This design may take any structure (i.e., combination of sequences).
+
+```julia
+using Bioequivalence, CSV
+```
+
+Nonparametric
+
+```julia
+nonparametric = CSV.read(joinpath(dirname(pathof(Bioequivalence)), "..", "data", "Nonparametric", "PJ2006_3_1.tsv"))
+show(nonparametric)
+```
+
+Parallel
+
+```julia
+parallel = CSV.read(joinpath(dirname(pathof(Bioequivalence)), "..", "data", "Parallel", "FSL2015_1.tsv"))
+show(parallel)
+```
+
+Crossover 2S2P
+
+```julia
+co2s2p = CSV.read(joinpath(dirname(pathof(Bioequivalence)), "..", "data", "2S2P", "SLF2014_1.tsv"))
+show(co2s2p)
+```
+
+Balaam
+
+```julia
+balaam = CSV.read(joinpath(dirname(pathof(Bioequivalence)), "..", "data", "Balaam", "CL2009_9_2_1.tsv"))
+show(balaam)
+```
+
+Dual
+
+```julia
+dual = CSV.read(joinpath(dirname(pathof(Bioequivalence)), "..", "data", "Dual", "PJ2006_4_1.tsv"))
+show(dual)
+```
+
+Crossover 2S4P1
+
+```julia
+co2s4p1 = CSV.read(joinpath(dirname(pathof(Bioequivalence)), "..", "data", "2S4P", "CL2009_9_4_1.tsv"))
+show(co2s4p1)
+```
+
+Crossover 2S4P2
+
+```julia
+co2s4p2 = CSV.read(joinpath(dirname(pathof(Bioequivalence)), "..", "data", "2S4P", "PJ2006_4_4.tsv"))
+show(co2s4p2)
+```
+
+Williams Design 3S
+
+```julia
+wd3 = CSV.read(joinpath(dirname(pathof(Bioequivalence)), "..", "data", "Williams", "PJ2006_4_5.tsv"))
+show(wd3)
+```
+
+Williams Design 4S
+
+```julia
+wd4 = CSV.read(joinpath(dirname(pathof(Bioequivalence)), "..", "data", "Williams", "PJ2006_4_6.tsv"))
+show(wd4)
+```
+
+## Main Function
+
+In order to perform a bioequivalence analysis we can use the function `read_be` which is an alias for `BioequivalenceStudy`.
+
+```julia
+@doc BioequivalenceStudy
+```
+
+## Examples
+
+Nonparameteric
+
+```julia
+nonparametric_model = read_be(nonparametric)
+```
+
+Parallel
+
+```julia
+parallel_model = read_be(parallel)
+```
+
+Crossover 2S2P
+
+```julia
+co2s2p_model = read_be(co2s2p)
+```
+
+Balaam
+
+```julia
+balaam_model = read_be(balaam)
+```
+
+Dual
+
+```julia
+dual_model = read_be(dual)
+```
+
+Crossover 2S4P1
+
+```julia
+co2s2p1_model = read_be(co2s2p1)
+```
+
+Crossover 2S4P2
+
+```julia
+co2s4p2_model = read_be(co2s4p2)
+```
+
+Williams Design 3S
+
+```julia
+wd3s_model = read_be(wd3)
+```
+
+Williams Design 4S
+
+```julia
+wd4s_model = read_be(wd4)
+```
+
+```julia{echo=false,skip="notebook"}
+using PumasTutorials
+PumasTutorials.tutorial_footer(WEAVE_ARGS[:folder],WEAVE_ARGS[:file])
+```
