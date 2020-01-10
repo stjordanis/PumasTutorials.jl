@@ -216,21 +216,48 @@ function _orth_empirical_bayes!(
   param::NamedTuple,
   approx::Union{FOCE,FOCEI,LaplaceI},
   args...;
-  # We explicitly use reltol to compute the right step size for finite difference based gradient
-  reltol=DEFAULT_ESTIMATION_RELTOL,
-  fdtype=Val{:central}(),
-  fdrelstep=_fdrelstep(m, param, reltol, fdtype),
   kwargs...)
 
-  cost = vηorth -> penalized_conditional_nll(
-    m,
-    subject,
-    param,
-    vηorth,
-    approx,
-    args...;
-    reltol=reltol,
-    kwargs...)
+  function _fgh!(F, G, H, x)
+    if G !== nothing || H !== nothing
+      _∂²l∂η² = ∂²l∂η²(m, subject, param, x, approx, args...; kwargs...)
+      if G !== nothing
+        fill!(G, 0)
+      end
+      if H !== nothing
+        fill!(H, 0)
+      end
+      f = zero(first(_∂²l∂η²)[1])
+      for key in keys(_∂²l∂η²)
+        _∂²l∂η²_key = _∂²l∂η²[key]
+        f += _∂²l∂η²_key[1]
+        if G !== nothing
+          _G =  _∂²l∂η²_key[2]
+          if _G !== nothing
+            G .+= _G
+          end
+        end
+        if H !== nothing
+          _H = _∂²l∂η²_key[3]
+          if _H !== nothing
+            H .+= _H
+          end
+        end
+      end
+      if G !== nothing
+        G .+= x
+      end
+      if H !== nothing
+        H .= H + I
+      end
+      return f + x'x/2
+    end
+    if F !== nothing
+      return penalized_conditional_nll(m, subject, param, x, approx, args...; kwargs...)
+    end
+  end
+
+  cost = Optim.NLSolversBase.TwiceDifferentiable(Optim.NLSolversBase.only_fgh!(_fgh!), vrandeffsorth)
 
   vrandeffsorth .= Optim.minimizer(
     Optim.optimize(
@@ -241,8 +268,7 @@ function _orth_empirical_bayes!(
         show_trace=false,
         extended_trace=true,
         g_tol=1e-5
-      );
-      autodiff=:forward))
+      )))
   return vrandeffsorth
 end
 
@@ -535,57 +561,58 @@ function marginal_nll_gradient!(g::AbstractVector,
 
   param = TransformVariables.transform(trf, vparam)
 
-  ∂ℓᵐ∂θ = ForwardDiff.gradient(
-    _vparam -> marginal_nll(
-      model,
-      subject,
-      TransformVariables.transform(trf, _vparam),
-      vrandeffsorth,
-      approx,
-      args...; kwargs...
-    ),
-    vparam,
-  )
+  _cs = max(1, div(8, length(vrandeffsorth)))
 
-  ∂ℓᵐ∂η = ForwardDiff.gradient(
-    vηorth -> marginal_nll(
-      model,
-      subject,
-      param,
-      vηorth,
-      approx,
-      args...; kwargs...
-    ),
+  _f_∂ℓᵐ∂θ = _vparam -> marginal_nll(
+    model,
+    subject,
+    TransformVariables.transform(trf, _vparam),
     vrandeffsorth,
+    approx,
+    args...; kwargs...
   )
+  cs = min(length(vparam), _cs)
+  cfg_∂ℓᵐ∂θ = ForwardDiff.GradientConfig(_f_∂ℓᵐ∂θ, vparam, ForwardDiff.Chunk{cs}())
+  ∂ℓᵐ∂θ = ForwardDiff.gradient(_f_∂ℓᵐ∂θ, vparam, cfg_∂ℓᵐ∂θ)
 
-  ∂²ℓᵖ∂η² = ForwardDiff.hessian(
-    vηorth -> penalized_conditional_nll(
-      model,
-      subject,
-      param,
-      vηorth,
-      approx,
-      args...; kwargs...),
-    vrandeffsorth
+  _f_∂ℓᵐ∂η = vηorth -> marginal_nll(
+    model,
+    subject,
+    param,
+    vηorth,
+    approx,
+    args...; kwargs...
   )
+  cs = min(length(vrandeffsorth), _cs)
+  cfg_∂ℓᵐ∂η = ForwardDiff.GradientConfig(_f_∂ℓᵐ∂η, vrandeffsorth, ForwardDiff.Chunk{cs}())
+  ∂ℓᵐ∂η = ForwardDiff.gradient(_f_∂ℓᵐ∂η, vrandeffsorth, cfg_∂ℓᵐ∂η)
 
-  ∂²ℓᵖ∂η∂θ = ForwardDiff.jacobian(
-    _vparam -> begin
-      _param = TransformVariables.transform(trf, _vparam)
-      ForwardDiff.gradient(
-        vηorth -> penalized_conditional_nll(
-          model,
-          subject,
-          _param,
-          vηorth,
-          approx,
-          args...; kwargs...),
-        vrandeffsorth
-      )
-    end,
-    vparam
-  )
+  _f_∂²ℓᵖ∂η² = vηorth -> penalized_conditional_nll(
+    model,
+    subject,
+    param,
+    vηorth,
+    approx,
+    args...; kwargs...)
+  cs = min(length(vrandeffsorth), 3)
+  cfg_∂²ℓᵖ∂η² = ForwardDiff.HessianConfig(_f_∂²ℓᵖ∂η², vrandeffsorth, ForwardDiff.Chunk{cs}())
+  ∂²ℓᵖ∂η² = ForwardDiff.hessian(_f_∂²ℓᵖ∂η², vrandeffsorth, cfg_∂²ℓᵖ∂η²)
+
+  _f_∂²ℓᵖ∂η∂θ = _vparam -> begin
+    _param = TransformVariables.transform(trf, _vparam)
+    ForwardDiff.gradient(
+      vηorth -> penalized_conditional_nll(
+        model,
+        subject,
+        _param,
+        vηorth,
+        approx,
+        args...; kwargs...),
+      vrandeffsorth
+    )
+  end
+  cfg_∂²ℓᵖ∂η∂θ = ForwardDiff.JacobianConfig(_f_∂²ℓᵖ∂η∂θ, vparam, ForwardDiff.Chunk{1}())
+  ∂²ℓᵖ∂η∂θ = ForwardDiff.jacobian(_f_∂²ℓᵖ∂η∂θ, vparam, cfg_∂²ℓᵖ∂η∂θ)
 
   dηdθ = -∂²ℓᵖ∂η² \ ∂²ℓᵖ∂η∂θ
 
@@ -835,6 +862,7 @@ function _∂²l∂η²(obsdv::AbstractVector, dv_d::AbstractVector{<:Distributi
   # Initialize Hessian matrix and gradient vector
   ## FIXME! Careful about hardcoding for Float64 here
   H    = @SMatrix zeros(nrfx, nrfx)
+  dldη = @SVector zeros(nrfx)
   nl   = 0.0
 
   for j in eachindex(dv_d)
@@ -842,13 +870,15 @@ function _∂²l∂η²(obsdv::AbstractVector, dv_d::AbstractVector{<:Distributi
     if ismissing(obj)
       continue
     end
-    dvj = dv_d[j]
-    f   = SVector(ForwardDiff.partials(_mean(dvj)).values)
-    H  += f/ForwardDiff.value(_var(dvj))*f'
-    nl -= ForwardDiff.value(_lpdf(dvj, obj))
+    dvj   = dv_d[j]
+    f     = SVector(ForwardDiff.partials(_mean(dvj)).values)
+    fdr   = f/ForwardDiff.value(_var(dvj))
+    H    += fdr*f'
+    dldη -= fdr*(obj - ForwardDiff.value(_mean(dvj)))
+    nl   -= ForwardDiff.value(_lpdf(dvj, obj))
   end
 
-  return nl, nothing, H
+  return nl, dldη, H
 end
 
 # Categorical
@@ -878,6 +908,9 @@ function _∂²l∂η²(obsdv::AbstractVector, dv_d::AbstractVector{<:Categorica
   return nl, nothing, H
 end
 
+_log(::Normal, obs)    = obs
+_log(::LogNormal, obs) = log(obs)
+
 function _∂²l∂η²(obsdv::AbstractVector, dv::AbstractVector{<:Union{Normal,LogNormal}}, ::FOCEI)
   # Loop through the distribution vector and extract derivative information
   nrfx = length(ForwardDiff.partials(first(dv).μ))
@@ -885,6 +918,7 @@ function _∂²l∂η²(obsdv::AbstractVector, dv::AbstractVector{<:Union{Normal
   # Initialize Hessian matrix and gradient vector
   ## FIXME! Careful about hardcoding for Float64 here
   H    = @SMatrix zeros(nrfx, nrfx)
+  dldη = @SVector zeros(nrfx)
   nl   = 0.0
 
   for j in eachindex(dv)
@@ -896,12 +930,14 @@ function _∂²l∂η²(obsdv::AbstractVector, dv::AbstractVector{<:Union{Normal
     r_inv = inv(ForwardDiff.value(dvj.σ^2))
     f     = SVector(ForwardDiff.partials(dvj.μ).values)
     del_r = SVector(ForwardDiff.partials(dvj.σ.^2).values)
+    res   = _log(dvj, obj) - ForwardDiff.value(dvj.μ)
 
-    H  += f*r_inv*f' + (r_inv*del_r*r_inv*del_r')/2
-    nl -= ForwardDiff.value(_lpdf(dvj, obj))
+    H    += f*r_inv*f' + (r_inv*del_r*r_inv*del_r')/2
+    dldη -= (-del_r/2 + f*res + res^2*del_r*r_inv/2)*r_inv
+    nl   -= ForwardDiff.value(_lpdf(dvj, obj))
   end
 
-  return nl, nothing, H
+  return nl, dldη, H
 end
 
 # FIXME LaplaceI only support one dv.
@@ -933,9 +969,9 @@ function ∂²l∂η²(m::PumasModel,
   vrandeffsorth)
 
 #   # Extract the derivatives
-  nl, W = DiffResults.value(diffres), DiffResults.hessian(diffres)
+  nl, dldη, W = DiffResults.value(diffres), DiffResults.gradient(diffres), DiffResults.hessian(diffres)
 
-  return map(x -> (nl, nothing, W), subject.observations)
+  return map(x -> (nl, dldη, W), subject.observations)
 end
 
 # Fallbacks

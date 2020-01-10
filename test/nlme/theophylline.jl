@@ -470,7 +470,7 @@ end
   o_estimates = coef(o)
   o_stderror  = stderror(o)
 
-  @test deviance(o) ≈ 121.89849119366599
+  @test deviance(o) ≈ 121.89849119366599 rtol=1e-7
 
   @testset "test estimate of $k" for k in keys(o_estimates)
     @test _extract(getfield(o_estimates, k)) ≈ _extract(getfield(foce_estimated_params, k)) rtol=1e-3
@@ -742,18 +742,7 @@ end
   end
 
   @test length(Pumas.epred(theopmodel_focei, theopp[1], param, 1000).dv) == 11
-  @test Pumas.cpred(  theopmodel_focei, theopp[1], param).dv ≈ [
-    0.0
-    5.068341459357763
-    8.443563123891462
-   10.037122038452848
-    8.944352418175603
-    6.402624012061738
-    5.482260711623049
-    4.611559621549391
-    3.9247518752173303
-    3.0865429675088953
-    1.185669082816525]
+  @test_throws ArgumentError Pumas.cpred(  theopmodel_focei, theopp[1], param).dv
   @test Pumas.cpredi( theopmodel_focei, theopp[1], param).dv ≈ [
     0.0
     5.068341459357763
@@ -765,7 +754,7 @@ end
     4.611559621549391
     3.9247518752173303
     3.0865429675088953
-    1.185669082816525]
+    1.185669082816525] rtol=1e-6
   @test Pumas.pred(   theopmodel_focei, theopp[1], param).dv ≈ [
     0.0
     4.275044896193946
@@ -802,7 +791,7 @@ end
    0.4278768983990183
    0.5204742127712235
    0.6506387271130077
-   1.3748928119024197]
+   1.3748928119024197] rtol=1e-6
   @test Pumas.iwres(  theopmodel_focei, theopp[1], param).dv ≈ [ 1.1879984032756807
    -0.5922659254289279
    -0.028925269913169835
@@ -825,7 +814,7 @@ end
     0.30756958787462435
     0.47263581944050936
     0.680189149628738
-    1.4895796376772368]
+    1.4895796376772368] rtol=1e-6
   @test Pumas.eiwres( theopmodel_focei, theopp[1], param, 1000) isa NamedTuple
   @test_throws ArgumentError Pumas.cwres(  theopmodel_focei, theopp[1], param)
 end
