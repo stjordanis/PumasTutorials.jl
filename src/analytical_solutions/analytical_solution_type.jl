@@ -62,7 +62,7 @@ function Base.show(io::IO, m::MIME"text/plain", A::PKPDAnalyticalSolution)
   show(io,m,A.u)
 end
 
-struct AnalyticalPKSolution{T,N,uType,tType,S1,S2} <: DiffEqBase.AbstractTimeseriesSolution{T,N}
+struct AnalyticalPKSolution{T,N,uType,tType,S1,S2} <: DiffEqBase.AbstractTimeseriesSolution{T,N,Vector{uType}}
   u::Vector{uType}
   t::Vector{tType}
   pksol::S1
