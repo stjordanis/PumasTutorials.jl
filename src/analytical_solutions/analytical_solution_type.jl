@@ -126,7 +126,7 @@ function (sol::AnalyticalPKSolution)(ts::AbstractArray,deriv::Type{<:Val}=Val{0}
   end
 end
 
-struct NullDESolution{P} <: DiffEqBase.AbstractAnalyticalSolution{Any,1}
+struct NullDESolution{P} <: DiffEqBase.AbstractAnalyticalSolution{Any,1,Nothing}
   prob::P
 end
 
