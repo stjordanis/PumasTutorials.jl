@@ -220,38 +220,24 @@ function _orth_empirical_bayes!(
 
   function _fgh!(F, G, H, x)
     if G !== nothing || H !== nothing
-      _∂²l∂η² = ∂²l∂η²(m, subject, param, x, approx, args...; kwargs...)
-      if G !== nothing
-        fill!(G, 0)
+      nl, ∇nl, ∇²nl = ∂²l∂η²(m, subject, param, x, approx, args...; kwargs...)
+
+      if G !== nothing && ∇nl !== nothing
+        G .= ∇nl
       end
-      if H !== nothing
-        fill!(H, 0)
+      if H !== nothing && ∇²nl !== nothing
+        H .= ∇²nl
       end
-      f = zero(first(_∂²l∂η²)[1])
-      for key in keys(_∂²l∂η²)
-        _∂²l∂η²_key = _∂²l∂η²[key]
-        f += _∂²l∂η²_key[1]
-        if G !== nothing
-          _G =  _∂²l∂η²_key[2]
-          if _G !== nothing
-            G .+= _G
-          end
-        end
-        if H !== nothing
-          _H = _∂²l∂η²_key[3]
-          if _H !== nothing
-            H .+= _H
-          end
-        end
-      end
+
       if G !== nothing
         G .+= x
       end
       if H !== nothing
         H .= H + I
       end
-      return f + x'x/2
+      return nl + x'x/2
     end
+
     if F !== nothing
       return penalized_conditional_nll(m, subject, param, x, approx, args...; kwargs...)
     end
@@ -291,9 +277,8 @@ function empirical_bayes_dist(m::PumasModel,
   parset = m.random(param)
   trf = totransform(parset)
 
-  dv_∂²l∂η² = ∂²l∂η²(m, subject, param, vrandeffsorth, approx, args...; kwargs...)
-  # 3 is W, should we make is a named tuple with l, g, W?
-  V = inv(sum(_dv_∂²l∂η²[3] for _dv_∂²l∂η² in dv_∂²l∂η²) + I)
+  _, _, _∂²l∂η² = ∂²l∂η²(m, subject, param, vrandeffsorth, approx, args...; kwargs...)
+  V = inv(_∂²l∂η² + I)
 
   i = 1
   tmp = map(trf.transformations) do t
@@ -438,19 +423,14 @@ function marginal_nll(m::PumasModel,
   @assert iszero(vrandeffsorth)
 
   # Compute the gradient of the likelihood and Hessian approxmation in the random effect vector η
-  dv_∂²l∂η² = ∂²l∂η²(m, subject, param, vrandeffsorth, approx, args...; kwargs...)
+  nl, dldη, W  = ∂²l∂η²(m, subject, param, vrandeffsorth, approx, args...; kwargs...)
 
-  sum(map(_dv_∂²l∂η² -> _marginal_nll(_dv_∂²l∂η², approx), dv_∂²l∂η²))
-end
-# this is the marginal_nll calculation for a single DV
-function _marginal_nll(_dv_∂²l∂η², approx::FO)
-    nl, dldη, W = _dv_∂²l∂η²
-    if isfinite(nl)
-      FIW = cholesky(Symmetric(Matrix(I + W)))
-      return nl + (- dldη'*(FIW\dldη) + logdet(FIW))/2
-    else # conditional likelihood return Inf
-      return typeof(nl)(Inf)
-    end
+  if isfinite(nl)
+    FIW = cholesky(Symmetric(Matrix(I + W)))
+    return nl + (- dldη'*(FIW\dldη) + logdet(FIW))/2
+  else # conditional likelihood return Inf
+    return typeof(nl)(Inf)
+  end
 end
 
 function marginal_nll(m::PumasModel,
@@ -460,13 +440,8 @@ function marginal_nll(m::PumasModel,
                       approx::Union{FOCE,FOCEI,LaplaceI},
                       args...; kwargs...)::promote_type(numtype(param), numtype(vrandeffsorth))
 
-  dv_∂²l∂η² = ∂²l∂η²(m, subject, param, vrandeffsorth, approx, args...; kwargs...)
+  nl, _, W = ∂²l∂η²(m, subject, param, vrandeffsorth, approx, args...; kwargs...)
 
-  sum(map(_dv_∂²l∂η² -> _marginal_nll(_dv_∂²l∂η², vrandeffsorth, approx), dv_∂²l∂η²))
-end
-
-function _marginal_nll(_dv_∂²l∂η², vrandeffsorth, approx::Union{FOCE,FOCEI,LaplaceI})
-  nl, _, W = _dv_∂²l∂η²
   if isfinite(nl)
     # If the factorization succeeded then compute the approximate marginal likelihood. Otherwise, return Inf.
     # FIXME. For now we have to convert to matrix to have the check=false version available. Eventually,
@@ -528,12 +503,12 @@ this is scaled and shifted slightly from [`marginal_nll`](@ref).
 StatsBase.deviance(m::PumasModel,
                    subject::Subject,
                    args...; kwargs...) =
-    2marginal_nll(m, subject, args...; kwargs...) - count(!ismissing, first(subject.observations))*log(2π)
+    2marginal_nll(m, subject, args...; kwargs...) - sum(map(dv -> count(!ismissing, dv), subject.observations))*log(2π)
 
 StatsBase.deviance(m::PumasModel,
                    data::Population,
                    args...; kwargs...) =
-    2marginal_nll(m, data, args...; kwargs...) - sum(subject->count(!ismissing, first(subject.observations)), data)*log(2π)
+    2marginal_nll(m, data, args...; kwargs...) - sum(subject -> sum(dv -> count(!ismissing, dv), subject.observations), data)*log(2π)
 # NONMEM doesn't allow ragged, so this suffices for testing
 
 # Compute the gradient of marginal_nll without solving inner optimization
@@ -753,79 +728,19 @@ function ∂²l∂η²(m::PumasModel,
   _derived_dist = _derived_vηorth_gradient(m, subject, param, vrandeffsorth, args...; kwargs...)
 
   if any(d->d isa Nothing, _derived_dist)
-    return map(x->(Inf, nothing, nothing), subject.observations)
+    return (Inf, nothing, nothing)
   end
 
   dv_keys = keys(subject.observations)
 
   dv_dist = NamedTuple{dv_keys}(_derived_dist)
-  dv_zip = NamedTuple{dv_keys}(zip(dv_keys, subject.observations, dv_dist))
+  dv_zip = NamedTuple{dv_keys}(zip(subject.observations, dv_dist))
 
-  return map(d -> _∂²l∂η²(d[2], d[3], approx), dv_zip)
-end
+  ∂²l∂η²s = map(((obs, dv),) -> _∂²l∂η²(obs, dv, approx), dv_zip)
 
-function _∂²l∂η²(obsdv::AbstractVector, dv::AbstractVector{<:Normal}, ::FO)
-  # The dimension of the random effect vector
-  nrfx = length(ForwardDiff.partials(first(dv).μ))
-
-  # Initialize Hessian matrix and gradient vector
-  ## FIXME! Careful about hardcoding for Float64 here
-  H    = @SMatrix zeros(nrfx, nrfx)
-  dldη = @SVector zeros(nrfx)
-  nl   = 0.0
-
-  # Loop through the distribution vector and extract derivative information
-  for j in eachindex(dv)
-    obsdvj = obsdv[j]
-
-    # We ignore missing observations when estimating the model
-    if ismissing(obsdvj)
-      continue
-    end
-
-    dvj = dv[j]
-    r = ForwardDiff.value(dvj.σ)^2
-    f = SVector(ForwardDiff.partials(dvj.μ).values)
-    fdr = f/r
-
-    H    += fdr*f'
-    dldη += fdr*(obsdvj - ForwardDiff.value(dvj.μ))
-    nl   -= ForwardDiff.value(_lpdf(dvj, obsdvj))
+  return map((1, 2, 3)) do i
+    sum(∂²l∂η²s[dv_key][i] for dv_key in dv_keys)
   end
-
-  return nl, dldη, H
-end
-
-function _∂²l∂η²(obsdv::AbstractVector, dv::AbstractVector{<:LogNormal}, ::FO)
-  # The dimension of the random effect vector
-  nrfx = length(ForwardDiff.partials(first(dv).μ))
-
-  # Initialize Hessian matrix and gradient vector
-  ## FIXME! Careful about hardcoding for Float64 here
-  H    = @SMatrix zeros(nrfx, nrfx)
-  dldη = @SVector zeros(nrfx)
-  nl   = 0.0
-
-  # Loop through the distribution vector and extract derivative information
-  for j in eachindex(dv)
-    obsdvj = obsdv[j]
-
-    # We ignore missing observations when estimating the model
-    if ismissing(obsdvj)
-      continue
-    end
-
-    dvj = dv[j]
-    r = ForwardDiff.value(dvj.σ)^2
-    f = SVector(ForwardDiff.partials(dvj.μ).values)
-    fdr = f/r
-
-    H    += fdr*f'
-    dldη += fdr*(log(obsdvj) - ForwardDiff.value(dvj.μ))
-    nl   -= ForwardDiff.value(_lpdf(dvj, obsdvj))
-  end
-
-  return nl, dldη, H
 end
 
 # Helper function to detect homoscedasticity. For now, it is assumed the input dv vecotr containing
@@ -848,6 +763,41 @@ _var( d::Union{Bernoulli,Binomial,Exponential,Gamma,Normal,Poisson}) = var(d)
 _var( d::LogNormal) = d.σ^2
 _var( d::NegativeBinomial) = (1 - d.p)/d.p^2*d.r
 
+_log(::Distribution, obs) = obs
+_log(::LogNormal   , obs) = log(obs)
+
+function _∂²l∂η²(obsdv::AbstractVector, dv::AbstractVector{<:Union{Normal,LogNormal}}, ::FO)
+  # The dimension of the random effect vector
+  nrfx = length(ForwardDiff.partials(first(dv).μ))
+
+  # Initialize Hessian matrix and gradient vector
+  ## FIXME! Careful about hardcoding for Float64 here
+  H    = @SMatrix zeros(nrfx, nrfx)
+  dldη = @SVector zeros(nrfx)
+  nl   = 0.0
+
+  # Loop through the distribution vector and extract derivative information
+  for j in eachindex(dv)
+    obsj = obsdv[j]
+
+    # We ignore missing observations when estimating the model
+    if ismissing(obsj)
+      continue
+    end
+
+    dvj = dv[j]
+    r = ForwardDiff.value(dvj.σ)^2
+    f = SVector(ForwardDiff.partials(dvj.μ).values)
+    fdr = f/r
+
+    H    += fdr*f'
+    dldη += fdr*(_log(dvj, obsj) - ForwardDiff.value(dvj.μ))
+    nl   -= ForwardDiff.value(_lpdf(dvj, obsj))
+  end
+
+  return nl, dldη, H
+end
+
 # This version handles the exponential family and LogNormal (through the special _mean
 # and _var methods.)
 function _∂²l∂η²(obsdv::AbstractVector, dv_d::AbstractVector{<:Distribution}, ::FOCE)
@@ -866,16 +816,16 @@ function _∂²l∂η²(obsdv::AbstractVector, dv_d::AbstractVector{<:Distributi
   nl   = 0.0
 
   for j in eachindex(dv_d)
-    obj = obsdv[j]
-    if ismissing(obj)
+    obsj = obsdv[j]
+    if ismissing(obsj)
       continue
     end
     dvj   = dv_d[j]
     f     = SVector(ForwardDiff.partials(_mean(dvj)).values)
     fdr   = f/ForwardDiff.value(_var(dvj))
     H    += fdr*f'
-    dldη -= fdr*(obj - ForwardDiff.value(_mean(dvj)))
-    nl   -= ForwardDiff.value(_lpdf(dvj, obj))
+    dldη -= fdr*(_log(dvj, obsj) - ForwardDiff.value(_mean(dvj)))
+    nl   -= ForwardDiff.value(_lpdf(dvj, obsj))
   end
 
   return nl, dldη, H
@@ -889,27 +839,29 @@ function _∂²l∂η²(obsdv::AbstractVector, dv_d::AbstractVector{<:Categorica
   # Initialize Hessian matrix and gradient vector
   ## FIXME! Careful about hardcoding for Float64 here
   H    = @SMatrix zeros(nrfx, nrfx)
+  dldη = @SVector zeros(nrfx)
   nl   = 0.0
 
   for j in eachindex(dv_d)
-    obj = obsdv[j]
-    if ismissing(obj)
+    obsj = obsdv[j]
+    if ismissing(obsj)
       continue
     end
     dvj = dv_d[j]
     # Loop through probabilities and add contributions to Hessian
-    for pl in probs(dvj)
-      f  = SVector(ForwardDiff.partials(pl).values)
-      H += f/ForwardDiff.value(pl)*f'
+    for (l, pl) in enumerate(probs(dvj))
+      f   = SVector(ForwardDiff.partials(pl).values)
+      fdp = f/ForwardDiff.value(pl)
+      if l == obsj
+        dldη -= fdp
+      end
+      H += fdp*f'
     end
-    nl -= ForwardDiff.value(_lpdf(dvj, obj))
+    nl   -= ForwardDiff.value(_lpdf(dvj, obsj))
   end
 
-  return nl, nothing, H
+  return nl, dldη, H
 end
-
-_log(::Normal, obs)    = obs
-_log(::LogNormal, obs) = log(obs)
 
 function _∂²l∂η²(obsdv::AbstractVector, dv::AbstractVector{<:Union{Normal,LogNormal}}, ::FOCEI)
   # Loop through the distribution vector and extract derivative information
@@ -922,25 +874,24 @@ function _∂²l∂η²(obsdv::AbstractVector, dv::AbstractVector{<:Union{Normal
   nl   = 0.0
 
   for j in eachindex(dv)
-    obj = obsdv[j]
-    if ismissing(obj)
+    obsj = obsdv[j]
+    if ismissing(obsj)
       continue
     end
     dvj   = dv[j]
     r_inv = inv(ForwardDiff.value(dvj.σ^2))
     f     = SVector(ForwardDiff.partials(dvj.μ).values)
     del_r = SVector(ForwardDiff.partials(dvj.σ.^2).values)
-    res   = _log(dvj, obj) - ForwardDiff.value(dvj.μ)
+    res   = _log(dvj, obsj) - ForwardDiff.value(dvj.μ)
 
     H    += f*r_inv*f' + (r_inv*del_r*r_inv*del_r')/2
     dldη -= (-del_r/2 + f*res + res^2*del_r*r_inv/2)*r_inv
-    nl   -= ForwardDiff.value(_lpdf(dvj, obj))
+    nl   -= ForwardDiff.value(_lpdf(dvj, obsj))
   end
 
   return nl, dldη, H
 end
 
-# FIXME LaplaceI only support one dv.
 function ∂²l∂η²(m::PumasModel,
                 subject::Subject,
                 param::NamedTuple,
@@ -969,7 +920,7 @@ function ∂²l∂η²(m::PumasModel,
   vrandeffsorth)
 
 #   # Extract the derivatives
-  nl, dldη, W = DiffResults.value(diffres), DiffResults.gradient(diffres), DiffResults.hessian(diffres)
+  return  DiffResults.value(diffres), DiffResults.gradient(diffres), DiffResults.hessian(diffres)
 
   return map(x -> (nl, dldη, W), subject.observations)
 end

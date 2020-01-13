@@ -154,8 +154,7 @@ end
        if _model != "proportional" || _approx != Pumas.LaplaceI()
            @test deviance(fit(model[_model], data, param, _approx)) == deviance(fit(model[_model], data_missing, param, _approx))
            res = fit(model[_model], data, param, _approx)
-           @test Pumas.∂²l∂η²(model[_model], first(data), param, first(res.vvrandeffsorth), _approx) isa NamedTuple
-           @test keys(Pumas.∂²l∂η²(model[_model], first(data), param, first(res.vvrandeffsorth), _approx)) == keys(first(data).observations)
+           @test Pumas.∂²l∂η²(model[_model], first(data), param, first(res.vvrandeffsorth), _approx) isa Tuple
        end
      end
 end # begin
