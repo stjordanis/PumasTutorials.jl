@@ -273,6 +273,15 @@ struct Subject{T1,T2,T3,T4}
   end
 end
 
+Base.hash(subject::Subject, h::UInt) = hash(
+  subject.time, hash(
+    subject.events, hash(
+      subject.covariates, hash(
+        subject.observations, hash(
+          subject.id, h)))))
+
+Base.:(==)(subject1::Subject, subject2::Subject) = hash(subject1) == hash(subject2)
+
 function DataFrames.DataFrame(subject::Subject; include_covariates=true, include_dvs=true)
   # Build a DataFrame that holds the events
   df_events = DataFrame(build_event_list(subject.events, true))

@@ -6,6 +6,12 @@ using Pumas, Test, CSV
 
   @test getproperty.(data[1].events, :time) == 0:12:36
 
+  @testset "Subject comparison" begin
+    datacopy = deepcopy(data)
+    @test data == datacopy
+    @test hash(data) == hash(datacopy)
+  end
+
   for ev in data[1].events
     @test ev.amt == data[1].events[1].amt
     @test ev.evid == data[1].events[1].evid
