@@ -104,11 +104,11 @@ using Pumas, Random
     σ²PK = 0.04,
     σ²PD = 0.04)
 
-  pop = map(i -> Subject(id=i, obs=(yPK=[], yPD=[]), evs=peg_inf_dr, time=t), 1:3)
+  _pop = map(i -> Subject(id=i, obs=(yPK=[], yPD=[]), evs=peg_inf_dr, time=t), 1:3)
 
   # Simulate data for estimation (fix seed for reproducibility)
   Random.seed!(123)
-  simdata = simobs(peg_inf_model, pop, param_PKPD, ensemblealg = EnsembleSerial())
+  simdata = simobs(peg_inf_model, _pop, param_PKPD, ensemblealg = EnsembleSerial())
 
   pd = Subject.(simdata)
 
