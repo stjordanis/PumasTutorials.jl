@@ -51,7 +51,7 @@ FittedPumasModel
 Successful minimization:                true
 
 Likelihood approximation:        Pumas.FOCEI
-Deviance:                          54.490036
+Deviance:                          54.490035
 Total number of observation records:      20
 Number of active observation records:     20
 Number of subjects:                       10
@@ -72,7 +72,7 @@ FittedPumasModelInference
 Successful minimization:                true
 
 Likelihood approximation:        Pumas.FOCEI
-Deviance:                          54.490036
+Deviance:                          54.490035
 Total number of observation records:      20
 Number of active observation records:     20
 Number of subjects:                       10

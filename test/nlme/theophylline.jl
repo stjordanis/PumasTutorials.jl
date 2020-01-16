@@ -470,7 +470,7 @@ end
   o_estimates = coef(o)
   o_stderror  = stderror(o)
 
-  @test deviance(o) ≈ 121.89849119366599
+  @test deviance(o) ≈ 121.89849119366599 rtol=1e-7
 
   @testset "test estimate of $k" for k in keys(o_estimates)
     @test _extract(getfield(o_estimates, k)) ≈ _extract(getfield(foce_estimated_params, k)) rtol=1e-3
@@ -501,7 +501,7 @@ end
     4.0473577932698825
     3.4538453107724867
     2.717339295201133
-    1.0438615786511665]
+    1.0438615786511665] rtol=1e-6
   @test Pumas.cpredi( theopmodel_foce, theopp[1], param).dv ≈ [
     0.0
     4.9049755499300955
@@ -513,7 +513,7 @@ end
     4.0473577932698825
     3.4538453107724867
     2.717339295201133
-    1.0438615786511665]
+    1.0438615786511665] rtol=1e-6
   @test Pumas.pred(   theopmodel_foce, theopp[1], param).dv ≈ [
     0.0
     4.275044896193946
@@ -525,7 +525,7 @@ end
     5.139785095454612
     4.389649021685277
     3.4538248683011945
-    1.3267830785309427]
+    1.3267830785309427] rtol=1e-6
   @test Pumas.wres(   theopmodel_foce, theopp[1], param).dv ≈ [
      1.1879984032756807
     -0.5121540697427261
@@ -537,7 +537,7 @@ end
      0.7926973976555282
      1.38286211294743
      1.8217361795780522
-     2.2749279342557145]
+     2.2749279342557145] rtol=1e-6
   @test Pumas.cwres(  theopmodel_foce, theopp[1], param).dv ≈ [
      1.1879984032756807
     -0.40449239905538514
@@ -549,7 +549,7 @@ end
      0.6557677791850915
      1.229426426138302
      1.6689875690147757
-     2.207038336508923]
+     2.207038336508923] rtol=1e-6
   @test Pumas.cwresi( theopmodel_foce, theopp[1], param).dv ≈ [ 1.1879984032756807
    -0.40449239905538514
     1.4078834621663032
@@ -560,7 +560,7 @@ end
     0.6557677791850915
     1.229426426138302
     1.6689875690147757
-    2.207038336508923]
+    2.207038336508923] rtol=1e-6
   @test Pumas.iwres(  theopmodel_foce, theopp[1], param).dv ≈ [
      1.1879984032756807
     -2.303825736901788
@@ -572,7 +572,7 @@ end
      3.740934575525829
      4.014071580900914
      3.9913136307052524
-     3.1357007891301087]
+     3.1357007891301087] rtol=1e-6
   @test Pumas.icwres( theopmodel_foce, theopp[1], param).dv ≈ [
      1.1879984032756807
     -1.3784646740678743
@@ -584,7 +584,7 @@ end
      0.09734551444138731
      0.9017172486653547
      1.5424519077826466
-     2.194973069154764]
+     2.194973069154764] rtol=1e-6
   @test Pumas.icwresi(theopmodel_foce, theopp[1], param).dv ≈ [
      1.1879984032756807
     -1.3784646740678743
@@ -596,7 +596,7 @@ end
      0.09734551444138731
      0.9017172486653547
      1.5424519077826466
-     2.194973069154764]
+     2.194973069154764] rtol=1e-6
   @test Pumas.eiwres( theopmodel_foce, theopp[1], param, 1000) isa NamedTuple
   @test Pumas.cwres(  theopmodel_foce, theopp[1], param).dv ≈ [
      1.1879984032756807
@@ -609,7 +609,7 @@ end
      0.6557677791850915
      1.229426426138302
      1.6689875690147757
-     2.207038336508923]
+     2.207038336508923] rtol=1e-6
 end
 
 @testset "run4.mod FOCEI, diagonal omega and additive + proportional error" begin
@@ -742,18 +742,7 @@ end
   end
 
   @test length(Pumas.epred(theopmodel_focei, theopp[1], param, 1000).dv) == 11
-  @test Pumas.cpred(  theopmodel_focei, theopp[1], param).dv ≈ [
-    0.0
-    5.068341459357763
-    8.443563123891462
-   10.037122038452848
-    8.944352418175603
-    6.402624012061738
-    5.482260711623049
-    4.611559621549391
-    3.9247518752173303
-    3.0865429675088953
-    1.185669082816525]
+  @test_throws ArgumentError Pumas.cpred(  theopmodel_focei, theopp[1], param).dv
   @test Pumas.cpredi( theopmodel_focei, theopp[1], param).dv ≈ [
     0.0
     5.068341459357763
@@ -765,7 +754,7 @@ end
     4.611559621549391
     3.9247518752173303
     3.0865429675088953
-    1.185669082816525]
+    1.185669082816525] rtol=1e-6
   @test Pumas.pred(   theopmodel_focei, theopp[1], param).dv ≈ [
     0.0
     4.275044896193946
@@ -802,7 +791,7 @@ end
    0.4278768983990183
    0.5204742127712235
    0.6506387271130077
-   1.3748928119024197]
+   1.3748928119024197] rtol=1e-6
   @test Pumas.iwres(  theopmodel_focei, theopp[1], param).dv ≈ [ 1.1879984032756807
    -0.5922659254289279
    -0.028925269913169835
@@ -825,7 +814,7 @@ end
     0.30756958787462435
     0.47263581944050936
     0.680189149628738
-    1.4895796376772368]
+    1.4895796376772368] rtol=1e-6
   @test Pumas.eiwres( theopmodel_focei, theopp[1], param, 1000) isa NamedTuple
   @test_throws ArgumentError Pumas.cwres(  theopmodel_focei, theopp[1], param)
 end

@@ -75,6 +75,11 @@ test-nlme-ml3:
   variables:
     GROUP: "NLME_ML3"
 
+test-nlme-ml4:
+  <<: *template
+  variables:
+    GROUP: "NLME_ML4"
+
 test-nlme-bayes:
   <<: *template
   variables:

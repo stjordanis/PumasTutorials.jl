@@ -37,7 +37,7 @@ end
 
 param = init_param(mdsl)
 
-# Not yet supported
+# Not supported
 @test_throws ArgumentError deviance(mdsl, data, param, Pumas.FO())
 @test_throws ArgumentError deviance(mdsl, data, param, Pumas.FOCEI())
 
