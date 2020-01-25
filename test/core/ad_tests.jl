@@ -1,9 +1,9 @@
-using Pumas, ForwardDiff, DiffEqDiffTools, Test, Random, LabelledArrays, DiffResults
+using Pumas, ForwardDiff, FiniteDiff, Test, Random, LabelledArrays, DiffResults
 
 AD_gradient = ForwardDiff.gradient
 AD_hessian = ForwardDiff.hessian
-FD_gradient = DiffEqDiffTools.finite_difference_gradient
-FD_jacobian = DiffEqDiffTools.finite_difference_jacobian
+FD_gradient = FiniteDiff.finite_difference_gradient
+FD_jacobian = FiniteDiff.finite_difference_jacobian
 FD_hessian = function (f, x)
     grad_fun = y -> FD_gradient(f, y)
     FD_jacobian(grad_fun, x, Val{:central}, eltype(x))

@@ -626,7 +626,7 @@ function marginal_nll_gradient!(g::AbstractVector,
 
   # Compute first order derivatives of the marginal likelihood function
   # with finite differencing to save compute time
-  g .= DiffEqDiffTools.finite_difference_gradient(
+  g .= FiniteDiff.finite_difference_gradient(
     _vparam -> marginal_nll(
       model,
       subject,
@@ -1200,7 +1200,7 @@ function _observed_information(f::FittedPumasModel,
     end
 
     # Compute Hessian contribution and update Hessian
-    DiffEqDiffTools.finite_difference_jacobian!(_H,_f,vparam,
+    FiniteDiff.finite_difference_jacobian!(_H,_f,vparam,
                                                      Val{:central};
                                                      relstep=fdrelstep_hessian,
                                                      absstep=fdrelstep_hessian^2)
@@ -1304,7 +1304,7 @@ function _expected_information_fd(
   ___E = _vparam -> __E_and_V(_vparam)[1]
   ___V = _vparam -> vec(__E_and_V(_vparam)[2])
 
-  dEdθ = DiffEqDiffTools.finite_difference_jacobian(
+  dEdθ = FiniteDiff.finite_difference_jacobian(
     ___E,
     vparam,
     typeof(fdtype),
@@ -1312,7 +1312,7 @@ function _expected_information_fd(
     relstep=fdrelstep,
     absstep=fdabsstep
   )
-  JV = DiffEqDiffTools.finite_difference_jacobian(
+  JV = FiniteDiff.finite_difference_jacobian(
     ___V,
     vparam,
     typeof(fdtype),
