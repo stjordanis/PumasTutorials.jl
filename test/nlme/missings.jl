@@ -105,7 +105,17 @@ using Pumas, Test
     # LaplaceI and proportional is very unstable and succeeds/fails depending on architecture
     # so we can't mark this as @test_broken
     if _model != "proportional" || _approx != Pumas.LaplaceI()
-      @test deviance(fit(model[_model], data, param, _approx)) == deviance(fit(model[_model], data_missing, param, _approx))
+      ft         = fit(model[_model], data        , param, _approx)
+      ft_missing = fit(model[_model], data_missing, param, _approx)
+      @test deviance(ft) == deviance(ft_missing)
+
+      if _approx isa Union{Pumas.FO, Pumas.FOCE, Pumas.FOCEI}
+        res         = wresiduals(ft)
+        res_missing = wresiduals(ft_missing)
+        @test all(map(((rᵢ, rmᵢ),) -> rᵢ.wres.dv ≈ filter(!ismissing, rmᵢ.wres.dv), zip(res, res_missing)))
+      else
+        @test_broken wresiduals(ft)
+      end
     end
   end
 end

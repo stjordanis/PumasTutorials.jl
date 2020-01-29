@@ -100,7 +100,7 @@ end
     @test Pumas.pred(mdsl_proportional, dt, param).dv ≈ sub_pred rtol=1e-6
 end
 
-@testset "wres" for
+@testset "wresiduals(::FO) (WRES)" for
     (sub_wres, dt) in zip([[ 0.180566054, 1.74797817 ],
                            [-1.35845124 ,-0.274456699],
                            [ 0.310535666, 0.611240923],
@@ -112,10 +112,10 @@ end
                            [-1.38172560 , 0.984121759],
                            [ 0.905043866, 0.302785305]], data)
 
-    @test Pumas.wres(mdsl_proportional, dt, param).dv ≈ sub_wres
+    @test wresiduals(mdsl_proportional, dt, param, nothing, Pumas.FO()).dv ≈ sub_wres
 end
 
-@testset "cwres" begin
+@testset "wresiduals(::FOCE), (CWRES)" begin
     for (sub_cwres, dt) in zip([[  1.8056605439561435, 6.35847069362139   ],
                                 [-13.584512372551321 , -0.7859197550457881],
                                 [  3.105356662285346 , 1.925994243881485  ],
@@ -127,12 +127,12 @@ end
                                 [-13.817256008339715 , 3.249017333791544  ],
                                 [  9.050438663401902 , 0.9200622059620783]], data)
 
-      @test Pumas.cwres(mdsl_additive, dt, param).dv ≈ sub_cwres
+      @test wresiduals(mdsl_additive, dt, param, nothing, Pumas.FOCE()).dv ≈ sub_cwres
     end
-    @test_throws ArgumentError Pumas.cwres(mdsl_proportional, data[1], param)
+    @test_throws ArgumentError wresiduals(mdsl_proportional, data[1], param, nothing, Pumas.FOCE())
 end
 
-@testset "cwresi" for
+@testset "wresiduals(::FOCEI), (CWRESI)" for
     (sub_cwresi, dt) in zip([[ 0.180566054, 1.6665779  ],
                              [-1.35845124 ,-0.278938663],
                              [ 0.310535666, 0.605059261],
@@ -144,7 +144,7 @@ end
                              [-1.3817256  , 0.962485383],
                              [ 0.905043866, 0.302554671]], data)
 
-   @test Pumas.cwresi(mdsl_proportional, dt, param).dv ≈ sub_cwresi rtol=1e-6
+   @test wresiduals(mdsl_proportional, dt, param, nothing, Pumas.FOCEI()).dv ≈ sub_cwresi rtol=1e-6
 end
 
 @testset "iwres" for

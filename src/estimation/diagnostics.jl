@@ -89,25 +89,7 @@ function DataFrames.DataFrame(vresid::Vector{<:SubjectResidual}; include_covaria
   df
 end
 
-"""
-    restype(approx)
 
-Returns the residual type for the given approximation method.
-Can be one of [`FO`](@ref), [`FOCE`](@ref), or [`FOCEI`](@ref).
-"""
-restype(::FO) = :wres
-restype(::FOCE) = :cwres
-restype(::FOCEI) = :cwresi
-
-function wresiduals(model::PumasModel, subject::Subject, param::NamedTuple, randeffs, approx::FO, args...; kwargs...)
-  wres(model, subject, param, randeffs, args...; kwargs...)
-end
-function wresiduals(model::PumasModel, subject::Subject, param::NamedTuple, randeffs, approx::FOCE, args...; kwargs...)
-  cwres(model, subject, param, randeffs, args...; kwargs...)
-end
-function wresiduals(model::PumasModel, subject::Subject, param::NamedTuple, randeffs, approx::FOCEI, args...; kwargs...)
-  cwresi(model, subject, param, randeffs, args...; kwargs...)
-end
 function iwresiduals(model::PumasModel, subject::Subject, param::NamedTuple, randeffs, approx::FO, args...; kwargs...)
   iwres(model, subject, param, randeffs, args...; kwargs...)
 end
@@ -118,103 +100,64 @@ function iwresiduals(model::PumasModel, subject::Subject, param::NamedTuple, ran
   icwresi(model, subject, param, randeffs, args...; kwargs...)
 end
 
-"""
 
-  wres(model, subject, param[, rfx])
-
-To calculate the Weighted Residuals (WRES).
-"""
-function wres(m::PumasModel,
-              subject::Subject,
-              param::NamedTuple,
-              vrandeffsorth::Union{Nothing, AbstractVector}=nothing,
-              args...;
-              kwargs...)
+function wresiduals(
+  model::PumasModel,
+  subject::Subject,
+  param::NamedTuple,
+  vrandeffsorth::Union{Nothing, AbstractVector},
+  approx::Union{FO,FOCE,FOCEI},
+  args...; kwargs...)
 
   if vrandeffsorth isa Nothing
-    vrandeffsorth=_orth_empirical_bayes(m, subject, param, FO(), args...; kwargs...)::AbstractVector
+    vrandeffsorth = _orth_empirical_bayes(model, subject, param, approx, args...; kwargs...)
   end
 
-  randeffstransform = totransform(m.random(param))
+  randeffstransform = totransform(model.random(param))
   randeffs = TransformVariables.transform(randeffstransform, vrandeffsorth)
-  dist = _derived(m, subject, param, randeffs)
+  dist = _derived(model, subject, param, randeffs)
 
-  F = _mean_derived_vηorth_jacobian(m, subject, param, vrandeffsorth, args...; kwargs...)
+  F   = _mean_derived_vηorth_jacobian(model, subject, param, vrandeffsorth, args...; kwargs...)
+  res = residuals(subject, dist)
 
   _dv_keys = keys(subject.observations)
-  return map(NamedTuple{_dv_keys}(_dv_keys)) do name
 
-        V = Symmetric(F[name]*F[name]' + Diagonal(var.(dist[name])))
-        return cholesky(V).U'\residuals(subject, dist)[name]
+  # For FOCE, we don't allow the dispersion parameter to depend on the random effects
+  if approx isa FOCE
+    foreach(_dv_keys) do _key
+      if !_is_homoscedastic(dist[_key])
+        throw(ArgumentError("dispersion parameter is not allowed to depend on the random effects when using FOCE"))
       end
-end
-
-"""
-  cwres(model, subject, param[, rfx])
-
-To calculate the Conditional Weighted Residuals (CWRES).
-"""
-function cwres(m::PumasModel,
-               subject::Subject,
-               param::NamedTuple,
-               vrandeffsorth::Union{Nothing, AbstractVector}=nothing,
-               args...;
-               kwargs...)
-
-  if vrandeffsorth isa Nothing
-    vrandeffsorth = _orth_empirical_bayes(m, subject, param, FOCE(), args...; kwargs...)
-  end
-
-  randeffstransform = totransform(m.random(param))
-  randeffsEBE = TransformVariables.transform(randeffstransform, vrandeffsorth)
-
-  distEBE = _derived(m, subject, param, randeffsEBE)
-
-  _dv_keys = keys(subject.observations)
-  foreach(_dv_keys) do _key
-    if !_is_homoscedastic(distEBE[_key])
-      throw(ArgumentError("dispersion parameter is not allowed to depend on the random effects when using FOCE"))
+      nothing
     end
-    nothing
   end
 
-  F = _mean_derived_vηorth_jacobian(m, subject, param, vrandeffsorth, args...; kwargs...)
-
-  randeffstransform = totransform(m.random(param))
-
   return map(NamedTuple{_dv_keys}(_dv_keys)) do name
-          V = Symmetric(F[name]*F[name]' + Diagonal(var.(distEBE[name])))
-          return cholesky(V).U'\(residuals(subject, distEBE)[name] .+ F[name]*vrandeffsorth)
-        end
-end
-"""
-  cwresi(model, subject, param[, rfx])
+    # We have to handle missing values explicitly to avoid that the variance
+    # components associated with missing values influence the weighting
+    missingmask = ismissing.(subject.observations[name])
+    Fname   = F[name]
+    resname = res[name]
+    Fname[missingmask, :] .= 0
+    resname[missingmask]  .= 0
 
-To calculate the Conditional Weighted Residuals with Interaction (CWRESI).
-"""
+    V = Symmetric(Fname*Fname' + Diagonal(var.(dist[name])))
 
-function cwresi(m::PumasModel,
-                subject::Subject,
-                param::NamedTuple,
-                vrandeffsorth::Union{Nothing, AbstractVector}=nothing,
-                args...;
-                kwargs...)
+    # if "conditional" mothods, there is a first order term in the mean
+    if approx isa Union{FOCE, FOCEI}
+      resname .+= Fname*vrandeffsorth
+    end
 
-  if vrandeffsorth isa Nothing
-    vrandeffsorth = _orth_empirical_bayes(m, subject, param, FOCEI(), args...; kwargs...)
+    ldiv!(cholesky(V).U', resname)
+
+    # This setindex! operation fails when there are no missings even though
+    # the mask is empty
+    if any(missingmask)
+      resname[missingmask] .= missing
+    end
+
+    return resname
   end
-
-  randeffstransform = totransform(m.random(param))
-  randeffs = TransformVariables.transform(randeffstransform, vrandeffsorth)
-  dist = _derived(m, subject, param, randeffs)
-
-  F = _mean_derived_vηorth_jacobian(m, subject, param, vrandeffsorth, args...; kwargs...)
-
-  _dv_keys = keys(subject.observations)
-  return map(NamedTuple{_dv_keys}(_dv_keys)) do name
-           V = Symmetric(F[name]*F[name]' + Diagonal(var.(dist[name])))
-           return cholesky(V).U'\(residuals(subject, dist)[name] .+ F[name]*vrandeffsorth)
-         end
 end
 
 """
