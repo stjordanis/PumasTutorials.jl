@@ -6,15 +6,29 @@ date: December 19th, 2019
 
 # Introduction
 
-In this tutorial we will go over how to perform bioequivalence analysis with
-the Pumas ecosystem. Bioequivalence analysis relies on using a pharmacokinetic
-endpoints such as the area under the curve (AUC) or peak concentration (Cmax).
-From a clinical study data, you can obtain these parameters using the Pumas
-NCA module (`Pumas.NCA`). See the NCA section for more details.
+The majority of drug applications go through a process intended to show that a formula is equivalent to another that has already been approved. For example, in the United States the Federal Drugs Administration (FDA) offers the Abbreviated New Drug Applications (ANDAs) which requires to submit evidence of bioequivalence. In other words, it is up to the applicant to demonstrate that the proposed product can be expected to be, for all intents and purposes, the same to a chosen a listed reference drug (LRD) in the application. An LRD is some drug that has been approved and has not been withdrawn or suspended.
 
-In order to perform an average bioequivalence analysis, we will use the
-Bioequivalence.jl package, part of the Pumas ecosystem. This module allows
-to compute various designs such as:
+Bioequivalence analysis is the study of assessing whether a drug or formula can be expected to work like another. For example, generic drugs are commonly approved through a process which requires demonstrating bioequivalence. These kinds of studies are more cost effective than other alternatives and can streamline the process for a drug to make it to the market. It is also a powerful tool to obtain affordable drug prices after the end of some form of market exclusivity (e.g., patents expiring).
+
+The core idea of bioequivalence is that the new formulation and the LRD have same therapeutic goal, target population, and active ingredient, and route of administration which comprises pharmaceutically equivalence. The second aspect to bioequivalence is assessing the formulas bioavailability. Pharmacokinetics studies how a substance does in a living organism. Bioequivalence relies on understanding how substances are absorbed, interact, and are eliminated after being administered.
+
+In practice, average bioequivalence is determined by analyzing certain pharmacokinetic/pharmacodynamic endpoints such as the area under the curve (AUC) of the substance concentration in the body (e.g., in blood), peak concentration (Cmax), time of highest concentration (Tmax), etc. These endpoints are typically obtained from performing noncompartmental analysis such as those available through the `Pumas.NCA` module.
+
+The way that an endpoint is analyzed will depend on the clinical study design, the distribution of the endpoint, and properties of the LRD. For example, some drugs may contain an active ingredient that can be toxic to the intended population if outside some narrow concentrations; those drugs are called narrow therapeutic index drugs (NTI). Other type of drugs may have significantly different rates of absorption and elimination from person to person in the targeted population; those drugs are considered highly variable index drugs (HVD). Regulatory agencies may also impose specific guidelines for certain products. However, in general most average bioequivalence studies analyze the AUC and CMax.
+
+The general guidelines for establishing average bioequivalence require that the 90% confidence interval for the average bioavailability of the test formulation is contained in the [80%, 125%] of the reference formulation (Karachi et al. 2015). Additional adjustments are performed for NTI/HVD and special drugs. In certain cases, one may also be interested in the variability of bioavailability which may be a requirement for assessing bioequivalence (Chow and Liu 2009).
+
+# Design Studies
+
+Bioequivalence studies can use various clinical trial designs such as: nonparametric, parallel, and crossover designs. The design decision is usually a function of available participants, number of formulations being tested, length of the study (e.g., number of periods), half-life of the substance (e.g., a long half-life might make too onerous to choose a design with more than a few periods), etc. The most common design is the crossover 2x2 design. This design tests a reference and a test formulation (i.e., two formulations), two groups (i.e., two sequences), over two periods. During the first period, one group receives the reference formulation while the second receives the test formulation. In the second period, the groups receive the other formulation different from the one administered during the first period. A common assumption is that between each period, there is a washout period in order to avoid any carry over effects from the formulations administrated in previous periods.
+
+Higher order crossover studies allow to obtain additional parameter estimates such as those related to the variability of bioavailability which is only available in studies with repeated subjects/formulation observations. For example, the two optimal two sequences, four periods designs are (RTTR|TRRT) and (RTRT|TRTR). The first design has a sequence with reference, treatment, treatment, and the reference while the second sequence has treatment, reference, reference, and treatment. The second design has formulations alternating rather than repeating the same formulation during consecutive periods. Lastly, other higher order crossover studies may be used to analysis bioequivalence across multiple formulations (e.g., three or four different formulations including the reference). The optimal crossover designs for more than two formulations are called Williams designs.
+
+# Bioequivalence.jl
+
+Bioequivalence.jl has implemented a series of routines to make it simple to estimate nonparametric, parallel, and crossover designs as well as adapt these for cases with NTI/HVD LRD.
+
+This module allows to compute the following designs:
 - Nonparameteric
 - Parallel (e.g., R|T, A|B|C)
 - Crossover 2x2 (e.g., RT|TR)
@@ -27,7 +41,7 @@ to compute various designs such as:
 
 ## Data Schema
 
-Every bioequivalence design must conform to the following schema,
+Data for bioequivalence studies must conform to the following schema,
 
 - `id`: a subject ID
 - `sequence`: the sequence of treatments (as a string, e.g., `"TR"`)
@@ -39,137 +53,38 @@ Let us see a few examples.
 This design may take any structure (i.e., combination of sequences).
 
 ```julia
+using Pkg
+pkg"instantiate"
 using Bioequivalence, CSV
 ```
 
-Nonparametric
-
-```julia
-nonparametric = CSV.read(joinpath(dirname(pathof(Bioequivalence)), "..", "data", "Nonparametric", "PJ2006_3_1.tsv"))
-show(nonparametric)
-```
-
-Parallel
-
-```julia
-parallel = CSV.read(joinpath(dirname(pathof(Bioequivalence)), "..", "data", "Parallel", "FSL2015_1.tsv"))
-show(parallel)
-```
-
-Crossover 2S2P
+The following is an example of data for a crossover 2x2 study (i.e., RT|TR).
 
 ```julia
 co2s2p = CSV.read(joinpath(dirname(pathof(Bioequivalence)), "..", "data", "2S2P", "SLF2014_1.tsv"))
 show(co2s2p)
 ```
 
-Balaam
+## Performing an Analysis
 
-```julia
-balaam = CSV.read(joinpath(dirname(pathof(Bioequivalence)), "..", "data", "Balaam", "CL2009_9_2_1.tsv"))
-show(balaam)
-```
-
-Dual
-
-```julia
-dual = CSV.read(joinpath(dirname(pathof(Bioequivalence)), "..", "data", "Dual", "PJ2006_4_1.tsv"))
-show(dual)
-```
-
-Crossover 2S4P1
-
-```julia
-co2s4p1 = CSV.read(joinpath(dirname(pathof(Bioequivalence)), "..", "data", "2S4P", "CL2009_9_4_1.tsv"))
-show(co2s4p1)
-```
-
-Crossover 2S4P2
-
-```julia
-co2s4p2 = CSV.read(joinpath(dirname(pathof(Bioequivalence)), "..", "data", "2S4P", "PJ2006_4_4.tsv"))
-show(co2s4p2)
-```
-
-Williams Design 3S
-
-```julia
-wd3 = CSV.read(joinpath(dirname(pathof(Bioequivalence)), "..", "data", "Williams", "PJ2006_4_5.tsv"))
-show(wd3)
-```
-
-Williams Design 4S
-
-```julia
-wd4 = CSV.read(joinpath(dirname(pathof(Bioequivalence)), "..", "data", "Williams", "PJ2006_4_6.tsv"))
-show(wd4)
-```
-
-## Main Function
-
-In order to perform a bioequivalence analysis we can use the function `read_be` which is an alias for `BioequivalenceStudy`.
-
-```julia
-@doc BioequivalenceStudy
-```
-
-## Examples
-
-Nonparameteric
-
-```julia
-nonparametric_model = read_be(nonparametric)
-```
-
-Parallel
-
-```julia
-parallel_model = read_be(parallel)
-```
-
-Crossover 2S2P
+We can analyze the data for the AUC endpoint (the default) through the `read_be` function.
 
 ```julia
 co2s2p_model = read_be(co2s2p)
 ```
 
-Balaam
+## Interpreting the Results
 
-```julia
-balaam_model = read_be(balaam)
-```
+[PLACEHOLDER]
 
-Dual
+# References
 
-```julia
-dual_model = read_be(dual)
-```
+Chow, Shein-Chung, and Jen-pei Liu. 2009. Design and Analysis of Bioavailability and Bioequivalence Studies. 3rd ed. Chapman & Hall/CRC Biostatistics Series 27. Boca Raton: CRC Press.
 
-Crossover 2S4P1
+Karachi, Pakistan, Abdur Rasheed, and Afaq Siddiqui. 2015. "Use of Geometric Mean in Bioequivalence Trials." International Journal of Statistics in Medical Research 4 (1): 114–20. DOI: [10.6000/1929-6029.2015.04.01.13](https://doi.org/10.6000/1929-6029.2015.04.01.13).
 
-```julia
-co2s2p1_model = read_be(co2s2p1)
-```
 
-Crossover 2S4P2
-
-```julia
-co2s4p2_model = read_be(co2s4p2)
-```
-
-Williams Design 3S
-
-```julia
-wd3s_model = read_be(wd3)
-```
-
-Williams Design 4S
-
-```julia
-wd4s_model = read_be(wd4)
-```
-
-```julia{echo=false,skip="notebook"}
+```julia{echo = false, skip = "notebook"}
 using PumasTutorials
 PumasTutorials.tutorial_footer(WEAVE_ARGS[:folder],WEAVE_ARGS[:file])
 ```
