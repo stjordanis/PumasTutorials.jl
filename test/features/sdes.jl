@@ -12,11 +12,13 @@ function randomfx(p)
 end
 
 function pre_f(params, randoms, subject)
-    θ = params.θ
-    η = randoms.η
-    (Ka = θ[1],
-     CL = θ[2]*exp(η[1]),
-     V  = θ[3]*exp(η[2]))
+    function pre(t)
+        θ = params.θ
+        η = randoms.η
+        (Ka = θ[1],
+         CL = θ[2]*exp(η[1]),
+         V  = θ[3]*exp(η[2]))
+    end
 end
 
 function f(du,u,p,t)
@@ -32,12 +34,14 @@ end
 
 prob = SDEProblem(f,g,nothing,nothing)
 
-init_f = (col,t) -> [0.0,0.0]
+init_f(col,t) = [0.0,0.0]
 
-function derived_f(col,sol,obstimes,subject)
+function derived_f(col,sol,obstimes,subject, param, randeffs)
+    V = col.V
+    Σ = col.Σ
     central = sol(obstimes;idxs=2)
-    conc = @. central / col.V
-    dv = @. Normal(conc, conc*col.Σ)
+    conc = @. central / V
+    dv = @. Normal(conc, conc*Σ)
     (dv=dv,)
 end
 

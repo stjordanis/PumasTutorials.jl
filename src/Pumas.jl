@@ -63,7 +63,7 @@ export conditional_nll
 export predict, residuals, wresiduals, empirical_bayes
 export ηshrinkage, ϵshrinkage
 export read_pumas, example_data
-export @model, @nca, @tvcov
+export @model, @nca
 # From StatsBase
 export fit, stderror, vcov, aic, bic, deviance, informationmatrix
 export infer, inspect

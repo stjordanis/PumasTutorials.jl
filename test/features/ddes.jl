@@ -12,11 +12,13 @@ function randomfx(p)
 end
 
 function pre_f(params, randoms, subject)
+  function pre(t)
     θ = params.θ
     η = randoms.η
     (Ka = θ[1],
-     CL = θ[2]*exp(η[1]),
-     V  = θ[3]*exp(η[2]))
+    CL = θ[2]*exp(η[1]),
+    V  = θ[3]*exp(η[2]))
+  end
 end
 
 function f(du,u,h,p,t)
@@ -31,11 +33,15 @@ h(p,t) = zeros(2)
 
 prob = DDEProblem(f,nothing,h,nothing,nothing)
 
-function derived_f(col,sol,obstimes,subject)
+function derived_f(col,sol,obstimes,subject,param,randeffs)
+    col_t = col() # no time-varying covariates, so pre is constant
+    V = col_t.V
+    Σ = col_t.Σ
+
     central = sol(obstimes;idxs=2)
-    conc = @. central / col.V
-    dv = @. Normal(conc, conc*col.Σ)
-    dv = @. rand(___dv)
+    conc = @. central / V
+    
+    dv = @. Normal(conc, conc*Σ)
     (dv=dv,)
 end
 

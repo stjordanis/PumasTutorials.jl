@@ -29,8 +29,7 @@ using Pumas, Test
 # evid = 1: indicates a dosing event
 # mdv = 1: indicates that observations are not avaialable at this dosing record
 
-subject = read_pumas(example_data("event_data/data23"),
-                         cvs = [], dvs = [:ev1,:cp,:periph,:resp])[1]
+subject = read_pumas(example_data("event_data/data23"), dvs = [:ev1,:cp,:periph,:resp])[1]
 
 
 m23 = @model begin
@@ -43,8 +42,10 @@ m23 = @model begin
         Vc      = θ[3]*exp(η[2])
         Q       = θ[4]*exp(η[3])
         Vp      = θ[5]*exp(η[4])
-        Kin     = θ[6]*exp(η[5])
-        Kout    = θ[7]*exp(η[6])
+        kin     = θ[6]
+        Kin     = kin*exp(η[5])
+        kout    = θ[7]
+        Kout    = kout*exp(η[6])
         IC50    = θ[8]*exp(η[7])
         IMAX    = θ[9]*exp(η[8])
         γ       = θ[10]*exp(η[9])
@@ -53,7 +54,7 @@ m23 = @model begin
     end
 
     @init begin
-        Resp = θ[6]/θ[7]
+        Resp = kin/kout
     end
 
     @dynamics begin
@@ -67,7 +68,7 @@ m23 = @model begin
     @derived begin
         # TODO: allow direct output of dynamical variables
         ev1    = Ev1
-        cp     = Cent / θ[3]
+        cp     = Cent ./ θ[3]
         periph = Periph
         resp   = Resp
     end
@@ -100,7 +101,7 @@ inds = vcat(1:240,242:480,482:720,722:length(subject.observations))
 @test sim[:resp] ≈ subject.observations.resp rtol=1e-6
 
 # without events
-@test_nowarn simobs(m23, Subject(id=1), param, randeffs, obstimes=(0, 1.0))
+@test_nowarn simobs(m23, Subject(id=1), param, randeffs, obstimes=[0, 1.0])
 
 # Indirect Response Model (irm2)
 
@@ -132,8 +133,7 @@ inds = vcat(1:240,242:480,482:720,722:length(subject.observations))
 # evid = 1: indicates a dosing event
 # mdv = 1: indicates that observations are not avaialable at this dosing record
 
-subject = read_pumas(example_data("event_data/data24"),
-                         cvs = [], dvs = [:ev1,:cp,:periph,:resp])[1]
+subject = read_pumas(example_data("event_data/data24"), dvs = [:ev1,:cp,:periph,:resp])[1]
 
 
 m24 = @model begin
@@ -146,8 +146,10 @@ m24 = @model begin
         Vc      = θ[3]*exp(η[2])
         Q       = θ[4]*exp(η[3])
         Vp      = θ[5]*exp(η[4])
-        Kin     = θ[6]*exp(η[5])
-        Kout    = θ[7]*exp(η[6])
+        kin     = θ[6]
+        Kin     = kin*exp(η[5])
+        kout    = θ[7]
+        Kout    = kout*exp(η[6])
         IC50    = θ[8]*exp(η[7])
         IMAX    = θ[9]*exp(η[8])
         γ       = θ[10]*exp(η[9])
@@ -156,7 +158,7 @@ m24 = @model begin
     end
 
     @init begin
-        Resp = θ[6]/θ[7]
+        Resp = kin/kout
     end
 
     @dynamics begin

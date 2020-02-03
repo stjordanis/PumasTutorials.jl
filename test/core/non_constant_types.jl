@@ -1,10 +1,13 @@
 using Pumas
 
-data = read_pumas(example_data("data1"),
-                      cvs = [:sex,:wt,:etn,:time])
+data = read_pumas(example_data("data1"), cvs = [:sex,:wt,:etn])
 
 tmp = []
-push!(tmp, Subject(obs=data[1].observations, time=data[1].time, cvs=(sex=1, wt=[51.6 for i in 1:length(data[1].covariates.time)], etn=1, time=data[1].covariates.time), evs=data[1].events))
+push!(tmp, Subject(obs=data[1].observations,
+                   time=data[1].time,
+                   cvs=(sex=1, wt=[51.6 for i in 1:length(data[1].time)], etn=1),
+                   cvstime=(sex=[0.0], wt=data[1].time, etn=[0.0]),
+                   evs=data[1].events))
 push!(tmp, data[2])
 new_data = identity.(tmp)
 
@@ -20,12 +23,11 @@ mdsl = @model begin
         η ~ MvNormal(Ω)
     end
 
-    @covariates sex wt etn time
+    @covariates sex wt etn
 
     @pre begin
-        _wt = @tvcov wt time DataInterpolations.ZeroSpline
         Ka = θ[1]
-        CL = t -> θ[2] * ((_wt(t)/70)^0.75) * (θ[4]^sex) * exp(η[1])
+        CL = θ[2] * ((wt/70)^0.75) * (θ[4]^sex) * exp(η[1])
         V  = θ[3] * exp(η[2])
     end
 
@@ -36,7 +38,7 @@ mdsl = @model begin
 
     @dynamics begin
         Depot'   := -Ka*Depot # test for `:=` handling
-        Central' =  Ka*Depot - CL(t)*conc
+        Central' =  Ka*Depot - CL*conc
     end
 
     @derived begin

@@ -10,18 +10,24 @@ m_diffeq = @model begin
 
     @covariates ka cl v
 
+    @pre begin
+        Ka = ka
+        CL = cl
+        V = v
+    end
+
     @vars begin
-        cp = cl/v
+        cp = CL/V
     end
 
     @dynamics begin
-        Depot'   = -ka*Depot
-        Central' =  ka*Depot - cp*Central
+        Depot'   = -Ka*Depot
+        Central' =  Ka*Depot - cp*Central
     end
 
     # we approximate the error by computing the conditional_nll
     @derived begin
-        conc = @. Central / v
+        conc = @. Central / V
         dv ~ @. Normal(conc, 1e-100)
     end
 end
@@ -39,7 +45,7 @@ m_analytic = @model begin
 
     # we approximate the error by computing the conditional_nll
     @derived begin
-        conc = @. Central / v
+        conc = @. Central / V
         dv ~ @. Normal(conc, 1e-100)
     end
 end
@@ -65,5 +71,5 @@ end
 @test sim_diffeq ≈ sim_analytic rtol=1e-3
 
 pop = Population(map(i -> Subject(id=i, time=i:20, cvs=subject1.covariates),1:3))
-s = simobs(m_diffeq,pop,param,randeffs)
+s = simobs(m_diffeq,pop,param,randeffs;ensemblealg = EnsembleSerial())
 @test map(x->x.times, s) == map(x->x.time, pop)

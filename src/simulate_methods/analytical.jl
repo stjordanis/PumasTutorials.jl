@@ -21,7 +21,7 @@ function _build_analytical_problem(m::PumasModel, subject::Subject, tspan, col,
                                    args...; kwargs...)
   f = m.prob isa ExplicitModel ? m.prob : m.prob.pkprob
   u0 = pk_init(f)
-  numtypecol = numtype(col)
+  numtypecol = numtype(col(0))
   # we don't want to promote units
   if numtypecol <: Unitful.Quantity || numtype(u0) <: Unitful.Quantity || numtype(tspan) <: Unitful.Quantity
     Tu0 = map(float, u0)
@@ -48,7 +48,6 @@ function DiffEqBase.solve(prob::PKPDAnalyticalProblem,
   bioav = prob.bioav
   events = prob.events
   times = prob.times
-
   u = Vector{typeof(Tu0)}(undef, length(times))
   doses = zeros(typeof(Tu0), length(times))
   rates = Vector{typeof(Tu0)}(undef, length(times))

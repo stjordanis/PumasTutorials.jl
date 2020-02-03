@@ -1,5 +1,5 @@
 ## Types
-
+include("interpolation.jl")
 """
     Event
 
@@ -198,16 +198,18 @@ Fields:
 - `events`: a vector of `Event`s.
 - `time`: a vector of time stamps for the observations
 """
-struct Subject{T1,T2,T3,T4}
+struct Subject{T1,T2,T3,T4,T5,T6}
   id::String
   observations::T1
   covariates::T2
   events::T3
   time::T4
-
-  function Subject(data, Names,
+  tvcov::T5
+  covartime::T6
+  function Subject(data::AbstractDataFrame, Names,
                    id, time, evid, amt, addl, ii, cmt, rate, ss,
-                   cvs = Symbol[], dvs = Symbol[:dv],
+                   cvs::Vector{<:Symbol} = Symbol[],
+                   dvs::Vector{<:Symbol} = Symbol[:dv],
                    event_data = true)
     ## Observations
     idx_obs = findall(iszero, data[!,evid])
@@ -227,10 +229,20 @@ struct Subject{T1,T2,T3,T4}
     # cmt handling should be reversed: it should give it the appropriate name given cmt
     # obs_cmts = :cmt ∈ Names ? data[:cmt][idx_obs] : nothing
 
-    ## Covariates
-    covariates = isempty(cvs) ? nothing : to_nt(data[!,cvs])
+    #==
+      Covariates
+      We first build individual time/covar pairs. If there are no time varying
+      covariates, we return no-ops. Else, we build individual interpolations,
+      interpolate to the total covariate time grid, and then we build a multi-
+      valued interpolant. The idea is to only do searchsorted once. We also
+      use the union of covar times to specify d_discontinuities for diffeq
+      based solvers, and to split up the analytical solution.
+    ==#
 
-
+    # build individual interpolants and use them to create a batch interpolant
+    covar_times, tvcov = build_tvcov(cvs, data, time)
+    ## FIXME we still keep the old covar
+    covariates = isempty(cvs) ? nothing : to_nt(data[!, cvs])
     ## Events
     idx_evt = setdiff(1:size(data, 1), idx_obs)
 
@@ -255,21 +267,25 @@ struct Subject{T1,T2,T3,T4}
       build_event_list!(events, event_data, t, _evid, _amt, _addl, _ii, _cmt, _rate, ss′)
     end
     sort!(events)
-    new{typeof(observations),typeof(covariates),typeof(events),typeof(_obs_times)}(
-      string(first(data[!,id])), observations, covariates, events, _obs_times)
+    new{typeof(observations),typeof(covariates),typeof(events),typeof(_obs_times), typeof(tvcov), typeof(covar_times)}(
+      string(first(data[!,id])), observations, covariates, events, _obs_times, tvcov, covar_times)
   end
 
   function Subject(;id = "1",
                    obs = nothing,
                    cvs = nothing,
+                   cvstime = obs isa AbstractDataFrame ? obs.time : nothing,
                    evs = Event[],
                    time = obs isa AbstractDataFrame ? obs.time : nothing,
                    event_data = true,)
     obs = build_observation_list(obs)
     evs = build_event_list(evs, event_data)
+    covar_times, tvcov = build_tvcov(cvs, cvstime)
+    # Check that time is well-specified (not nothing, not missing and increasing)
     _time = isnothing(time) ? nothing : Missings.disallowmissing(time)
     @assert isnothing(time) || issorted(_time) "Time is not monotonically increasing within subject"
-    new{typeof(obs),typeof(cvs),typeof(evs),typeof(_time)}(string(id), obs, cvs, evs, _time)
+
+    new{typeof(obs),typeof(cvs),typeof(evs),typeof(_time), typeof(tvcov), typeof(covar_times)}(string(id), obs, cvs, evs, _time, tvcov, covar_times)
   end
 end
 
@@ -378,6 +394,7 @@ function DataFrames.DataFrame(subject::Subject; include_covariates=true, include
   # Return df
   df
 end
+
 function _add_covariates!(df::DataFrame, subject::Subject)
   covariates = subject.covariates
   if !isa(covariates, Nothing)

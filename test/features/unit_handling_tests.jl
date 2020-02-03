@@ -2,7 +2,10 @@ using Pumas, Test
 umodel = @model begin
   @param begin
     k1 = 1.01u"mg"
-    I  = 1u"hr"
+    θI  = 1u"hr"
+  end
+  @pre begin 
+    I = θI
   end
   @init begin
     x1=k1

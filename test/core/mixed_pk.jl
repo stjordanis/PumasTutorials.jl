@@ -22,11 +22,12 @@ function rfx_f(p)
 end
 
 function col_f(param,randeffs,subject)
-    (Σ  = param.Σ,
-    Ka = param.θ[1],  # pre
+  function f(t)
+    (Ka = param.θ[1],  # pre
     CL = param.θ[2] * ((subject.covariates.wt/70)^0.75) *
          (param.θ[4]^subject.covariates.sex) * exp(randeffs.η[1]),
     V  = param.θ[3] * exp(randeffs.η[2]))
+  end
 end
 
 function init_f(col,t0)
@@ -34,7 +35,7 @@ function init_f(col,t0)
 end
 
 function onecompartment_f(u,p,t)
-    Depot, Central = p.___pk(t)
+    Depot, Central = p(t).___pk
     @SVector [Depot-Central]
 end
 

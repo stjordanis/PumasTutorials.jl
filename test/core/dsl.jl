@@ -2,8 +2,7 @@ using Pumas, Test, Random, LabelledArrays
 
 
 # Read the data# Read the data
-data = read_pumas(example_data("data1"),
-                      cvs = [:sex,:wt,:etn])
+data = read_pumas(example_data("data1"), cvs = [:sex,:wt,:etn])
 # Cut off the `t=0` pre-dose observation as it throws conditional_nll calculations
 # off the scale (variance of the simulated distribution is too small).
 for subject in data
@@ -68,16 +67,19 @@ function rfx_f(p)
 end
 
 function col_f(param,randeffs,subject)
-    (Σ  = param.Σ,
-    Ka = param.θ[1],  # pre
-    CL = param.θ[2] * ((subject.covariates.wt/70)^0.75) *
-         (param.θ[4]^subject.covariates.sex) * exp(randeffs.η[1]),
-    V  = param.θ[3] * exp(randeffs.η[2]))
+    function f(t=nothing)
+        (Ka = param.θ[1],  # pre
+        CL = param.θ[2] * ((subject.covariates.wt/70)^0.75) *
+             (param.θ[4]^subject.covariates.sex) * exp(randeffs.η[1]),
+        V  = param.θ[3] * exp(randeffs.η[2]))
+    end
 end
 
 OneCompartmentVector = @SLVector (:Depot,:Central)
 
 function init_f(col,t0)
+    c = col(t0)
+    T = typeof(c.CL/c.V)
     OneCompartmentVector(0.0,0.0)
 end
 
@@ -89,10 +91,12 @@ prob = ODEProblem(onecompartment_f,nothing,nothing,nothing)
 
 # In the function interface, the first return value is a named tuple of sampled
 # values, the second is a named tuple of distributions
-function derived_f(col,sol,obstimes,subject)
+function derived_f(col,sol,obstimes,subject,  param, randeffs)
+    Σ = param.Σ
+    V = col().V
     central = sol(obstimes;idxs=2)
-    conc = @. central / col.V
-    dv = @. Normal(conc, conc*col.Σ)
+    conc = @. central / V
+    dv = @. Normal(conc, conc*Σ) # we should move params to a separate output
     (dv=dv,)
 end
 
@@ -115,6 +119,8 @@ sol2 = solve(mobj,subject,param,randeffs)
 @test sol1[10].Central ≈ sol2[10].Central
 @test sol1[2,:] ≈ sol2[2,:]
 
+conditional_nll(mdsl,subject,param,randeffs)
+conditional_nll(mobj,subject,param,randeffs)
 @test conditional_nll(mdsl,subject,param,randeffs) ≈ conditional_nll(mobj,subject,param,randeffs) rtol=5e-3
 
 Random.seed!(1); obs_dsl = simobs(mdsl,subject,param,randeffs)
@@ -171,7 +177,7 @@ mdsl = @model begin
     end
 
     @derived begin
-      dv ~ [Binomial(30,Ka*CL) for i in 1:length(t)]
+      dv ~ @. Binomial(30, Ka*CL)
     end
 
     @observed begin

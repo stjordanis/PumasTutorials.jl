@@ -10,7 +10,7 @@ m_neut = @model begin
 
         CL ∈ RealDomain(lower=5.0,  upper=15.0, init=10.0)
         Q  ∈ RealDomain(lower=5.0,  upper=40.0, init=15.0)
-        V1 ∈ RealDomain(lower=15.0, upper=70.0, init=35.0)
+        v1 ∈ RealDomain(lower=15.0, upper=70.0, init=35.0)
         V2 ∈ RealDomain(lower=30.0, upper=250.0, init=105.0)
 
         sigma ∈ RealDomain(lower=1e-8, upper=30.0, init=1.0)
@@ -26,6 +26,11 @@ m_neut = @model begin
     end
 
     @pre begin
+        α = alpha
+        o = circ0
+        γ = gamma
+        Ka = ka
+        V1 = v1
         k10 = CL / V1
         k12 = Q / V1
         k21 = Q / V2
@@ -36,8 +41,8 @@ m_neut = @model begin
     end
 
     @dynamics begin
-        x1' = -ka * x1
-        x2' = ka * x1 - (k10 + k12) * x2 + k21 * x3
+        x1' = -Ka * x1
+        x2' = Ka * x1 - (k10 + k12) * x2 + k21 * x3
         x3' = k12 * x2 - k21 * x3
 
         # conc = x1 / V1
@@ -49,7 +54,7 @@ m_neut = @model begin
         # circ =     max(x8 + circ0, eps())  # Device for implementing a modeled initial condition
 
         # dx4 = ktr * (x4 + circ0) * ((1 - alpha * (x1 / V1) ) * ((circ0 / max(x8 + circ0, ϵ))^gamma) - 1)
-        x4' = ktr * (x4 + circ0) * ((1 - alpha * (x1 / V1) ) * ((circ0 / (x8 + circ0))^gamma) - 1)
+        x4' = ktr * (x4 + o) * ((1 - α * (x1 / V1) ) * ((o / (x8 + o))^γ) - 1)
         x5' = ktr * (x4 - x5)
         x6' = ktr * (x5 - x6)
         x7' = ktr * (x6 - x7)
@@ -59,7 +64,7 @@ m_neut = @model begin
 
     @derived begin
         cHat = @. max(x2,0.0) / V1
-        neutHat = @. x8 + circ0
+        neutHat = @. x8 + circ0  # or + o
 
         logc ~ @. Normal(log(cHat), sigma)
         logn ~ @. Normal(log(neutHat), sigmaNeut)

@@ -53,8 +53,7 @@ m_analytic = @model begin
     @derived cp = @. Central / V
 end
 
-subject = read_pumas(example_data("event_data/data2"),
-                         cvs = [], dvs = [:cp])[1]
+subject = read_pumas(example_data("event_data/data2"), dvs = [:cp])[1]
 
 param = (θ = [1.5,  #Ka
            1.0,  #CL
@@ -131,8 +130,7 @@ mlag_analytic = @model begin
     @derived cp = @. Central / V
 end
 
-subject = read_pumas(example_data("event_data/data3"),
-                         cvs = [], dvs = [:cp])[1]
+subject = read_pumas(example_data("event_data/data3"), dvs = [:cp])[1]
 
 
 param = (θ = [1.5,  #Ka
@@ -216,8 +214,7 @@ mlagbioav_analytic = @model begin
     @derived cp = @. Central / V
 end
 
-subject = read_pumas(example_data("event_data/data4"),
-                         cvs = [], dvs = [:cp])[1]
+subject = read_pumas(example_data("event_data/data4"), dvs = [:cp])[1]
 
 param = (θ = [1.5,  #Ka
            1.0,  #CL
@@ -302,8 +299,7 @@ mbioav_analytic = @model begin
     @derived cp = @. Central / V
 end
 
-subject = read_pumas(example_data("event_data/data5"),
-                         cvs = [], dvs = [:cp])[1]
+subject = read_pumas(example_data("event_data/data5"), dvs = [:cp])[1]
 
 param = (θ = [1.5,  #Ka
            1.0,  #CL
@@ -381,54 +377,53 @@ sim = simobs(mbioav_analytic, subject, param, randeffs; abstol=1e-14, reltol=1e-
 # evid = 1: indicates a dosing event
 # mdv = 1: indicates that observations are not avaialable at this dosing record
 
-subject = read_pumas(example_data("event_data/data6"),
-                         cvs = [], dvs = [:cp])[1]
+  subject = read_pumas(example_data("event_data/data6"), dvs = [:cp])[1]
 
-param = (θ = [1.5,  #Ka
-           1.0,  #CL
-           30.0, #V
-           0.812,#bioav
-           ],)
+  param = (θ = [1.5,  #Ka
+             1.0,  #CL
+             30.0, #V
+             0.812,#bioav
+             ],)
 
-function analytical_ss_update(u0,rate,duration,deg,bioav,ii)
-    rate_on_duration = duration*bioav - ii
-    rate_off_duration = ii - rate_on_duration
-    ee = exp(deg*rate_on_duration)
-    u_rate_off = inv(ee)*(-2rate + ee*2rate + deg*u0)/deg
-    ee2 = exp(deg*rate_off_duration)
-    u = inv(ee2)*(-rate + ee2*rate + deg*u_rate_off)/deg
-    u
-end
-
-u0 = 0.0
-let
-  global u0
-  for i in 1:200
-      u0 = analytical_ss_update(u0,10,10,param.θ[2]/param.θ[3],param.θ[4],6)
+  function analytical_ss_update(u0,rate,duration,deg,bioav,ii)
+      rate_on_duration = duration*bioav - ii
+      rate_off_duration = ii - rate_on_duration
+      ee = exp(deg*rate_on_duration)
+      u_rate_off = inv(ee)*(-2rate + ee*2rate + deg*u0)/deg
+      ee2 = exp(deg*rate_off_duration)
+      u = inv(ee2)*(-rate + ee2*rate + deg*u_rate_off)/deg
+      u
   end
-end
 
-sol = solve(mbioav_diffeq, subject, param, randeffs; abstol=1e-14, reltol=1e-14)
-@test sol[1][2] ≈ u0
+  u0 = 0.0
+  let
+    global u0
+    for i in 1:200
+        u0 = analytical_ss_update(u0,10,10,param.θ[2]/param.θ[3],param.θ[4],6)
+    end
+  end
 
-sol = solve(mbioav_analytic, subject, param, randeffs; abstol=1e-14, reltol=1e-14)
-@test sol[3][2] ≈ u0
+  sol = solve(mbioav_diffeq, subject, param, randeffs; abstol=1e-14, reltol=1e-14)
+  @test sol[1][2] ≈ u0
 
-sol = solve(mbioav_diffeq, subject, param, randeffs; abstol=1e-14, reltol=1e-14)
-@test 1000sol(subject.time;idxs=2,continuity=:left)[2:end]./30 ≈ subject.observations.cp[2:end] rtol=1e-5
-@test sol.t == subject.time
+  sol = solve(mbioav_analytic, subject, param, randeffs; abstol=1e-14, reltol=1e-14)
+  @test sol[3][2] ≈ u0
 
-sol = solve(mbioav_diffeq, subject, param, randeffs; saveat = Float64[] , abstol=1e-14, reltol=1e-14)
-@test 1000sol(subject.time;idxs=2,continuity=:left)[2:end]./30 ≈ subject.observations.cp[2:end] rtol=1e-5
+  sol = solve(mbioav_diffeq, subject, param, randeffs; abstol=1e-14, reltol=1e-14)
+  @test 1000sol(subject.time;idxs=2,continuity=:left)[2:end]./30 ≈ subject.observations.cp[2:end] rtol=1e-5
+  @test sol.t == subject.time
 
-sol = solve(mbioav_diffeq, subject, param, randeffs; abstol=1e-14, reltol=1e-14, saveat=subject.time, continuity=:left)
-@test sol.t == subject.time
+  sol = solve(mbioav_diffeq, subject, param, randeffs; saveat = Float64[] , abstol=1e-14, reltol=1e-14)
+  @test 1000sol(subject.time;idxs=2,continuity=:left)[2:end]./30 ≈ subject.observations.cp[2:end] rtol=1e-5
 
-sim = simobs(mbioav_diffeq, subject, param, randeffs; abstol=1e-14, reltol=1e-14, continuity=:left)
-@test 1000sim[:cp] ≈ subject.observations.cp rtol=1e-5
+  sol = solve(mbioav_diffeq, subject, param, randeffs; abstol=1e-14, reltol=1e-14, saveat=subject.time, continuity=:left)
+  @test sol.t == subject.time
 
-sim = simobs(mbioav_analytic, subject, param, randeffs; abstol=1e-14, reltol=1e-14, continuity=:left)
-@test 1000sim[:cp] ≈ subject.observations.cp rtol=1e-6
+  sim = simobs(mbioav_diffeq, subject, param, randeffs; abstol=1e-14, reltol=1e-14, continuity=:left)
+  @test 1000sim[:cp] ≈ subject.observations.cp rtol=1e-5
+
+  sim = simobs(mbioav_analytic, subject, param, randeffs; abstol=1e-14, reltol=1e-14, continuity=:left)
+  @test 1000sim[:cp] ≈ subject.observations.cp rtol=1e-6
 
 ###############################
 # Test 7
@@ -459,8 +454,7 @@ sim = simobs(mbioav_analytic, subject, param, randeffs; abstol=1e-14, reltol=1e-
 # evid = 1: indicates a dosing event
 # mdv = 1: indicates that observations are not avaialable at this dosing record
 
-subject = read_pumas(example_data("event_data/data7"),
-                         cvs = [], dvs = [:cp])[1]
+subject = read_pumas(example_data("event_data/data7"), dvs = [:cp])[1]
 
 param = (θ = [ 1.5,  #Ka
             1.0,  #CL
@@ -515,8 +509,7 @@ sim = simobs(mbioav_analytic, subject, param, randeffs; abstol=1e-14, reltol=1e-
 # evid = 1: indicates a dosing event
 # mdv = 1: indicates that observations are not avaialable at this dosing record
 
-subject = read_pumas(example_data("event_data/data8"),
-                         cvs = [], dvs = [:cp])[1]
+subject = read_pumas(example_data("event_data/data8"), dvs = [:cp])[1]
 
 param = (θ = [ 1.5,  #Ka
             1.0,  #CL
@@ -573,8 +566,7 @@ sim = simobs(mbioav_analytic, subject, param, randeffs; abstol=1e-14, reltol=1e-
 # evid = 1: indicates a dosing event
 # mdv = 1: indicates that observations are not avaialable at this dosing record
 
-subject = read_pumas(example_data("event_data/data9"),
-                         cvs = [], dvs = [:cp])[1]
+subject = read_pumas(example_data("event_data/data9"), dvs = [:cp])[1]
 
 param = (θ = [ 1.5,  #Ka
             1.0,  #CL
@@ -624,8 +616,7 @@ sim = simobs(mbioav_analytic, subject, param, randeffs; abstol=1e-12, reltol=1e-
 # evid = 1: indicates a dosing event
 # mdv = 1: indicates that observations are not avaialable at this dosing record
 
-subject = read_pumas(example_data("event_data/data10"),
-                         cvs = [], dvs = [:cp])[1]
+subject = read_pumas(example_data("event_data/data10"), dvs = [:cp])[1]
 
 param = (θ = [ 1.5,  #Ka
             1.0,  #CL
@@ -676,8 +667,7 @@ sim = simobs(mbioav_analytic, subject, param, randeffs; abstol=1e-12, reltol=1e-
 # evid = 1: indicates a dosing event
 # mdv = 1: indicates that observations are not avaialable at this dosing record
 
-subject = read_pumas(example_data("event_data/data11"),
-                         cvs = [], dvs = [:cp])[1]
+subject = read_pumas(example_data("event_data/data11"), dvs = [:cp])[1]
 
 param = (θ = [ 1.5,  #Ka
             1.0,  #CL
@@ -724,8 +714,7 @@ sim = simobs(mbioav_analytic, subject, param, randeffs; abstol=1e-12, reltol=1e-
 # evid = 1: indicates a dosing event
 # mdv = 1: indicates that observations are not avaialable at this dosing record
 
-subject = read_pumas(example_data("event_data/data12"),
-                         cvs = [], dvs = [:cp])[1]
+subject = read_pumas(example_data("event_data/data12"), dvs = [:cp])[1]
 
 param = (θ = [ 1.5,  #Ka
             1.0,  #CL
@@ -766,8 +755,7 @@ sim = simobs(m_analytic, subject, param, randeffs; abstol=1e-12, reltol=1e-12)
 # evid = 1: indicates a dosing event
 # mdv = 1: indicates that observations are not avaialable at this dosing record
 
-subject = read_pumas(example_data("event_data/data13"),
-                         cvs = [], dvs = [:cp])[1]
+subject = read_pumas(example_data("event_data/data13"), dvs = [:cp])[1]
 
 param = (θ = [ 1.5,  #Ka
             1.0,  #CL
@@ -854,8 +842,7 @@ mbld_analytic = @model begin
     @derived cp = @. Central / V
 end
 
-subject = read_pumas(example_data("event_data/data14"),
-                         cvs = [], dvs = [:cp])[1]
+subject = read_pumas(example_data("event_data/data14"), dvs = [:cp])[1]
 
 param = (θ = [
           1.5,  #Ka
@@ -893,8 +880,7 @@ sim = simobs(mbld_analytic, subject, param, randeffs; abstol=1e-12, reltol=1e-12
 # evid = 1: indicates a dosing event
 # mdv = 1: indicates that observations are not avaialable at this dosing record
 
-subject = read_pumas(example_data("event_data/data15"),
-                         cvs = [], dvs = [:cp])[1]
+subject = read_pumas(example_data("event_data/data15"), dvs = [:cp])[1]
 
 param = (θ = [
            1.5,  #Ka
@@ -938,8 +924,7 @@ maximum(sim[:cp] - subject.observations.cp)
 # evid = 1: indicates a dosing event
 # mdv = 1: indicates that observations are not avaialable at this dosing record
 
-subject = read_pumas(example_data("event_data/data16"),
-                         cvs = [], dvs = [:cp])[1]
+subject = read_pumas(example_data("event_data/data16"), dvs = [:cp])[1]
 
 param = (θ = [
               1.5,  #Ka
@@ -977,8 +962,7 @@ sim = simobs(m_analytic, subject, param, randeffs; abstol=1e-12, reltol=1e-12, c
 # evid = 1: indicates a dosing event
 # mdv = 1: indicates that observations are not avaialable at this dosing record
 
-subject = read_pumas(example_data("event_data/data17"),
-                         cvs = [], dvs = [:cp])[1]
+subject = read_pumas(example_data("event_data/data17"), dvs = [:cp])[1]
 
 param = (θ = [
               1.0,  #Ka
@@ -1008,8 +992,7 @@ sim = simobs(m_analytic, subject, param, randeffs; abstol=1e-12, reltol=1e-12)
 # evid = 1: indicates a dosing event
 # mdv = 1: indicates that observations are not avaialable at this dosing record
 
-subject = read_pumas(example_data("event_data/data18"),
-                         cvs = [], dvs = [:cp])[1]
+subject = read_pumas(example_data("event_data/data18"), dvs = [:cp])[1]
 
 param = (θ = [
             1.0,  #Ka
@@ -1089,8 +1072,7 @@ mparbl_analytic = @model begin
     @derived cp = @. Central / V
 end
 
-subject = read_pumas(example_data("event_data/data19"),
-                         cvs = [], dvs = [:cp])[1]
+subject = read_pumas(example_data("event_data/data19"), dvs = [:cp])[1]
 
 param = (θ = [
             0.8,  #Ka1
@@ -1160,8 +1142,7 @@ mbl2_analytic = @model begin
     @derived cp = @. Central / V
 end
 
-subject = read_pumas(example_data("event_data/data20"),
-                         cvs = [], dvs = [:cp])[1]
+subject = read_pumas(example_data("event_data/data20"), dvs = [:cp])[1]
 
 param = (θ = [
             0.5,  #Ka1
@@ -1192,8 +1173,7 @@ sim = simobs(mbl2_analytic, subject, param, randeffs; abstol=1e-12, reltol=1e-12
 # evid = 4: indicates a dosing event where time and amounts in all compartments are reset to zero
 # mdv = 1: indicates that observations are not avaialable at this dosing record
 
-subject = read_pumas(example_data("event_data/data21"),
-                         cvs = [], dvs = [:cp])[1]
+subject = read_pumas(example_data("event_data/data21"), dvs = [:cp])[1]
 
 param = (θ = [
             1.5,  #Ka
@@ -1223,8 +1203,7 @@ sim = simobs(m_analytic, subject, param, randeffs; abstol=1e-12, reltol=1e-12, c
 # evid = 4: indicates a dosing event where time and amounts in all compartments are reset to zero
 # mdv = 1: indicates that observations are not avaialable at this dosing record
 
-subject = read_pumas(example_data("event_data/data22"),
-                         cvs = [], dvs = [:cp])[1]
+subject = read_pumas(example_data("event_data/data22"), dvs = [:cp])[1]
 
 param = (θ = [
             1.5,  #Ka

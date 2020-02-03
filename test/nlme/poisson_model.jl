@@ -19,12 +19,13 @@ using Pumas, Test
     @pre begin
       baseline = θ₁*exp(η[1])
       d50 = θ₂
+      dose_d50 = dose/(dose + d50)
     end
 
     @covariates dose
 
     @derived begin
-      dv ~ @. Poisson(baseline*(1-dose/(dose + d50)))
+      dv ~ @. Poisson(baseline*(1 - dose_d50))
     end
   end
 

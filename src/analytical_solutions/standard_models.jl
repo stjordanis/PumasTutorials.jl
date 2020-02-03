@@ -5,7 +5,8 @@ export Central1, Depots1Central1, Depots2Central1,
 abstract type ExplicitModel end
 
 # Generic ExplicitModel solver. Uses an analytical eigen solution.
-function _analytical_solve(m::M, t, t₀, amounts, doses, p, rates) where M<:ExplicitModel
+function _analytical_solve(m::M, t, t₀, amounts, doses, pre, rates) where M<:ExplicitModel
+  p = pre(t₀)
   amt₀ = amounts + doses   # initial values for cmt's + new doses
   Λ, 𝕍 = eigen(m, p)
 

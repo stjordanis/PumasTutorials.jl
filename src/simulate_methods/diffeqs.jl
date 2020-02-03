@@ -5,9 +5,10 @@ function _build_diffeq_problem(m::PumasModel, subject::Subject, args...;
   prob = typeof(m.prob) <: DiffEqBase.AbstractJumpProblem ? m.prob.prob : m.prob
   tspan = prob.tspan
   col = prob.p
+  col0 = col(0) # would be great to get the numtype without this
   u0 = prob.u0
 
-  T = promote_type(numtype(col), numtype(u0), numtype(tspan))
+  T = promote_type(numtype(col0), numtype(u0), numtype(tspan))
   # we don't want to promote units
   if T <: Unitful.Quantity
     Tu0 = map(float, u0)
@@ -21,16 +22,18 @@ function _build_diffeq_problem(m::PumasModel, subject::Subject, args...;
   ft = DiffEqBase.parameterless_type(typeof(prob.f))
 
   # figure out callbacks and convert type for tspan if necessary
+  # d_discontinuities are used to inform diffeq about the places where things change
+  # suddenly in the model and introduce discontinuities in the derivates (such as
+  # time varying covariates etc)
   tstops,cb = ith_subject_cb(col,subject,Tu0,tspan[1],typeof(prob),saveat,save_discont,continuity)
+  # tstops,cb,d_discontinuities = ith_subject_cb(col,subject,Tu0,tspan[1],typeof(prob),saveat,save_discont,continuity)
   Tt = promote_type(numtype(tstops), numtype(tspan))
   tspan = Tt.(tspan)
   :callback ∈ keys(prob.kwargs) && (cb = CallbackSet(cb, prob.kwargs[:callback]))
-
   # Remake problem of correct type
   new_f = make_function(prob,fd)
-
   remake(m.prob; f=new_f, u0=Tu0, tspan=tspan, callback=cb, saveat=saveat,
-                 tstops = tstops,
+                 tstops = tstops,# d_discontinuities=d_discontinuities,
                  save_first = !isnothing(saveat) && tspan[1] ∈ saveat)
 end
 
@@ -53,16 +56,15 @@ function build_pkpd_problem(_prob::DiffEqBase.AbstractJumpProblem,set_parameters
                                             _prob.jump_callback,_prob.variable_jumps),tstops
 end
 
-function ith_subject_cb(p,datai::Subject,u0,t0,ProbType,saveat,save_discont,continuity)
-  isempty(datai.events) && return Float64[], nothing
+function ith_subject_cb(col,datai::Subject,u0,t0,ProbType,saveat,save_discont,continuity)
+  isempty(datai.events) && return Float64[], nothing, Float64[]
   ss_abstol = 1e-12 # TODO: Make an option
   ss_reltol = 1e-12 # TODO: Make an option
   ss_max_iters = 1000
-
-  lags,bioav,rate,duration = get_magic_args(p,u0,t0)
+  lags,bioav,rate,duration = get_magic_args(col,u0,t0)
   events = adjust_event(datai.events,u0,lags,bioav,rate,duration)
-
   tstops = sorted_approx_unique(events)
+  d_discontinuities = datai.covartime
   counter::Int = 1
   ss_mode = Ref(false)
   ss_time = Ref(-one(eltype(tstops)))
@@ -406,6 +408,20 @@ end
 DiffEqWrapper(f::DiffEqWrapper) = DiffEqWrapper(f.f,0,f.rates)
 
 function (f::DiffEqWrapper)(u,p,t)
+  # Because it is impossible (or unclear) how you can easily have MTK call
+  # `p` and then unpack it, we intercept the solve flow here and evaluate
+  # the `pre` block at `t` and pass it on as a `NamedTuple`
+  out = f.f(u,p(t),t)
+  if f.rates_on > 0
+    return out + f.rates
+  else
+    return out
+  end
+end
+function (f::DiffEqWrapper)(u,p::NamedTuple,t)
+  # Because it is impossible (or unclear) how you can easily have MTK call
+  # `p` and then unpack it, we intercept the solve flow here and evaluate
+  # the `pre` block at `t` and pass it on as a `NamedTuple`
   out = f.f(u,p,t)
   if f.rates_on > 0
     return out + f.rates
@@ -413,12 +429,13 @@ function (f::DiffEqWrapper)(u,p,t)
     return out
   end
 end
+
 function (f::DiffEqWrapper)(du,u,p,t)
-  f.f(du,u,p,t)
+  f.f(du,u,p(t),t)
   f.rates_on > 0 && (du .+= f.rates)
 end
 function (f::DiffEqWrapper)(u,h::DiffEqBase.AbstractHistoryFunction,p,t)
-  f.f(du,u,h,p,t)
+  f.f(du,u,h,p(t),t)
   if f.rates_on > 0
     return out + rates
   else
@@ -426,6 +443,6 @@ function (f::DiffEqWrapper)(u,h::DiffEqBase.AbstractHistoryFunction,p,t)
   end
 end
 function (f::DiffEqWrapper)(du,u,h::DiffEqBase.AbstractHistoryFunction,p,t)
-  f.f(du,u,h,p,t)
+  f.f(du,u,h,p(t),t)
   f.rates_on > 0 && (du .+= f.rates)
 end

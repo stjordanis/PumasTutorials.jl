@@ -3,7 +3,7 @@ using Pumas, Test, StatsFuns
 @testset "Logistic regression example" begin
 
     data = read_pumas(joinpath(dirname(pathof(Pumas)), "..", "examples", "pain_remed.csv"),
-                          cvs = [:arm, :dose, :conc, :painord, :time];
+                          cvs = [:arm, :dose, :conc, :painord];
                           time=:time, event_data=false)
 
     mdsl = @model begin
@@ -17,7 +17,7 @@ using Pumas, Test, StatsFuns
             η ~ MvNormal(Ω)
         end
 
-        @covariates arm dose time
+        @covariates arm dose
 
         @pre begin
             rx = dose > 0 ? 1 : 0
@@ -25,7 +25,7 @@ using Pumas, Test, StatsFuns
         end
 
         @derived begin
-            dv ~ Bernoulli(logistic(LOGIT))
+            dv ~ @. Bernoulli(logistic(LOGIT))
         end
 
     end

@@ -64,11 +64,13 @@ end
                 σ = RealDomain(lower=0.0, init=1.0)))
     rfx_f(p) = ParamSet((η=MvNormal(p.Ω),))
     function col_f(param,randeffs,subject)
-        cov = subject.covariates
-        (Ka = param.θ[1],
-        CL = param.θ[2] * ((cov.wt/70)^0.75) * (param.θ[4]^cov.sex) * exp(randeffs.η[1]),
-        V  = param.θ[3] * exp(randeffs.η[2]),
-        σ = param.σ)
+        function pre(t=nothing)
+            cov = subject.covariates
+            (Ka = param.θ[1],
+            CL = param.θ[2] * ((cov.wt/70)^0.75) * (param.θ[4]^cov.sex) * exp(randeffs.η[1]),
+            V  = param.θ[3] * exp(randeffs.η[2]),
+            σ = param.σ)
+        end
     end
     init_f(col,t0) = @LArray [0.0, 0.0] (:Depot, :Central)
     function onecompartment_f(du,u,p,t)
@@ -77,11 +79,13 @@ end
         du.Central = p.Ka*u.Depot - p.CL*cp
     end
     prob = ODEProblem(onecompartment_f,nothing,nothing,nothing)
-    function derived_f(col,sol,obstimes,subject)
+    function derived_f(col,sol,obstimes,subject, param, randeffs)
+        col_t = col() # no time covar
+        V = col_t.V
         central = sol(obstimes;idxs=2)
-        conc = @. central / col.V
+        conc = @. central / V
         cmax = maximum(conc)
-        (conc = conc, cmax = cmax, dv = @. Normal(conc, conc*col.σ))
+        (conc = conc, cmax = cmax, dv = @. Normal(conc, conc*param.σ))
     end
     model_ip = PumasModel(p,rfx_f,col_f,init_f,prob,derived_f)
 
@@ -158,8 +162,7 @@ end
         end
     end
 
-    subject = read_pumas(example_data("event_data/data2"),
-                         cvs = [], dvs = [:cp])[1]
+    subject = read_pumas(example_data("event_data/data2"), dvs = [:cp])[1]
 
     θ₀ = [1.5, 1.0, 30.0, 5.0]
     param = (θ = θ₀,)
@@ -200,8 +203,7 @@ end
         end
     end
 
-    subject = read_pumas(example_data("event_data/data5"),
-                         cvs = [], dvs = [:cp])[1]
+    subject = read_pumas(example_data("event_data/data5"), dvs = [:cp])[1]
 
     θ₀ = [1.5, 1.0, 30.0, 0.412]
     param = (θ = θ₀,)

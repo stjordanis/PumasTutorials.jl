@@ -43,7 +43,7 @@ end
   @test isa(read_pumas(data), Population)
   append!(data, DataFrame(time = 1, dv = rand(), evid = 0))
   @test_throws AssertionError read_pumas(data)
-  @test_throws AssertionError Subject(obs=DataFrame(x=[2:3;]), time=1:-1:0)
+  @test_throws AssertionError Subject(obs=DataFrame(x=[2:3;], time=1:-1:0))
 end
 @testset "event_data" begin
   data = DataFrame(time = [0, 1, 2, 2], amt = zeros(4), dv = rand(4), evid = 1)

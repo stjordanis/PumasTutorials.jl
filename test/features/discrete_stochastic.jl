@@ -12,11 +12,13 @@ function randomfx(p)
 end
 
 function pre_f(params, randoms, subject)
+  function pre(t)
     θ = params.θ
     η = randoms.η
     (Ka = θ[1],
      CL = θ[2]*exp(η[1]),
      V  = θ[3]*exp(η[2]))
+  end
 end
 
 prob = DiscreteProblem([0.0,0.0],(0.0,72.0))
@@ -37,11 +39,14 @@ jump_prob = JumpProblem(prob,Direct(),jump1,jump2)
 
 init_f = (col,t) -> [0.0,0.0]
 
-function derived_f(col,sol,obstimes,subject)
-    central = sol(obstimes;idxs=2)
-    conc = @. central / col.V
-    dv = @. Normal(conc, conc*col.Σ)
-    (dv=dv,)
+function derived_f(col, sol, obstimes, subject, param, randeffs)
+  col_t = col() # pre is not time-varying
+  V = col_t.V
+  Σ = param.Σ
+  central = sol(obstimes;idxs=2)
+  conc = @. central / V
+  dv = @. Normal(conc, conc*Σ)
+  (dv=dv,)
 end
 
 model = Pumas.PumasModel(p,randomfx,pre_f,init_f,jump_prob,derived_f)

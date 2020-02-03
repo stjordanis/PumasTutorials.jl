@@ -37,11 +37,11 @@ jump_prob = JumpProblem(prob,Direct(),jump)
 
 init_f = (col,t) -> [0.0,0.0]
 
-function derived_f(col,sol,obstimes,subject)
+function derived_f(col,sol,obstimes,subject, param, randeffs)
     central = sol(obstimes;idxs=2)
     conc = @. central / col.V
 
-    dv = @. Normal(conc, conc*col.Σ)
+    dv = @. Normal(conc, conc*param.Σ)
     (dv=dv,)
 end
 

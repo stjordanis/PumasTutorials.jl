@@ -11,8 +11,8 @@ function bwkg(gawk, m_bwg_ga40 = 3000)
 end
 
 df = DataFrame(id = repeat(1:7, inner = (30 * 24) + 1),
-               gawkbirth=repeat(collect(28:2:40), inner = (30 * 24) + 1),
-               timeH = repeat(collect(0:1:30*24), outer=7)) |>
+             gawkbirth=repeat(collect(28:2:40), inner = (30 * 24) + 1),
+             timeH = repeat(collect(0:1:30*24), outer=7)) |>
   @mutate(pnad = round.(_.timeH/24, digits = 4)) |>
   @mutate(gawk = round.(_.gawkbirth + (_.pnad/7), digits = 4)) |>
   @mutate(wtkg = round.(bwkg(_.gawk), digits = 4)) |>
@@ -30,7 +30,7 @@ df = identity.(df)
 
 @testset "Model with time varying covariates" begin
 
-  pd = read_pumas(df, dvs=[:dv], cvs=[:gawkbirth,:pnad,:gawk,:wtkg, :time])
+  pd = read_pumas(df, dvs=[:dv], cvs=[:pnad,:gawk,:wtkg])
 
   tvcov_model_normal = @model begin
     @param begin
@@ -47,25 +47,22 @@ df = identity.(df)
       η ~ MvNormal(Ω)
     end
 
-    @covariates pnad gawk wtkg time
+    @covariates pnad gawk wtkg
 
     @pre begin
-      _pnad = @tvcov pnad time
-      _gawk = @tvcov gawk time
-      _wtkg = @tvcov wtkg time
-      mat = t -> _pnad(t) / (ec50 + _pnad(t))
-      cl = t -> tvcl * mat(t) * (_gawk(t)/34)^gaeffect * (1 - mat(t)) * _wtkg(t)^0.75 * exp(η[1])
-      v = t -> tvv * _wtkg(t) * exp(η[2])
+      mat = pnad / (ec50 + pnad)
+      cl = tvcl * mat * (gawk/34)^gaeffect * (1 - mat) * wtkg^0.75 * exp(η[1])
+      v = tvv * wtkg * exp(η[2])
       ka = tvka
     end
 
     @dynamics begin
       Depot' = -ka*Depot
-      Central' =  ka*Depot - (cl(t)/v(t))*Central
+      Central' =  ka*Depot - (cl/v)*Central
     end
 
     @derived begin
-      cp = @. (Central / v(t))
+      cp = @. (Central / v)
       dv ~ @. Normal(cp, sqrt(cp^2*σ_prop))
     end
   end
@@ -79,6 +76,7 @@ df = identity.(df)
     Ω = Diagonal([0.09,0.09]),
     σ_prop = 0.04
   )
+
 
   tvcov_model_gamma = @model begin
     @param begin
@@ -95,25 +93,22 @@ df = identity.(df)
       η ~ MvNormal(Ω)
     end
 
-    @covariates pnad gawk wtkg time
+    @covariates pnad gawk wtkg
 
     @pre begin
-      _pnad = @tvcov pnad time
-      _gawk = @tvcov gawk time
-      _wtkg = @tvcov wtkg time
-      mat = t -> _pnad(t) / (ec50 + _pnad(t))
-      cl = t -> tvcl * mat(t) * (_gawk(t)/34)^gaeffect * (1 - mat(t)) * _wtkg(t)^0.75 * exp(η[1])
-      v = t -> tvv * _wtkg(t) * exp(η[2])
+      mat = pnad / (ec50 + pnad)
+      cl = tvcl * mat * (gawk/34)^gaeffect * (1 - mat) * wtkg^0.75 * exp(η[1])
+      v = tvv * wtkg * exp(η[2])
       ka = tvka
     end
 
     @dynamics begin
       Depot' = -ka*Depot
-      Central' =  ka*Depot - (cl(t)/v(t))*Central
+      Central' =  ka*Depot - (cl/v)*Central
     end
 
     @derived begin
-      cp = @. (Central / v(t))
+      cp = @. (Central / v)
       dv ~ @. Gamma(ν, cp/ν)
     end
   end
@@ -133,76 +128,76 @@ df = identity.(df)
   sim_df = DataFrame(obs)
   est_df = sim_df |>
     @mutate(cmt = ifelse(ismissing(_.cmt), 2, _.cmt)) |> DataFrame
-  tvcov_pd = read_pumas(est_df, dvs = [:dv], cvs = [:gawkbirth,:pnad,:gawk,:wtkg, :time])
+  tvcov_pd = read_pumas(est_df, dvs = [:dv], cvs = [:pnad,:gawk,:wtkg])
 
   @testset "Fit proportional (normal) error model" begin
     ft_normal = fit(
-      tvcov_model_normal,
-      tvcov_pd, param_normal,
-      Pumas.FOCEI(),
-      optimize_fn = Pumas.DefaultOptimizeFN(
-        show_trace=true,
-        # Use a very rough convergence tolerance to avoid time out on CI. Once the time-varying
-        # covariate handling has been fixed, it should be possible to use the default tolerance
-        g_tol=1e-1,
-      ),
-    )
+        tvcov_model_normal,
+        tvcov_pd, param_normal,
+        Pumas.FOCEI();
+        optimize_fn = Pumas.DefaultOptimizeFN(
+          show_trace=true,
+          # Use a very rough convergence tolerance to avoid time out on CI. Once the time-varying
+          # covariate handling has been fixed, it should be possible to use the default tolerance
+          g_tol=1e-1,
+        ),
+      )
+    
+    # FIXME! Test how based below requires using the default convergence tolerance so enable/adjust once
+    # time-vraying covarites have been made faster. Meanwhile we just test deviance with a rough tolerance
+    @test deviance(ft_normal) ≈ 8784.236097321953 rtol=1e-5
+    # @test sprint((io, t) -> show(io, MIME"text/plain"(), t), ft_normal) == """
+    # FittedPumasModel
 
-# FIXME! Tehs how based below requires using the default convergence tolerance so enable/adjust once
-# time-vraying covarites have been made faster. Meanwhile we just test deviance with a rough tolerance
-    @test deviance(ft_normal) ≈ 8802.6439 rtol=1e-5
-#     @test sprint((io, t) -> show(io, MIME"text/plain"(), t), ft_normal) == """
-# FittedPumasModel
+    # Successful minimization:                true
 
-# Successful minimization:                true
+    # Likelihood approximation:        Pumas.FOCEI
+    # Deviance:                          8802.6439
+    # Total number of observation records:    4669
+    # Number of active observation records:   4669
+    # Number of subjects:                        7
 
-# Likelihood approximation:        Pumas.FOCEI
-# Deviance:                          8802.6439
-# Total number of observation records:    4669
-# Number of active observation records:   4669
-# Number of subjects:                        7
-
-# -----------------------
-#              Estimate
-# -----------------------
-# tvcl          0.15967
-# tvv           3.7096
-# tvka          0.88369
-# ec50         15.0
-# gaeffect     10.97
-# Ω₁,₁          0.071157
-# Ω₂,₂          0.085358
-# σ_prop        0.040622
-# -----------------------
-# """
+    # -----------------------
+    #              Estimate
+    # -----------------------
+    # tvcl          0.15967
+    # tvv           3.7096
+    # tvka          0.88369
+    # ec50         15.0
+    # gaeffect     10.97
+    # Ω₁,₁          0.071157
+    # Ω₂,₂          0.085358
+    # σ_prop        0.040622
+    # -----------------------
+    # """
   end
 
-# Currently disable since it's too slow. Enable once evaluation of time-varying covariates is faster
-#   @test "Fit gamma model" begin
-#     ft_gamma = fit(tvcov_model_gamma, tvcov_pd, param_gamma, Pumas.FOCE(), optimize_fn = Pumas.DefaultOptimizeFN(show_trace=true))
-#     @test sprint((io, t) -> show(io, MIME"text/plain"(), t), ft_normal) == """
-# FittedPumasModel
+    # Currently disable since it's too slow. Enable once evaluation of time-varying covariates is faster
+  # @testset "Fit gamma model" begin
+  #     ft_gamma = fit(tvcov_model_gamma, tvcov_pd, param_gamma, Pumas.FOCE(), optimize_fn = Pumas.DefaultOptimizeFN(show_trace=true))
+  #   #   @test sprint((io, t) -> show(io, MIME"text/plain"(), t), ft_normal) == """
+  #   # FittedPumasModel
 
-# Successful minimization:                true
+  #   # Successful minimization:                true
 
-# Likelihood approximation:         Pumas.FOCE
-# Deviance:                          8939.5062
-# Total number of observation records:    4669
-# Number of active observation records:   4669
-# Number of subjects:                        7
+  #   # Likelihood approximation:         Pumas.FOCE
+  #   # Deviance:                          8939.5062
+  #   # Total number of observation records:    4669
+  #   # Number of active observation records:   4669
+  #   # Number of subjects:                        7
 
-# -----------------------
-#              Estimate
-# -----------------------
-# tvcl          0.15977
-# tvv           3.6998
-# tvka          0.89359
-# ec50         14.917
-# gaeffect     10.952
-# Ω₁,₁          0.071966
-# Ω₂,₂          0.087925
-# ν            23.217
-# -----------------------
-# """
-#   end
+  #   # -----------------------
+  #   #              Estimate
+  #   # -----------------------
+  #   # tvcl          0.15977
+  #   # tvv           3.6998
+  #   # tvka          0.89359
+  #   # ec50         14.917
+  #   # gaeffect     10.952
+  #   # Ω₁,₁          0.071966
+  #   # Ω₂,₂          0.087925
+  #   # ν            23.217
+  #   # -----------------------
+  #   # """
+  #   end
 end

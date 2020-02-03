@@ -7,7 +7,7 @@ cvs = ((WT = round(clamp(rand(Normal(80, 30)), 50, 110), digits = 2),
         SEX = rand(Binomial(1, 0.7)),
         BCRCL = round(clamp(rand(Normal(90, 20)), 40, 120), digits = 2))
         for subj in 1:24)
-population = Population(map((id, cvs, evs) -> Subject(id = id, cvs = cvs, evs = evs),1:24,cvs,evs))
+population = Population(map((id, cvs, evs) -> Subject(id = id, cvs = cvs, evs = evs),collect(1:24),cvs,evs))
 
 
 model = @model begin
@@ -55,10 +55,10 @@ model = @model begin
     end
 
     @vars begin
-    cp = Cent/Vc
-    resp   = Resp
-    #auc = AUC(cp)
-end
+      cp = Cent/Vc
+      resp   = Resp
+      #auc = AUC(cp)
+    end
 
     @derived begin
         cmax = maximum(cp)
@@ -89,7 +89,8 @@ param = (θ = θ,
     Σ_dv = 0.04,
     Σ_pddv = 1)
 
-@test_throws MethodError conditional_nll(model, population[1], param, (η=zeros(9),))
+
+#@test_throws MethodError conditional_nll(model, population[1], param, (η=zeros(9),))
 @test_throws MethodError conditional_nll(model, population[1])
 @test_nowarn simobs(model, population[1], param,obstimes=0.1:0.1:300.0)
 

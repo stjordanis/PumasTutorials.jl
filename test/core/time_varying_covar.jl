@@ -22,11 +22,14 @@ function rfx_f(p)
 end
 
 function col_f(param,randeffs,subject)
-    cov = subject.covariates
-   (Ka = t->t*param.θ[1],  # pre
-    CL = param.θ[2] * ((cov.wt/70)^0.75) *
-         (param.θ[4]^cov.sex) * exp(randeffs.η[1]),
-    V  = param.θ[3] * exp(randeffs.η[2]))
+  function __pre(t)
+    cov = subject.tvcov(t)
+    Ka = t*param.θ[1]  # pre
+    CL = param.θ[2] * ((cov.wt/70)^0.75) * (param.θ[4]^cov.sex) * exp(randeffs.η[1])
+    V  = param.θ[3] * exp(randeffs.η[2])
+
+    return (CL=CL, V=V, Ka=Ka)
+  end
 end
 
 #OneCompartmentVector = @SLVector (:Depot,:Central)
@@ -36,14 +39,16 @@ function init_f(col,t0)
 end
 
 function onecompartment_f(u,p,t)
-    @SVector [-p.Ka(t)*u[1],
-               p.Ka(t)*u[1] - (p.CL/p.V)*u[2]]
+    @SVector [-p.Ka*u[1],
+               p.Ka*u[1] - (p.CL/p.V)*u[2]]
 end
 prob = ODEProblem(onecompartment_f,nothing,nothing,nothing)
 
-function derived_f(col,sol,obstimes,obs)
+function derived_f(col,sol,obstimes,obs, param, randeffs)
+    colt = col.(obstimes)
+    V = getproperty.(colt, :V)
     central = sol(obstimes;idxs=2)
-    conc = @. central / col.V
+    conc = @. central / V
     (conc = conc,)
 end
 
@@ -75,7 +80,7 @@ m_diffeq = @model begin
   @covariates sex wt etn
 
   @pre begin
-      Ka = t -> t*θ[1]
+      Ka = θ[1] * t
       CL = θ[2] * ((wt/70)^0.75) * (θ[4]^sex) * exp(η[1])
       V  = θ[3] * exp(η[2])
   end
@@ -85,8 +90,8 @@ m_diffeq = @model begin
   end
 
   @dynamics begin
-      Depot'   = -Ka(t)*Depot
-      Central' =  Ka(t)*Depot - CL*cp
+      Depot'   = -Ka*Depot
+      Central' =  Ka*Depot - CL*cp
   end
 
   @derived begin
@@ -109,8 +114,10 @@ tv_subject = read_pumas(example_data("time_varying_covariates"),
                       [:weight])[1]
 =#
 
+
+
 tv_subject = Subject(evs = DosageRegimen([10, 20], ii = 24, addl = 2, time = [0, 12], cmt = 2),
-                  cvs = (wt=[70,75,80,85,90,92,70,80],),
+                  cvs = (wt=[70,75,80,85,90,92,70,80],), cvstime = 0:12:7*12,
                   time = 0:15:(15*7))
 
 m_tv = @model begin
@@ -127,9 +134,8 @@ m_tv = @model begin
     @covariates wt
 
     @pre begin
-        _wt = @tvcov wt t DataInterpolations.LinearInterpolation
         Ka = θ[1]
-        CL = t -> θ[2] * ((_wt(t)/70)^0.75) * θ[4] * exp(η[1])
+        CL = θ[2] * ((wt/70)^0.75) * θ[4] * exp(η[1])
         V  = θ[3] * exp(η[2])
     end
 
@@ -139,7 +145,7 @@ m_tv = @model begin
 
     @dynamics begin
         Depot'   = -Ka*Depot
-        Central' =  Ka*Depot - CL(t)*cp
+        Central' =  Ka*Depot - CL*cp
     end
 
     @derived begin
@@ -148,4 +154,4 @@ m_tv = @model begin
     end
 end
 
-obs_dsl = simobs(m_tv,tv_subject,param,(η=[0.0,0.0]))
+obs_dsl = simobs(m_tv,tv_subject,param,(η=[0.0,0.0],))

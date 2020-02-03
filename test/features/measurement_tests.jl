@@ -78,11 +78,13 @@ end
                 σ = RealDomain(lower=0.0, init=1.0)))
     rfx_f(p) = ParamSet((η=MvNormal(p.Ω),))
     function col_f(param,randeffs,subject)
+      function pre(t)
         cov = subject.covariates
         (Ka = param.θ[1],
         CL = param.θ[2] * ((cov.wt/70)^0.75) * (param.θ[4]^cov.sex) * exp(randeffs.η[1]),
         V  = param.θ[3] * exp(randeffs.η[2]),
         σ = param.σ)
+      end
     end
     init_f(col,t0) = @LArray [0.0, 0.0] (:Depot, :Central)
     function onecompartment_f(du,u,p,t)
@@ -91,9 +93,11 @@ end
         du.Central = p.Ka*u.Depot - p.CL*cp
     end
     prob = ODEProblem(onecompartment_f,nothing,nothing,nothing)
-    function derived_f(col,sol,obstimes,subject)
+    function derived_f(col,sol,obstimes,subject, param, randeffs)
+        col_t = col() # pre is time-constant
+        V = col_t.V
         central = sol(obstimes;idxs=2)
-        _conc = @. central / col.V
+        _conc = @. central / V
         _cmax = maximum(_conc)
         (conc = _conc, cmax = _cmax)
     end

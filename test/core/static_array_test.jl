@@ -57,12 +57,14 @@ function rfx_f(p)
 end
 
 function col_f(param,randeffs,subject)
-    cov = subject.covariates
-    (Σ  = param.Σ,
-    Ka = param.θ[1],  # pre
-    CL = param.θ[2] * ((cov.wt/70)^0.75) *
-         (param.θ[4]^cov.sex) * exp(randeffs.η[1]),
-    V  = param.θ[3] * exp(randeffs.η[2]))
+  function pre(t)
+      cov = subject.covariates
+      (Σ  = param.Σ,
+      Ka = param.θ[1],  # pre
+      CL = param.θ[2] * ((cov.wt/70)^0.75) *
+           (param.θ[4]^cov.sex) * exp(randeffs.η[1]),
+      V  = param.θ[3] * exp(randeffs.η[2]))
+    end
 end
 
 OneCompartmentVector = @SLVector (:Depot,:Central)
@@ -75,10 +77,11 @@ function static_onecompartment_f(u,p,t)
 end
 prob = ODEProblem(static_onecompartment_f,nothing,nothing,nothing)
 
-function derived_f(col,sol,obstimes,subject)
+function derived_f(col,sol,obstimes,subject,param,random)
+    _col = col(0.0)
     central = sol(obstimes;idxs=2)
-    conc = @. central / col.V
-    dv = @. Normal(conc, conc*col.Σ)
+    conc = @. central / _col.V
+    dv = @. Normal(conc, conc*param.Σ)
     (dv = dv,)
 end
 
@@ -101,18 +104,23 @@ p = ParamSet((θ = VectorDomain(3, lower=zeros(3), init=ones(3)),
               Ω = PSDDomain(2))),
 
 function col_f2(param,randeffs,subject)
+  function pre(t)
     (Ka = param.θ[1],
      CL = param.θ[2] * exp(randeffs.η[1]),
      V  = param.θ[3] * exp(randeffs.η[2]))
+  end
 end
 
 function post_f(col,u,t)
-    (conc = u[2] / col.V,)
+   col_t = col(0.0) # no t needed as covariates are constant
+    (conc = u[2] / col_t.V,)
 end
-function derived_f(col,sol,obstimes,subject)
-    central = sol(obstimes;idxs=2)
-    conc = @. central / col.V
-    (conc = conc,)
+function derived_f(col, sol, obstimes, subject, param, randeffs)
+  col_t = col(0.0)
+  V = col_t.V
+  central = sol(obstimes;idxs=2)
+  conc = @. central / V
+  (conc = conc,)
 end
 
 mstatic2 = PumasModel(p,rfx_f,col_f2,init_f,prob,derived_f,observed_f)

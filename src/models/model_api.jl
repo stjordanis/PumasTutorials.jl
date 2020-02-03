@@ -127,7 +127,11 @@ function _problem(m::PumasModel, subject, col, args...;
   elseif m.prob isa AnalyticalPKProblem
     _prob1 = _build_analytical_problem(m, subject, tspan, col, args...;kwargs...)
     pksol = solve(_prob1,args...;kwargs...)
-    _col = (col...,___pk=pksol)
+    function _col(t)
+      col_t = col(t)
+      ___pk = pksol(t)
+      (col=col, ___pk=___pk)
+    end
     u0  = m.init(col, tspan[1])
     _prob = PresetAnalyticalPKProblem(remake(m.prob.prob2; p=_col, u0=u0, tspan=tspan, saveat=saveat),pksol)
   else
@@ -182,9 +186,9 @@ to be repeated in the other API functions
   _saveat = obstimes === nothing ? Float64[] : obstimes
   _prob = _problem(m, subject, collated, args...; saveat=_saveat, kwargs...)
   if _prob isa NullDEProblem
-    dist = m.derived(collated, nothing, obstimes, subject)
+    dist = m.derived(collated, nothing, obstimes, subject, param, randeffs)
   else
-    sol = solve(_prob,args...;reltol=reltol, abstol=abstol, alg=alg, kwargs...)
+    sol = solve(_prob,args...; reltol=reltol, abstol=abstol, alg=alg, kwargs...)
     # if solution contains NaN return Inf
     if (sol.retcode != :Success && sol.retcode != :Terminated) ||
       # FIXME! Make this uniform across the two solution types
@@ -195,7 +199,7 @@ to be repeated in the other API functions
     end
 
     # extract distributions
-    dist = m.derived(collated, sol, obstimes, subject)
+    dist = m.derived(collated, sol, obstimes, subject, param, randeffs)
   end
   dist
 end
@@ -213,7 +217,7 @@ _rand(d) = d
 
 """
     simobs(m::PumasModel, subject::Subject, param[, randeffs, [args...]];
-                  obstimes=observationtimes(subject),kwargs...)
+                  obstimes::AbstractArray=observationtimes(subject),kwargs...)
 
 Simulate random observations from model `m` for `subject` with parameters `param` at
 `obstimes` (by default, use the times of the existing observations for the subject). If no
@@ -224,13 +228,13 @@ function simobs(m::PumasModel, subject::Subject,
                 param = init_param(m),
                 randeffs=sample_randeffs(m, param),
                 args...;
-                obstimes=observationtimes(subject),
+                obstimes::AbstractArray=observationtimes(subject),
                 saveat=obstimes,kwargs...)
   col = m.pre(_rand(param), randeffs, subject)
   prob = _problem(m, subject, col, args...; saveat=saveat, kwargs...)
   alg = m.prob isa ExplicitModel ? nothing : alg=AutoTsit5(Rosenbrock23())
   sol = prob !== nothing ? solve(prob, args...; alg=alg, kwargs...) : nothing
-  derived = m.derived(col,sol,obstimes,subject)
+  derived = m.derived(col,sol,obstimes,subject,param,randeffs)
   obs = m.observed(col,sol,obstimes,map(_rand,derived),subject)
   SimulatedObservations(subject,obstimes,obs)
 end
@@ -256,7 +260,7 @@ function simobs(m::PumasModel, pop::Population,
     col = sol.prob.p
     obstimes = :obstimes ∈ keys(kwargs) ? kwargs[:obstimes] : observationtimes(pop[i])
     saveat = :saveat ∈ keys(kwargs) ? kwargs[:saveat] : obstimes
-    derived = m.derived(col,sol,obstimes,pop[i])
+    derived = m.derived(col,sol,obstimes,pop[i],param,randeffs)
     obs = m.observed(col,sol,obstimes,map(_rand,derived),pop[i])
     SimulatedObservations(pop[i],obstimes,obs),false
   end

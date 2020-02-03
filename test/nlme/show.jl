@@ -19,7 +19,7 @@ mdl = @model begin
     end
 
     @derived begin
-        dv ~ [Normal(m, σ)]
+        dv ~ @. Normal(m, σ)
     end
 end
 

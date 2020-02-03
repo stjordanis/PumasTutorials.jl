@@ -9,7 +9,7 @@ using Pumas, Test, Random
       θ₁ ∈ RealDomain(init=3.0, lower=0.1)
       θ₂ ∈ RealDomain(init=0.5, lower=0.1)
       ω  ∈ RealDomain(init=1.0, lower=0.0)
-      r  ∈ RealDomain(init=1.0, lower=0.0)
+      θr  ∈ RealDomain(init=1.0, lower=0.0)
     end
 
     @random begin
@@ -19,12 +19,14 @@ using Pumas, Test, Random
     @pre begin
       baseline = θ₁*exp(η[1])
       d50 = θ₂
+      dose_d50 = dose/(dose+d50)
+      r = θr
     end
 
     @covariates dose
 
     @vars begin
-      m = baseline*(1 - dose/(dose + d50))
+      m = baseline*(1 - dose_d50)
       p = r/(m + r)
     end
 
@@ -40,7 +42,7 @@ using Pumas, Test, Random
 
   Random.seed!(123)
 
-  sim_negativebinomial = simobs(negativebinomial_model, pd_poisson, param)
+  sim_negativebinomial = simobs(negativebinomial_model, pd_poisson, param; ensemblealg = EnsembleSerial())
   pd_negativebinomial  = Subject.(sim_negativebinomial)
 
   # FOCE
@@ -64,7 +66,7 @@ Number of subjects:                       20
 θ₁      3.4486
 θ₂      0.5289
 ω       1.0304
-r       0.94599
+θr      0.94599
 ----------------
 """
 
@@ -85,7 +87,7 @@ Number of subjects:                       20
 θ₁     3.4486      24.299         [1.8062 ; 5.091  ]
 θ₂     0.5289      14.988         [0.37353; 0.68428]
 ω      1.0304      13.538         [0.75699; 1.3038 ]
-r      0.94599      6.2294        [0.83049; 1.0615 ]
+θr     0.94599      6.2294        [0.83049; 1.0615 ]
 -----------------------------------------------------
 """
 
@@ -110,7 +112,7 @@ Number of subjects:                       20
 θ₁      3.4714
 θ₂      0.52769
 ω       1.0304
-r       0.94599
+θr      0.94599
 ----------------
 """
 
@@ -131,7 +133,7 @@ Number of subjects:                       20
 θ₁     3.4714      24.302         [1.8179 ; 5.1248 ]
 θ₂     0.52769     14.99          [0.37265; 0.68273]
 ω      1.0304      13.537         [0.75699; 1.3037 ]
-r      0.94599      6.229         [0.83049; 1.0615 ]
+θr     0.94599      6.229         [0.83049; 1.0615 ]
 -----------------------------------------------------
 """
 

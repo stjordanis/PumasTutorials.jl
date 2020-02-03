@@ -42,7 +42,15 @@ function var_def(tupvar, indvars)
 end
 var_def(tupvar, inddict::AbstractDict) = var_def(tupvar, keys(inddict))
 
-
+# This is used in derived. It creates vectors for all variables referenced in
+# @pre. This is too expensive for constant covariates, so we have a fast path there
+# that creates singleton pre variables that will still broadcast.
+function timed_var_def(tupvar, indvars_pre, timevar)
+  quote
+    indvars_times = $tupvar.($timevar)
+    $(Expr(:block, [:($(esc(v)) = map(t->t[$(QuoteNode(v))], indvars_times)) for v in indvars_pre]...))
+  end
+end
 function extract_params!(vars, params, exprs)
   # should be called on an expression wrapped in a @param
   # expr can be:
@@ -132,7 +140,6 @@ function random_obj(randoms, params)
 end
 
 function extract_syms!(vars, subvars, syms)
-
   if length(syms) == 1 && first(syms) isa Expr && first(syms).head == :block
     _syms = first(syms).args
   else
@@ -182,19 +189,26 @@ end
 _keys(x) = x
 _keys(x::AbstractDict) = keys(x)
 
+# This function is called in @model to construct the function that returns
+# a function to evaluate the pre block for a subject given parameters
 function pre_obj(preexpr, prevars, params, randoms, covariates)
   quote
+    # This function is called when defining a differential equations problem
     function (_param::NamedTuple, _random::NamedTuple, _subject::Subject)
-      _covariates = _subject.covariates
-      $(esc(:t)) = _subject.time
-      $(Expr(:block, [:($(esc(v)) = _param.$v) for v in _keys(params)]...))
-      $(Expr(:block, [:($(esc(v)) = _random.$v) for v in _keys(randoms)]...))
-      $(Expr(:block, [:($(esc(v)) = _covariates.$v) for v in _keys(covariates)]...))
-      $(esc(preexpr))
-      $(esc(nt_expr(prevars)))
+      # pre is evaluated at t. All covariates are available in `covar`.
+      function pre(t)
+        covar = _subject.tvcov(t)
+        $(Expr(:escape, :t)) = t
+        $(Expr(:block, [:($(esc(v)) = covar.$v) for v in _keys(covariates)]...))
+        $(Expr(:block, [:($(esc(v)) = _param.$v) for v in _keys(params)]...))
+        $(Expr(:block, [:($(esc(v)) = _random.$v) for v in _keys(randoms)]...))
+        $(esc(preexpr))
+        $(esc(nt_expr(prevars)))
+      end
     end
   end
 end
+
 
 function extract_parameter_calls!(expr::Expr,prevars,callvars)
   if expr.head == :call && expr.args[1] ∈ prevars
@@ -269,7 +283,9 @@ function init_obj(ode_init,odevars,prevars,isstatic)
     append!(typeexpr.args,vecexpr)
     quote
       function (_pre,t)
-        $(var_def(:_pre, prevars))
+        # since _pre is a function, we will unpack prevars (on the left hand side)
+        # from a call to _pre(t) (on the right hand side)
+        $(var_def(:(_pre(t)), prevars))
         $(esc(typeexpr))
       end
     end
@@ -280,7 +296,9 @@ function init_obj(ode_init,odevars,prevars,isstatic)
     end
     quote
       function (_pre,t)
-        $(var_def(:_pre, prevars))
+        # since _pre is a function, we will unpack prevars (on the left hand side)
+        # from a call to _pre(t) (on the right hand side)
+        $(var_def(:(_pre(t)), prevars))
         $(esc(vecexpr))
       end
     end
@@ -289,13 +307,18 @@ end
 
 function dynamics_obj(odeexpr::Expr, pre, odevars, callvars, bvars, eqs, isstatic)
   odeexpr == :() && return nothing
+
+  # dvars and params are Operations (does params still have to now that pre is "pre-evaluated" in the wrapper function?)
   dvars = []
   params = []
   mteqs = []
   fname = gensym(:PumasDiffEqFunction)
   diffeq = :(ODEProblem{false}($fname,nothing,nothing,nothing))
 
-  # DVar
+  # DVar - create array of dynamic variables
+  # Combines symbols (v's), the Variable constructor and
+  # the differential `D` to create dynamic variables of
+  # the type ModelingToolkit.Operation.
   t = Variable(:t; known = true)()
   D = Differential(t)
   for v in odevars
@@ -316,7 +339,6 @@ function dynamics_obj(odeexpr::Expr, pre, odevars, callvars, bvars, eqs, isstati
     rhseq = eq.args[3]
     push!(mteqs,lhsvar ~ convert_rhs_to_Expression(rhseq,bvars,dvars,params,t))
   end
-
   f_ex = generate_function(ODESystem(mteqs),dvars,params)[1]
 
   quote
@@ -458,11 +480,16 @@ function solvars_def(collection, odevars)
   end
 end
 
-function derived_obj(derivedexpr, derivedvars, pre, odevars)
+function derived_obj(derivedexpr, derivedvars, pre, odevars, params, randoms)
   quote
-    function (_pre,_sol,_obstimes,_subject)
-      $(var_def(:_pre, pre))
+    function (_pre,_sol,_obstimes,_subject,_param, _random)
       $(esc(:events)) = _subject.events
+      $(esc(:t)) = _obstimes
+      $(var_def(:_param, params))
+      $(var_def(:_random, randoms))
+
+      # Unpack all solution variables such that concentrations etc can be used
+      # with pre-vars (see below) to compute concentrations, etc.
       if _sol != nothing
         if typeof(_sol) <: PKPDAnalyticalSolution
           _solarr = _sol(_obstimes)
@@ -471,7 +498,22 @@ function derived_obj(derivedexpr, derivedvars, pre, odevars)
         end
         $(solvars_def(:(_solarr), odevars))
       end
-      $(esc(:t)) = _obstimes
+      # timed_var_def evaluates pre at _obstimes with `_pre.(_obstimes)` and
+      # unpacks all pre-variables as vectors. This way all timevarying things
+      # are evaluated and ready for use, say
+      # @derived begin
+      #   cp = @. (Central / v)
+      #   dv ~ @. Normal(cp, sqrt(cp^2*σ_prop))
+      # end
+      # Where `v` is from `pre`, but the use in the at-derived block implies
+      # that we want to use v at all obstime (in the denominator of the fraction
+      # for cp that depends also on Central at obstimes, though this is unpacked
+      # from the solution, not pre)
+      if _subject.tvcov isa ConstantCovar
+        $(var_def(:(_pre(0.0)), pre))
+      else
+        $(timed_var_def(:_pre, pre, :_obstimes))
+      end
       $(esc(derivedexpr))
       $(esc(nt_expr(derivedvars)))
     end
@@ -481,8 +523,7 @@ end
 function observed_obj(observedexpr, observedvars, pre, odevars, derivedvars)
   quote
     function (_pre,_sol,_obstimes,_samples,_subject)
-      $(var_def(:_pre, pre))
-      $(var_def(:_samples, derivedvars))
+      $(esc(:t)) = _obstimes
       if _sol != nothing
         if typeof(_sol) <: PKPDAnalyticalSolution
           _solarr = _sol(_obstimes)
@@ -491,7 +532,12 @@ function observed_obj(observedexpr, observedvars, pre, odevars, derivedvars)
         end
         $(solvars_def(:(_solarr), odevars))
       end
-      $(esc(:t)) = _obstimes
+      if _subject.tvcov isa ConstantCovar
+        $(var_def(:(_pre(0.0)), pre))
+      else
+        $(timed_var_def(:_pre, pre, :_obstimes))
+      end
+      $(var_def(:_samples, derivedvars))
       $(esc(observedexpr))
       $(esc(nt_expr(observedvars)))
     end
@@ -579,8 +625,6 @@ macro model(expr)
     #return nothing
   end
 
-  prevars = union(prevars, keys(params), keys(randoms), covariates)
-
   ex = quote
     x = PumasModel(
     $(param_obj(params)),
@@ -588,7 +632,7 @@ macro model(expr)
     $(pre_obj(preexpr,prevars,params,randoms,covariates)),
     $(init_obj(ode_init,odevars,prevars,isstatic)),
     $(dynamics_obj(odeexpr,prevars,odevars,callvars,bvars,eqs,isstatic)),
-    $(derived_obj(derivedexpr,derivedvars,prevars,odevars)),
+    $(derived_obj(derivedexpr,derivedvars,prevars,odevars,params,randoms)),
     $(observed_obj(observedexpr,observedvars,prevars,odevars,derivedvars)))
     function Base.show(io::IO, ::typeof(x))
       println(io,"PumasModel")

@@ -111,7 +111,8 @@ function increment_value(A::Number,x,k)
   A+x
 end
 
-function get_magic_args(p,u0,t0)
+function get_magic_args(pre,u0,t0)
+  p = pre(t0)
   if haskey(p,:lags)
     lags = p.lags
   else
@@ -151,7 +152,6 @@ numtype(X::PDMats.AbstractPDMat) = numtype(eltype(X))
 # numtype(x::Tuple)         = reduce(promote_type, map(numtype,x))
 numtype(x::Tuple)         = promote_type(map(numtype, x)...)
 numtype(x::NamedTuple) = numtype(values(x))
-numtype(x::Function) = Float32 # To allow time-varying covariates
 numtype(x::AbstractString) = Float32 # To allow string covariates
 numtype(x::Integer) = Float32
 
