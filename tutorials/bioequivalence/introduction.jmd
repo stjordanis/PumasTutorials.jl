@@ -54,6 +54,7 @@ This design may take any structure (i.e., combination of sequences).
 
 ```julia
 using Pkg
+Pkg.activate(@__DIR__)
 pkg"instantiate"
 using Bioequivalence, CSV
 ```
@@ -75,13 +76,96 @@ co2s2p_model = read_be(co2s2p)
 
 ## Interpreting the Results
 
-[PLACEHOLDER]
+The output will display the study design which in this case is a 2x2 crossover (RT|TR) with the number of sequences being 2.
+There are two periods.
+Subjects per sequence will display how many subjects are in each sequence. In this case 9 for the RT sequences and 9 in the TR sequence.
+
+The average bioequivalence is assessed by estimating the difference in means of the endpoint (in this case the AUC) for the test formulation and the reference formulation. For the parameter estimate, the statistics include the point estimate (PE), standard error (SE), and 90% confidence interval for natural log transformation, the geometric mean ratio and the 90% confidence interval in the natural scale.
+
+In order to conclude average bioequivalence we would look at LB and UB and verify these statistics are in the interval [0.80, 1.25]. The confidence intervals should be rounded up to two decimal places and compared to the established limits according to the latest FDA [Bioavailability Studies Submitted in NDAs or INDs — General Considerations Guidance for Industry](https://www.fda.gov/media/121311/download) as of February 2019. In this case, an estimated  90% confidence interval of (0.91, 1.00) would support that the test formulation is bioequivalent to reference as of the AUC endpoint.
+
+# Study designs
+
+## Nonparameteric
+
+The nonparametric model is well suited for endpoints that are not expected to follow usual distributions such as a bell curve distribution (e.g., time of maxmimum concentration - Tmax). The model performs a Wilcoxon signed rank test of the null hypothesis that the distribution of the difference x - y has zero median against the alternative hypothesis that the median is non-zero.
+
+```julia
+nonparametric = CSV.read(joinpath(dirname(pathof(Bioequivalence)), "..", "data", "Nonparametric", "PJ2006_3_1.tsv"))
+show(nonparametric)
+```
+
+In this dataset, the endpoint is `:Tmax`. This most be provided to the `read_be` function as following.
+
+```julia
+nonparametric_model = read_be(nonparametric, :Tmax)
+```
+
+In this instance, we reject the null hypothesis of average bioequivalence since the upper bound 90% confidence interval (1.41) is higher than 1.25.
+
+## Parallel
+
+This model performs an unequal variance two-sample t-test of the null hypothesis that x and y come from distributions with equal means against the alternative hypothesis that the distributions have different means.
+
+```julia
+parallel = CSV.read(joinpath(dirname(pathof(Bioequivalence)), "..", "data", "Parallel", "FSL2015_1.tsv"))
+show(parallel)
+```
+
+```julia
+parallel_model = read_be(parallel)
+```
+
+In this instance, we reject the null hypothesis of average bioequivalence since the lower bound 90% confidence interval (0.27) is lower than 0.80.
+
+## Crossover 2x2
+
+This model performs a linear model regression with
+
+ln(endpoint) ~ formulation + sequence + period + id + μ
+
+## Balaam
+
+This model performs a linear mixed model regression with
+
+ln(endpoint) ~ formulation + sequence + period + (1|id) + μ
+
+fitted using the maximum likelihood estimation by default. The `REML = true` parameter may be used for using the restricted maximum likelihood estimation as the criteria instead.
+
+```julia
+balaam = CSV.read(joinpath(dirname(pathof(Bioequivalence)), "..", "data", "Balaam", "CL2009_9_2_1.tsv"))
+show(balaam)
+```
+
+```julia
+balaam_model = read_be(balaam)
+```
+
+The Balaam model is one that allows to estimate both the average and variability of the bioavailability.
+
+Average bioequivalence may be assessed as usual based on the confidence intervals estimates for which we reject the null of average bioequivalence given that the lower bound (0.75) is below 0.80. The intra-subject variability may be assessed based on VarLB and VarUB. In this case, we reject the null hypoothesis of equal intra-subject variability between the test and the reference formulations since the 90% confidence interval does not include unity (i.e., 3.88 ≰ 1 < 10.91).
+
+When a LRD is either a NTI or HVD, we may use the reference scaled estimates given as `scLB` and `scUB` in order to perform the analysis of average bioequivalence. The regulatory constant and auxiliary parameter may be passed to the function (Haidar et al. 2008).
+
+## Higher Order: Dual, 2S4P, Williams
+
+These models perform a linear mixed model regression with
+
+ln(endpoint) ~ formulation + sequence + period + (1|id)
+
+fitted using the maximum likelihood estimation by default. The `REML = true` parameter may be used for using the restricted maximum likelihood estimation as the criteria instead.
+
+The model will estimate the intra-subject variability and reference scaled estimates when the model allows it.
 
 # References
 
 Chow, Shein-Chung, and Jen-pei Liu. 2009. Design and Analysis of Bioavailability and Bioequivalence Studies. 3rd ed. Chapman & Hall/CRC Biostatistics Series 27. Boca Raton: CRC Press.
 
+Haidar, Sam H., Fairouz Makhlouf, Donald J. Schuirmann, Terry Hyslop, Barbara Davit, Dale Conner, and Lawrence X. Yu. 2008. "Evaluation of a Scaling Approach for the Bioequivalence of Highly Variable Drugs." The AAPS Journal 10 (3): 450–54. DOI: [10.1208/s12248-008-9053-4](https://doi.org/10.1208/s12248-008-9053-4).
+
 Karachi, Pakistan, Abdur Rasheed, and Afaq Siddiqui. 2015. "Use of Geometric Mean in Bioequivalence Trials." International Journal of Statistics in Medical Research 4 (1): 114–20. DOI: [10.6000/1929-6029.2015.04.01.13](https://doi.org/10.6000/1929-6029.2015.04.01.13).
+
+Patterson, Scott D, and Byron Jones. 2006. Bioequivalence and Statistics in Clinical Pharmacology. Boca Raton: Chapman & Hall/CRC. DOI: [10.1201/9781420034936](https://doi.org/10.1201/9781420034936).
 
 
 ```julia{echo = false, skip = "notebook"}
