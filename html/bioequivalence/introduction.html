@@ -662,8 +662,18 @@ div.title {text-align: center;}
           </div>
 
           <h1>Introduction</h1>
-<p>In this tutorial we will go over how to perform bioequivalence analysis with the Pumas ecosystem. Bioequivalence analysis relies on using a pharmacokinetic endpoints such as the area under the curve &#40;AUC&#41; or peak concentration &#40;Cmax&#41;. From a clinical study data, you can obtain these parameters using the Pumas NCA module &#40;<code>Pumas.NCA</code>&#41;. See the NCA section for more details.</p>
-<p>In order to perform an average bioequivalence analysis, we will use the Bioequivalence.jl package, part of the Pumas ecosystem. This module allows to compute various designs such as:</p>
+<p>The majority of drug applications go through a process intended to show that a formula is equivalent to another that has already been approved. For example, in the United States the Federal Drugs Administration &#40;FDA&#41; offers the Abbreviated New Drug Applications &#40;ANDAs&#41; which requires to submit evidence of bioequivalence. In other words, it is up to the applicant to demonstrate that the proposed product can be expected to be, for all intents and purposes, the same to a chosen a listed reference drug &#40;LRD&#41; in the application. An LRD is some drug that has been approved and has not been withdrawn or suspended.</p>
+<p>Bioequivalence analysis is the study of assessing whether a drug or formula can be expected to work like another. For example, generic drugs are commonly approved through a process which requires demonstrating bioequivalence. These kinds of studies are more cost effective than other alternatives and can streamline the process for a drug to make it to the market. It is also a powerful tool to obtain affordable drug prices after the end of some form of market exclusivity &#40;e.g., patents expiring&#41;.</p>
+<p>The core idea of bioequivalence is that the new formulation and the LRD have same therapeutic goal, target population, and active ingredient, and route of administration which comprises pharmaceutically equivalence. The second aspect to bioequivalence is assessing the formulas bioavailability. Pharmacokinetics studies how a substance does in a living organism. Bioequivalence relies on understanding how substances are absorbed, interact, and are eliminated after being administered.</p>
+<p>In practice, average bioequivalence is determined by analyzing certain pharmacokinetic/pharmacodynamic endpoints such as the area under the curve &#40;AUC&#41; of the substance concentration in the body &#40;e.g., in blood&#41;, peak concentration &#40;Cmax&#41;, time of highest concentration &#40;Tmax&#41;, etc. These endpoints are typically obtained from performing noncompartmental analysis such as those available through the <code>Pumas.NCA</code> module.</p>
+<p>The way that an endpoint is analyzed will depend on the clinical study design, the distribution of the endpoint, and properties of the LRD. For example, some drugs may contain an active ingredient that can be toxic to the intended population if outside some narrow concentrations; those drugs are called narrow therapeutic index drugs &#40;NTI&#41;. Other type of drugs may have significantly different rates of absorption and elimination from person to person in the targeted population; those drugs are considered highly variable index drugs &#40;HVD&#41;. Regulatory agencies may also impose specific guidelines for certain products. However, in general most average bioequivalence studies analyze the AUC and CMax.</p>
+<p>The general guidelines for establishing average bioequivalence require that the 90&#37; confidence interval for the average bioavailability of the test formulation is contained in the &#91;80&#37;, 125&#37;&#93; of the reference formulation &#40;Karachi et al. 2015&#41;. Additional adjustments are performed for NTI/HVD and special drugs. In certain cases, one may also be interested in the variability of bioavailability which may be a requirement for assessing bioequivalence &#40;Chow and Liu 2009&#41;.</p>
+<h1>Design Studies</h1>
+<p>Bioequivalence studies can use various clinical trial designs such as: nonparametric, parallel, and crossover designs. The design decision is usually a function of available participants, number of formulations being tested, length of the study &#40;e.g., number of periods&#41;, half-life of the substance &#40;e.g., a long half-life might make too onerous to choose a design with more than a few periods&#41;, etc. The most common design is the crossover 2x2 design. This design tests a reference and a test formulation &#40;i.e., two formulations&#41;, two groups &#40;i.e., two sequences&#41;, over two periods. During the first period, one group receives the reference formulation while the second receives the test formulation. In the second period, the groups receive the other formulation different from the one administered during the first period. A common assumption is that between each period, there is a washout period in order to avoid any carry over effects from the formulations administrated in previous periods.</p>
+<p>Higher order crossover studies allow to obtain additional parameter estimates such as those related to the variability of bioavailability which is only available in studies with repeated subjects/formulation observations. For example, the two optimal two sequences, four periods designs are &#40;RTTR|TRRT&#41; and &#40;RTRT|TRTR&#41;. The first design has a sequence with reference, treatment, treatment, and the reference while the second sequence has treatment, reference, reference, and treatment. The second design has formulations alternating rather than repeating the same formulation during consecutive periods. Lastly, other higher order crossover studies may be used to analysis bioequivalence across multiple formulations &#40;e.g., three or four different formulations including the reference&#41;. The optimal crossover designs for more than two formulations are called Williams designs.</p>
+<h1>Bioequivalence.jl</h1>
+<p>Bioequivalence.jl has implemented a series of routines to make it simple to estimate nonparametric, parallel, and crossover designs as well as adapt these for cases with NTI/HVD LRD.</p>
+<p>This module allows to compute the following designs:</p>
 <ul>
 <li><p>Nonparameteric</p>
 </li>
@@ -685,7 +695,7 @@ div.title {text-align: center;}
 </li>
 </ul>
 <h2>Data Schema</h2>
-<p>Every bioequivalence design must conform to the following schema,</p>
+<p>Data for bioequivalence studies must conform to the following schema,</p>
 <ul>
 <li><p><code>id</code>: a subject ID</p>
 </li>
@@ -701,12 +711,95 @@ div.title {text-align: center;}
 
 
 <pre class='hljl'>
-<span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>Bioequivalence</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span>
+<span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>Pkg</span><span class='hljl-t'>
+</span><span class='hljl-n'>Pkg</span><span class='hljl-oB'>.</span><span class='hljl-nf'>activate</span><span class='hljl-p'>(</span><span class='hljl-nd'>@__DIR__</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+Activating environment at &#96;~/project/GitHub/PumasAI/PumasTutorials.jl/Proje
+ct.toml&#96;
 </pre>
 
 
 
-<p>Nonparametric</p>
+<pre class='hljl'>
+<span class='hljl-so'>pkg&quot;instantiate&quot;</span><span class='hljl-t'>
+</span><span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>Bioequivalence</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span>
+</pre>
+
+
+
+<p>The following is an example of data for a crossover 2x2 study &#40;i.e., RT|TR&#41;.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>co2s2p</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span><span class='hljl-oB'>.</span><span class='hljl-nf'>read</span><span class='hljl-p'>(</span><span class='hljl-nf'>joinpath</span><span class='hljl-p'>(</span><span class='hljl-nf'>dirname</span><span class='hljl-p'>(</span><span class='hljl-nf'>pathof</span><span class='hljl-p'>(</span><span class='hljl-n'>Bioequivalence</span><span class='hljl-p'>)),</span><span class='hljl-t'> </span><span class='hljl-s'>&quot;..&quot;</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-s'>&quot;data&quot;</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-s'>&quot;2S2P&quot;</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-s'>&quot;SLF2014_1.tsv&quot;</span><span class='hljl-p'>))</span><span class='hljl-t'>
+</span><span class='hljl-nf'>show</span><span class='hljl-p'>(</span><span class='hljl-n'>co2s2p</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+36×4 DataFrames.DataFrame
+│ Row │ id    │ sequence │ period │ AUC     │
+│     │ Int64 │ String   │ Int64  │ Float64 │
+├─────┼───────┼──────────┼────────┼─────────┤
+│ 1   │ 1     │ RT       │ 1      │ 181.09  │
+│ 2   │ 1     │ RT       │ 2      │ 210.14  │
+│ 3   │ 2     │ RT       │ 1      │ 114.48  │
+│ 4   │ 2     │ RT       │ 2      │ 98.72   │
+│ 5   │ 3     │ TR       │ 1      │ 225.95  │
+│ 6   │ 3     │ TR       │ 2      │ 241.09  │
+│ 7   │ 4     │ RT       │ 1      │ 176.91  │
+⋮
+│ 29  │ 15    │ TR       │ 1      │ 173.86  │
+│ 30  │ 15    │ TR       │ 2      │ 206.66  │
+│ 31  │ 16    │ RT       │ 1      │ 144.0   │
+│ 32  │ 16    │ RT       │ 2      │ 143.25  │
+│ 33  │ 17    │ RT       │ 1      │ 185.1   │
+│ 34  │ 17    │ RT       │ 2      │ 192.22  │
+│ 35  │ 18    │ TR       │ 1      │ 117.99  │
+│ 36  │ 18    │ TR       │ 2      │ 125.5   │
+</pre>
+
+
+<h2>Performing an Analysis</h2>
+<p>We can analyze the data for the AUC endpoint &#40;the default&#41; through the <code>read_be</code> function.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>co2s2p_model</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>read_be</span><span class='hljl-p'>(</span><span class='hljl-n'>co2s2p</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+Design: RT|TR
+
+Sequences: RT|TR &#40;2&#41;
+Periods: 1:2 &#40;2&#41;
+Subjects per Sequence: &#40;RT &#61; 9, TR &#61; 9&#41;
+
+Average Bioequivalence
+───────────────────────────────────────────────────────────────────────────
+───────
+               PE        SE        lnLB         lnUB       GMR        LB   
+     UB
+───────────────────────────────────────────────────────────────────────────
+───────
+T - R  -0.0503868  0.026658  -0.0969286  -0.00384499  0.950862  0.907621  0
+.996162
+───────────────────────────────────────────────────────────────────────────
+───────
+</pre>
+
+
+<h2>Interpreting the Results</h2>
+<p>The output will display the study design which in this case is a 2x2 crossover &#40;RT|TR&#41; with the number of sequences being 2. There are two periods. Subjects per sequence will display how many subjects are in each sequence. In this case 9 for the RT sequences and 9 in the TR sequence.</p>
+<p>The average bioequivalence is assessed by estimating the difference in means of the endpoint &#40;in this case the AUC&#41; for the test formulation and the reference formulation. For the parameter estimate, the statistics include the point estimate &#40;PE&#41;, standard error &#40;SE&#41;, and 90&#37; confidence interval for natural log transformation, the geometric mean ratio and the 90&#37; confidence interval in the natural scale.</p>
+<p>In order to conclude average bioequivalence we would look at LB and UB and verify these statistics are in the interval &#91;0.80, 1.25&#93;. The confidence intervals should be rounded up to two decimal places and compared to the established limits according to the latest FDA <a href="https://www.fda.gov/media/121311/download">Bioavailability Studies Submitted in NDAs or INDs — General Considerations Guidance for Industry</a> as of February 2019. In this case, an estimated  90&#37; confidence interval of &#40;0.91, 1.00&#41; would support that the test formulation is bioequivalent to reference as of the AUC endpoint.</p>
+<h1>Study designs</h1>
+<h2>Nonparameteric</h2>
+<p>The nonparametric model is well suited for endpoints that are not expected to follow usual distributions such as a bell curve distribution &#40;e.g., time of maxmimum concentration - Tmax&#41;. The model performs a Wilcoxon signed rank test of the null hypothesis that the distribution of the difference x - y has zero median against the alternative hypothesis that the median is non-zero.</p>
 
 
 <pre class='hljl'>
@@ -738,6 +831,170 @@ div.title {text-align: center;}
 │ 64  │ 36    │ RT       │ 2      │ 1.0     │
 </pre>
 
+
+<p>In this dataset, the endpoint is <code>:Tmax</code>. This most be provided to the <code>read_be</code> function as following.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>nonparametric_model</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>read_be</span><span class='hljl-p'>(</span><span class='hljl-n'>nonparametric</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-sc'>:Tmax</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+Design: RT|TR
+
+Sequences: RT|TR &#40;2&#41;
+Periods: 1:2 &#40;2&#41;
+Subjects per Sequence: &#40;RT &#61; 17, TR &#61; 15&#41;
+
+Average Bioequivalence
+─────────────────────────────────────────────
+            lnLB      lnUB        LB       UB
+─────────────────────────────────────────────
+T - R  -0.202733  0.346574  0.816497  1.41421
+─────────────────────────────────────────────
+</pre>
+
+
+<p>In this instance, we reject the null hypothesis of average bioequivalence since the upper bound 90&#37; confidence interval &#40;1.41&#41; is higher than 1.25.</p>
+<h2>Parallel</h2>
+<p>This model performs an unequal variance two-sample t-test of the null hypothesis that x and y come from distributions with equal means against the alternative hypothesis that the distributions have different means.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>parallel</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span><span class='hljl-oB'>.</span><span class='hljl-nf'>read</span><span class='hljl-p'>(</span><span class='hljl-nf'>joinpath</span><span class='hljl-p'>(</span><span class='hljl-nf'>dirname</span><span class='hljl-p'>(</span><span class='hljl-nf'>pathof</span><span class='hljl-p'>(</span><span class='hljl-n'>Bioequivalence</span><span class='hljl-p'>)),</span><span class='hljl-t'> </span><span class='hljl-s'>&quot;..&quot;</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-s'>&quot;data&quot;</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-s'>&quot;Parallel&quot;</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-s'>&quot;FSL2015_1.tsv&quot;</span><span class='hljl-p'>))</span><span class='hljl-t'>
+</span><span class='hljl-nf'>show</span><span class='hljl-p'>(</span><span class='hljl-n'>parallel</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+18×4 DataFrames.DataFrame
+│ Row │ id    │ sequence │ period │ AUC     │
+│     │ Int64 │ String   │ Int64  │ Float64 │
+├─────┼───────┼──────────┼────────┼─────────┤
+│ 1   │ 1     │ T        │ 1      │ 2.52    │
+│ 2   │ 2     │ T        │ 1      │ 8.87    │
+│ 3   │ 3     │ T        │ 1      │ 0.79    │
+│ 4   │ 4     │ T        │ 1      │ 1.68    │
+│ 5   │ 5     │ T        │ 1      │ 6.95    │
+│ 6   │ 6     │ T        │ 1      │ 1.05    │
+│ 7   │ 7     │ T        │ 1      │ 0.99    │
+⋮
+│ 11  │ 11    │ R        │ 1      │ 7.14    │
+│ 12  │ 12    │ R        │ 1      │ 1.81    │
+│ 13  │ 13    │ R        │ 1      │ 7.34    │
+│ 14  │ 14    │ R        │ 1      │ 4.25    │
+│ 15  │ 15    │ R        │ 1      │ 6.66    │
+│ 16  │ 16    │ R        │ 1      │ 4.76    │
+│ 17  │ 17    │ R        │ 1      │ 7.16    │
+│ 18  │ 18    │ R        │ 1      │ 5.52    │
+</pre>
+
+
+
+<pre class='hljl'>
+<span class='hljl-n'>parallel_model</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>read_be</span><span class='hljl-p'>(</span><span class='hljl-n'>parallel</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+Design: R|T
+
+Sequences: R|T &#40;2&#41;
+Periods: 1:1 &#40;1&#41;
+Subjects per Sequence: &#40;R &#61; 9, T &#61; 9&#41;
+
+Average Bioequivalence
+───────────────────────────────────────────────────────────────────────────
+──
+              PE        SE      lnLB       lnUB       GMR        LB        
+UB
+───────────────────────────────────────────────────────────────────────────
+──
+T - R  -0.721906  0.333328  -1.31755  -0.126258  0.485825  0.267789  0.8813
+87
+───────────────────────────────────────────────────────────────────────────
+──
+</pre>
+
+
+<p>In this instance, we reject the null hypothesis of average bioequivalence since the lower bound 90&#37; confidence interval &#40;0.27&#41; is lower than 0.80.</p>
+<h2>Crossover 2x2</h2>
+<p>This model performs a linear model regression with</p>
+<p>ln&#40;endpoint&#41; ~ formulation &#43; sequence &#43; period &#43; id &#43; μ</p>
+<h2>Higher Order: Balaam, Dual, 2S4P, Williams</h2>
+<p>These models perform a linear mixed model regression with</p>
+<p>ln&#40;endpoint&#41; ~ formulation &#43; sequence &#43; period &#43; &#40;1|id&#41; &#43; μ</p>
+<p>fitted using the maximum likelihood estimation by default. The <code>REML &#61; true</code> parameter may be used for using the restricted maximum likelihood estimation as the criteria instead.</p>
+
+
+<pre class='hljl'>
+<span class='hljl-n'>balaam</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>CSV</span><span class='hljl-oB'>.</span><span class='hljl-nf'>read</span><span class='hljl-p'>(</span><span class='hljl-nf'>joinpath</span><span class='hljl-p'>(</span><span class='hljl-nf'>dirname</span><span class='hljl-p'>(</span><span class='hljl-nf'>pathof</span><span class='hljl-p'>(</span><span class='hljl-n'>Bioequivalence</span><span class='hljl-p'>)),</span><span class='hljl-t'> </span><span class='hljl-s'>&quot;..&quot;</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-s'>&quot;data&quot;</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-s'>&quot;Balaam&quot;</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-s'>&quot;CL2009_9_2_1.tsv&quot;</span><span class='hljl-p'>))</span><span class='hljl-t'>
+</span><span class='hljl-nf'>show</span><span class='hljl-p'>(</span><span class='hljl-n'>balaam</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+48×4 DataFrames.DataFrame
+│ Row │ id    │ sequence │ period │ AUC   │
+│     │ Int64 │ String   │ Int64  │ Int64 │
+├─────┼───────┼──────────┼────────┼───────┤
+│ 1   │ 1     │ TT       │ 1      │ 280   │
+│ 2   │ 1     │ TT       │ 2      │ 482   │
+│ 3   │ 2     │ TT       │ 1      │ 219   │
+│ 4   │ 2     │ TT       │ 2      │ 161   │
+│ 5   │ 3     │ TT       │ 1      │ 230   │
+│ 6   │ 3     │ TT       │ 2      │ 99    │
+│ 7   │ 4     │ TT       │ 1      │ 229   │
+⋮
+│ 41  │ 21    │ TR       │ 1      │ 235   │
+│ 42  │ 21    │ TR       │ 2      │ 271   │
+│ 43  │ 22    │ TR       │ 1      │ 380   │
+│ 44  │ 22    │ TR       │ 2      │ 340   │
+│ 45  │ 23    │ TR       │ 1      │ 308   │
+│ 46  │ 23    │ TR       │ 2      │ 270   │
+│ 47  │ 24    │ TR       │ 1      │ 269   │
+│ 48  │ 24    │ TR       │ 2      │ 249   │
+</pre>
+
+
+
+<pre class='hljl'>
+<span class='hljl-n'>balaam_model</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>read_be</span><span class='hljl-p'>(</span><span class='hljl-n'>balaam</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="output">
+Design: RR|RT|TR|TT
+
+Sequences: RR|RT|TR|TT &#40;4&#41;
+Periods: 1:2 &#40;2&#41;
+Subjects per Sequence: &#40;RR &#61; 6, RT &#61; 6, TR &#61; 6, TT &#61; 6&#41;
+Regulatory constant for reference-scaled estimates: 0.10
+Auxiliary parameter for reference-scaled estimates: 1.11
+
+Average Bioequivalence
+───────────────────────────────────────────────────────────────────────────
+──────────────────────────────────────────────
+              PE         SE       lnLB       lnUB       GMR       LB       
+UB     scLB     scUB  Varratio  VarLB    VarUB
+───────────────────────────────────────────────────────────────────────────
+──────────────────────────────────────────────
+T - R  -0.129419  0.0936591  -0.290245  0.0314075  0.878606  0.74808  1.031
+91  0.75401  1.32624   6.49813  3.871  10.9082
+───────────────────────────────────────────────────────────────────────────
+──────────────────────────────────────────────
+</pre>
+
+
+<p>The model will estimate the intra-subject variability and reference scaled estimates when the model allows it.</p>
+<p>Average bioequivalence may be assessed as usual based on the confidence intervals estimates for which we reject the null of average bioequivalence given that the lower bound &#40;0.75&#41; is below 0.80. The intra-subject variability may be assessed based on VarLB and VarUB. In this case, we reject the null hypoothesis of equal intra-subject variability between the test and the reference formulations since the 90&#37; confidence interval does not include unity &#40;i.e., 3.88 ≰ 1 &lt; 10.91&#41;.</p>
+<p>When a LRD is either a NTI or HVD, we may use the reference scaled estimates given as <code>scLB</code> and <code>scUB</code> in order to perform the analysis of average bioequivalence. The regulatory constant and auxiliary parameter may be passed to the function &#40;Haidar et al. 2008&#41;.</p>
+<h1>References</h1>
+<p>Chow, Shein-Chung, and Jen-pei Liu. 2009. Design and Analysis of Bioavailability and Bioequivalence Studies. 3rd ed. Chapman &amp; Hall/CRC Biostatistics Series 27. Boca Raton: CRC Press.</p>
+<p>Haidar, Sam H., Fairouz Makhlouf, Donald J. Schuirmann, Terry Hyslop, Barbara Davit, Dale Conner, and Lawrence X. Yu. 2008. &quot;Evaluation of a Scaling Approach for the Bioequivalence of Highly Variable Drugs.&quot; The AAPS Journal 10 &#40;3&#41;: 450–54. DOI: <a href="https://doi.org/10.1208/s12248-008-9053-4">10.1208/s12248-008-9053-4</a>.</p>
+<p>Karachi, Pakistan, Abdur Rasheed, and Afaq Siddiqui. 2015. &quot;Use of Geometric Mean in Bioequivalence Trials.&quot; International Journal of Statistics in Medical Research 4 &#40;1&#41;: 114–20. DOI: <a href="https://doi.org/10.6000/1929-6029.2015.04.01.13">10.6000/1929-6029.2015.04.01.13</a>.</p>
+<p>Patterson, Scott D, and Byron Jones. 2006. Bioequivalence and Statistics in Clinical Pharmacology. Boca Raton: Chapman &amp; Hall/CRC. DOI: <a href="https://doi.org/10.1201/9781420034936">10.1201/9781420034936</a>.</p>
 
 
 <pre class='hljl'>
@@ -772,14 +1029,15 @@ Environment:
 </div>
 <div class="markdown"><pre><code>Status &#96;/home/coder/project/GitHub/PumasAI/PumasTutorials.jl/Project.toml&#96;
 &#91;4ece37e6-a012-11e8-38cd-91247efc2c34&#93; Bioequivalence 0.1.1
-&#91;336ed68f-0bac-5ca0-87d4-7b16caf5d00b&#93; CSV 0.5.22
+&#91;336ed68f-0bac-5ca0-87d4-7b16caf5d00b&#93; CSV 0.5.23
 &#91;41bf760c-e81c-5289-8e54-58b1f1f8abe2&#93; DiffEqSensitivity 6.6.0
 &#91;31c24e10-a181-5473-b8eb-7969acd0382f&#93; Distributions 0.21.12
 &#91;7073ff75-c697-5162-941a-fcdaad2a7d2a&#93; IJulia 1.20.2
-&#91;429524aa-4258-5aef-a3af-852621145aeb&#93; Optim 0.19.7
+&#91;429524aa-4258-5aef-a3af-852621145aeb&#93; Optim 0.20.1
 &#91;91a5bcdd-55d7-5caf-9e0b-520d859cae80&#93; Plots 0.28.4
 &#91;4f2c3c20-a4ac-11e9-067b-e5872d3484cf&#93; Pumas 0.8.0
 &#91;1fd47b50-473d-5c70-9696-f719f8f3bcdc&#93; QuadGK 2.3.1
+&#91;295af30f-e4ad-537b-8983-00126c2a3abe&#93; Revise 2.5.0
 &#91;4c63d2b9-4356-54db-8cca-17b64c39e42c&#93; StatsFuns 0.9.3
 &#91;44d3d7a6-8a23-5bf8-98c5-b353f8df5ec9&#93; Weave 0.9.1
 &#91;b77e0a4c-d291-57a0-90e8-8db25a27a240&#93; InteractiveUtils nothing
@@ -793,7 +1051,7 @@ Environment:
           <div class="footer"><p>
           Published from <a href="introduction.jmd">introduction.jmd</a> using
           <a href="http://github.com/mpastell/Weave.jl">Weave.jl</a>
-           on 2020-01-26.
+           on 2020-02-04.
           <p></div>
 
 

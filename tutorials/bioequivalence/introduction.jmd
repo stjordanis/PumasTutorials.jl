@@ -124,9 +124,9 @@ This model performs a linear model regression with
 
 ln(endpoint) ~ formulation + sequence + period + id + μ
 
-## Balaam
+## Higher Order: Balaam, Dual, 2S4P, Williams
 
-This model performs a linear mixed model regression with
+These models perform a linear mixed model regression with
 
 ln(endpoint) ~ formulation + sequence + period + (1|id) + μ
 
@@ -141,21 +141,11 @@ show(balaam)
 balaam_model = read_be(balaam)
 ```
 
-The Balaam model is one that allows to estimate both the average and variability of the bioavailability.
+The model will estimate the intra-subject variability and reference scaled estimates when the model allows it.
 
 Average bioequivalence may be assessed as usual based on the confidence intervals estimates for which we reject the null of average bioequivalence given that the lower bound (0.75) is below 0.80. The intra-subject variability may be assessed based on VarLB and VarUB. In this case, we reject the null hypoothesis of equal intra-subject variability between the test and the reference formulations since the 90% confidence interval does not include unity (i.e., 3.88 ≰ 1 < 10.91).
 
 When a LRD is either a NTI or HVD, we may use the reference scaled estimates given as `scLB` and `scUB` in order to perform the analysis of average bioequivalence. The regulatory constant and auxiliary parameter may be passed to the function (Haidar et al. 2008).
-
-## Higher Order: Dual, 2S4P, Williams
-
-These models perform a linear mixed model regression with
-
-ln(endpoint) ~ formulation + sequence + period + (1|id)
-
-fitted using the maximum likelihood estimation by default. The `REML = true` parameter may be used for using the restricted maximum likelihood estimation as the criteria instead.
-
-The model will estimate the intra-subject variability and reference scaled estimates when the model allows it.
 
 # References
 
