@@ -313,7 +313,10 @@ function dynamics_obj(odeexpr::Expr, pre, odevars, callvars, bvars, eqs, isstati
   params = []
   mteqs = []
   fname = gensym(:PumasDiffEqFunction)
-  diffeq = :(ODEProblem{false}($fname,nothing,nothing,nothing))
+  jname = gensym(:PumasJacobianFunction)
+  Wname = gensym(:PumasWFactFunction)
+  funcname = gensym(:PumasODEFunction)
+  diffeq = :(ODEProblem{false}($funcname,nothing,nothing,nothing))
 
   # DVar - create array of dynamic variables
   # Combines symbols (v's), the Variable constructor and
@@ -340,10 +343,19 @@ function dynamics_obj(odeexpr::Expr, pre, odevars, callvars, bvars, eqs, isstati
     push!(mteqs,lhsvar ~ convert_rhs_to_Expression(rhseq,bvars,dvars,params,t))
   end
   f_ex = generate_function(ODESystem(mteqs),dvars,params)[1]
+  J_ex = generate_jacobian(ODESystem(mteqs),dvars,params)[1]
+  if length(eqs.args) < 16
+    W_ex = generate_factorized_W(ODESystem(mteqs),dvars,params)[1]
+  else
+    W_ex = :nothing
+  end
 
   quote
     let
       $fname = $f_ex
+      $jname = $J_ex
+      $Wname = $W_ex
+      $funcname = ODEFunction($fname,jac=$jname,Wfact=$Wname)
       $diffeq
     end
   end
