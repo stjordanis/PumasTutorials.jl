@@ -342,10 +342,10 @@ function dynamics_obj(odeexpr::Expr, pre, odevars, callvars, bvars, eqs, isstati
     rhseq = eq.args[3]
     push!(mteqs,lhsvar ~ convert_rhs_to_Expression(rhseq,bvars,dvars,params,t))
   end
-  f_ex = generate_function(ODESystem(mteqs),dvars,params)[1]
-  J_ex = generate_jacobian(ODESystem(mteqs),dvars,params)[1]
+  f_ex = ModelingToolkit.generate_function(ODESystem(mteqs),dvars,params)[1]
+  J_ex = ModelingToolkit.generate_jacobian(ODESystem(mteqs),dvars,params)[1]
   if length(eqs.args) < 16
-    W_ex = generate_factorized_W(ODESystem(mteqs),dvars,params)[1]
+    W_ex = ModelingToolkit.generate_factorized_W(ODESystem(mteqs),dvars,params)[1]
   else
     W_ex = :nothing
   end
