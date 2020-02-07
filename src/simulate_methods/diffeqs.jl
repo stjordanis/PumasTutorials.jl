@@ -1,7 +1,8 @@
 function _build_diffeq_problem(m::PumasModel, subject::Subject, args...;
                                saveat=Float64[],
                                save_discont= isnothing(saveat) || isempty(saveat),
-                               continuity=:right, kwargs...)
+                               continuity=:right,
+                               callback = nothing, kwargs...)
   prob = typeof(m.prob) <: DiffEqBase.AbstractJumpProblem ? m.prob.prob : m.prob
   tspan = prob.tspan
   col = prob.p
@@ -25,11 +26,15 @@ function _build_diffeq_problem(m::PumasModel, subject::Subject, args...;
   # d_discontinuities are used to inform diffeq about the places where things change
   # suddenly in the model and introduce discontinuities in the derivates (such as
   # time varying covariates etc)
-  tstops,cb = ith_subject_cb(col,subject,Tu0,tspan[1],typeof(prob),saveat,save_discont,continuity)
+  tstops,_cb = ith_subject_cb(col,subject,Tu0,tspan[1],typeof(prob),saveat,save_discont,continuity)
   # tstops,cb,d_discontinuities = ith_subject_cb(col,subject,Tu0,tspan[1],typeof(prob),saveat,save_discont,continuity)
   Tt = promote_type(numtype(tstops), numtype(tspan))
   tspan = Tt.(tspan)
-  :callback ∈ keys(prob.kwargs) && (cb = CallbackSet(cb, prob.kwargs[:callback]))
+  if isnothing(callback)
+    cb = _cb
+  else
+    cb = CallbackSet(_cb, callback)
+  end
   # Remake problem of correct type
   new_f = make_function(prob,fd)
   remake(m.prob; f=new_f, u0=Tu0, tspan=tspan, callback=cb, saveat=saveat,

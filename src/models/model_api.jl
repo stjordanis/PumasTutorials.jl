@@ -85,11 +85,13 @@ Returns a tuple containing the ODE solution `sol` and collation `col`.
 function DiffEqBase.solve(m::PumasModel, subject::Subject,
                           param = init_param(m),
                           randeffs = sample_randeffs(m, param),
+                          args...;
                           saveat = observationtimes(subject),
-                          args...; kwargs...)
+                          callback = nothing,
+                          kwargs...)
   col = m.pre(param, randeffs, subject)
   m.prob === nothing && return NullDESolution(NullDEProblem(col))
-  prob = _problem(m,subject,col,args...;saveat=saveat,kwargs...)
+  prob = _problem(m,subject,col,args...;saveat=saveat,callback=callback,kwargs...)
   alg = m.prob isa ExplicitModel ? nothing : alg=AutoTsit5(Rosenbrock23())
   solve(prob,args...;alg=alg,kwargs...)
 end
@@ -98,6 +100,7 @@ function DiffEqBase.solve(m::PumasModel, pop::Population,
                           param = init_param(m),
                           randeffs = nothing,
                           args...;
+                          callback = nothing,
                           alg=AutoTsit5(Rosenbrock23()),
                           ensemblealg = EnsembleThreads(),
                           kwargs...)
@@ -105,7 +108,7 @@ function DiffEqBase.solve(m::PumasModel, pop::Population,
   function solve_prob_func(prob,i,repeat)
     _randeffs = randeffs === nothing ? sample_randeffs(m, param) : randeffs
     col = m.pre(param, _randeffs, pop[i])
-    _problem(m,pop[i],col,args...;kwargs...)
+    _problem(m,pop[i],col,args...;callback=callback,kwargs...)
   end
   prob = EnsembleProblem(m.prob,prob_func = solve_prob_func)
   solve(prob,alg,ensemblealg,args...;trajectories = length(pop),kwargs...)
@@ -178,13 +181,14 @@ to be repeated in the other API functions
                           # Estimation only uses subject.time for the
                           # observation time series
                           obstimes = subject.time,
+                          callback = nothing,
                           kwargs...)
   # collate that arguments
   collated = m.pre(param, randeffs, subject)
   # create solution object. By passing saveat=obstimes, we compute the solution only
   # at obstimes such that we can simply pass solution.u to m.derived
   _saveat = obstimes === nothing ? Float64[] : obstimes
-  _prob = _problem(m, subject, collated, args...; saveat=_saveat, kwargs...)
+  _prob = _problem(m, subject, collated, args...; saveat=_saveat, callback=callback, kwargs...)
   if _prob isa NullDEProblem
     dist = m.derived(collated, nothing, obstimes, subject, param, randeffs)
   else
@@ -229,9 +233,10 @@ function simobs(m::PumasModel, subject::Subject,
                 randeffs=sample_randeffs(m, param),
                 args...;
                 obstimes::AbstractArray=observationtimes(subject),
+                callback = nothing,
                 saveat=obstimes,kwargs...)
   col = m.pre(_rand(param), randeffs, subject)
-  prob = _problem(m, subject, col, args...; saveat=saveat, kwargs...)
+  prob = _problem(m, subject, col, args...; saveat=saveat, callback=callback, kwargs...)
   alg = m.prob isa ExplicitModel ? nothing : alg=AutoTsit5(Rosenbrock23())
   sol = prob !== nothing ? solve(prob, args...; alg=alg, kwargs...) : nothing
   derived = m.derived(col,sol,obstimes,subject,param,randeffs)
@@ -245,6 +250,7 @@ function simobs(m::PumasModel, pop::Population,
                 args...;
                 alg=AutoTsit5(Rosenbrock23()),
                 ensemblealg = EnsembleThreads(),
+                callback = nothing,
                 kwargs...)
 
   function simobs_prob_func(prob,i,repeat)
@@ -253,7 +259,7 @@ function simobs(m::PumasModel, pop::Population,
     col = m.pre(_param, _randeffs, pop[i])
     obstimes = :obstimes ∈ keys(kwargs) ? kwargs[:obstimes] : observationtimes(pop[i])
     saveat = :saveat ∈ keys(kwargs) ? kwargs[:saveat] : obstimes
-    _problem(m,pop[i],col,args...; saveat=saveat,kwargs...)
+    _problem(m,pop[i],col,args...; saveat=saveat, callback=callback, kwargs...)
   end
 
   function simobs_output_func(sol,i)
