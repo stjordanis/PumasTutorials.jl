@@ -20,7 +20,15 @@ function _build_diffeq_problem(m::PumasModel, subject::Subject, args...;
 
   # build a "modified" problem using DiffEqWrapper
   fd = DiffEqWrapper(prob.f.f, 0, zero(u0)./oneunit(eltype(tspan)))
-  ft = DiffEqBase.parameterless_type(typeof(prob.f))
+  if typeof(prob) <: DiffEqBase.AbstractODEProblem
+    _jac   = DiffEqBase.has_jac(prob.f) ? prob.f.jac : nothing
+    _Wfact = DiffEqBase.has_Wfact(prob.f) ? prob.f.Wfact : nothing
+    _Wfact_t = DiffEqBase.has_Wfact_t(prob.f) ? prob.f.Wfact_t : nothing
+    ft = ODEFunction{DiffEqBase.isinplace(prob)}(fd,jac=_jac,Wfact=_Wfact,Wfact_t = _Wfact_t)
+  else
+    ft = DiffEqBase.parameterless_type(typeof(prob.f))
+    new_f = make_function(prob,fd)
+  end
 
   # figure out callbacks and convert type for tspan if necessary
   # d_discontinuities are used to inform diffeq about the places where things change
@@ -36,7 +44,6 @@ function _build_diffeq_problem(m::PumasModel, subject::Subject, args...;
     cb = CallbackSet(_cb, callback)
   end
   # Remake problem of correct type
-  new_f = make_function(prob,fd)
   remake(m.prob; f=new_f, u0=Tu0, tspan=tspan, callback=cb, saveat=saveat,
                  tstops = tstops,# d_discontinuities=d_discontinuities,
                  save_first = !isnothing(saveat) && tspan[1] ∈ saveat)
