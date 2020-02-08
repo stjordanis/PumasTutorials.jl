@@ -138,7 +138,7 @@ end
     Pumas.marginal_nll(model_ip,subject,param,Pumas.LaplaceI())
 end
 
-@testset "Magic argument - lags" begin
+@testset "DCP - lags" begin
     # Test 3 of template_model_ev_system.jl
     mlag = @model begin
         @param    θ ∈ VectorDomain(4, lower=zeros(4), init=ones(4))
@@ -179,7 +179,87 @@ end
     @test_broken grad_FD[4] ≈ grad_AD[4] # is NaN
 end
 
-@testset "Magic argument - bioav" begin
+@testset "DCP - rate" begin
+    mrate = @model begin
+        @param    θ ∈ VectorDomain(4, lower=zeros(4), init=ones(4))
+        @random   η ~ MvNormal(Matrix{Float64}(I, 2, 2))
+
+        @pre begin
+            Ka = θ[1]
+            CL = θ[2]*exp(η[1])
+            V  = θ[3]*exp(η[2])
+            rate = θ[4]
+        end
+
+        @dynamics begin
+            Depot'   = -Ka*Depot
+            Central' =  Ka*Depot - (CL/V)*Central
+        end
+
+        @derived begin
+            cp = @. Central / V
+            cmax = maximum(cp)
+        end
+    end
+
+    subject = read_pumas(example_data("event_data/data2"), dvs = [:cp])[1]
+
+    θ₀ = [1.5, 1.0, 30.0, 5.0]
+    param = (θ = θ₀,)
+    randeffs = (η = [0.0,0.0],)
+
+    test_fun = function(θ)
+        _param = (θ = θ,)
+        sim = simobs(mrate, subject, _param, randeffs; abstol=1e-14, reltol=1e-14)
+        sim[:cmax]
+    end
+
+    grad_FD = FD_gradient(test_fun, θ₀)
+    grad_AD = AD_gradient(test_fun, θ₀)
+    @test grad_FD[4] ≈ grad_AD[4] # is NaN
+end
+
+@testset "DCP - duration" begin
+    mduration = @model begin
+        @param    θ ∈ VectorDomain(4, lower=zeros(4), init=ones(4))
+        @random   η ~ MvNormal(Matrix{Float64}(I, 2, 2))
+
+        @pre begin
+            Ka = θ[1]
+            CL = θ[2]*exp(η[1])
+            V  = θ[3]*exp(η[2])
+            duration = θ[4]
+        end
+
+        @dynamics begin
+            Depot'   = -Ka*Depot
+            Central' =  Ka*Depot - (CL/V)*Central
+        end
+
+        @derived begin
+            cp = @. Central / V
+            cmax = maximum(cp)
+        end
+    end
+
+    subject = read_pumas(example_data("event_data/data2"), dvs = [:cp])[1]
+
+    θ₀ = [1.5, 1.0, 30.0, 5.0]
+    param = (θ = θ₀,)
+    randeffs = (η = [0.0,0.0],)
+
+    test_fun = function(θ)
+        _param = (θ = θ,)
+        sim = simobs(mduration, subject, _param, randeffs; abstol=1e-14, reltol=1e-14)
+        sim[:cmax]
+    end
+
+    grad_FD = FD_gradient(test_fun, θ₀)
+    grad_AD = AD_gradient(test_fun, θ₀)
+    @test grad_FD[4] ≈ grad_AD[4] # is NaN
+end
+
+@testset "DCP - bioav" begin
     # Test 5 of template_model_ev_system.jl
     mbioav = @model begin
         @param    θ ∈ VectorDomain(4, lower=zeros(4), init=ones(4))

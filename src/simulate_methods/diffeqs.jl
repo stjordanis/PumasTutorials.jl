@@ -61,13 +61,12 @@ function build_pkpd_problem(_prob::DiffEqBase.AbstractJumpProblem,set_parameters
                                             _prob.jump_callback,_prob.variable_jumps),tstops
 end
 
-function ith_subject_cb(col,datai::Subject,u0,t0,ProbType,saveat,save_discont,continuity)
+function ith_subject_cb(pre,datai::Subject,u0,t0,ProbType,saveat,save_discont,continuity)
   isempty(datai.events) && return Float64[], nothing, Float64[]
   ss_abstol = 1e-12 # TODO: Make an option
   ss_reltol = 1e-12 # TODO: Make an option
   ss_max_iters = 1000
-  lags,bioav,rate,duration = get_magic_args(col,u0,t0)
-  events = adjust_event(datai.events,u0,lags,bioav,rate,duration)
+  events = adjust_event(datai.events,pre,u0)
   tstops = sorted_approx_unique(events)
   d_discontinuities = datai.covartime
   counter::Int = 1

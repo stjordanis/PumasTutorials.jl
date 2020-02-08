@@ -65,7 +65,8 @@ function adjust_event(events::AbstractVector{<:Event},args...)
   out = collect(adjust_event(ev, args...) for ev in events)
   sort!(out)
 end
-function adjust_event(ev::Event,u0,lags,bioav,rate_input,duration_input)
+function adjust_event(ev::Event,pre,u0)
+  lags,bioav,rate_input,duration_input = get_magic_args(ev,pre,u0,ev.time)
   rate = _cmt_value(ev, u0, rate_input, DEFAULT_RATE)
   duration = _cmt_value(ev, u0, duration_input, DEFAULT_DURATION)
   @assert rate == DEFAULT_RATE || duration == DEFAULT_DURATION
@@ -111,12 +112,14 @@ function increment_value(A::Number,x,k)
   A+x
 end
 
-function get_magic_args(pre,u0,t0)
-  p = pre(t0)
-  if haskey(p,:lags)
-    lags = p.lags
+function get_magic_args(ev,pre,u0,t)
+  _p = pre(t)
+  if haskey(_p,:lags)
+    lags = _cmt_value(ev, u0, _p.lags, DEFAULT_LAGS)
+    p = pre(t+lags)
   else
     lags = zero(eltype(t0))
+    p = _p
   end
 
   if haskey(p,:bioav)
@@ -139,8 +142,6 @@ function get_magic_args(pre,u0,t0)
 
   lags,bioav,rate,duration
 end
-
-
 
 # promote to correct numerical type (e.g. to handle Duals correctly)
 # TODO Unitful.jl support?
