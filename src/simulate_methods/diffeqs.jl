@@ -24,9 +24,8 @@ function _build_diffeq_problem(m::PumasModel, subject::Subject, args...;
     _jac   = DiffEqBase.has_jac(prob.f) ? prob.f.jac : nothing
     _Wfact = DiffEqBase.has_Wfact(prob.f) ? prob.f.Wfact : nothing
     _Wfact_t = DiffEqBase.has_Wfact_t(prob.f) ? prob.f.Wfact_t : nothing
-    ft = ODEFunction{DiffEqBase.isinplace(prob)}(fd,jac=_jac,Wfact=_Wfact,Wfact_t = _Wfact_t)
+    new_f = ODEFunction{DiffEqBase.isinplace(prob)}(fd,jac=_jac,Wfact=_Wfact,Wfact_t = _Wfact_t)
   else
-    ft = DiffEqBase.parameterless_type(typeof(prob.f))
     new_f = make_function(prob,fd)
   end
 
