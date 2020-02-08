@@ -22,22 +22,19 @@ function _build_diffeq_problem(m::PumasModel, subject::Subject, args...;
   fd = DiffEqWrapper(prob.f.f, 0, zero(u0)./oneunit(eltype(tspan)))
   ft = DiffEqBase.parameterless_type(typeof(prob.f))
 
+  Tt = promote_type(numtype(tstops), numtype(tspan))
+  _tspan = Tt.(tspan)
+
   # figure out callbacks and convert type for tspan if necessary
   # d_discontinuities are used to inform diffeq about the places where things change
   # suddenly in the model and introduce discontinuities in the derivates (such as
   # time varying covariates etc)
-  tstops,_cb = ith_subject_cb(col,subject,Tu0,tspan[1],typeof(prob),saveat,save_discont,continuity)
+  tstops,_cb = ith_subject_cb(col,subject,Tu0,_tspan[1],typeof(prob),saveat,save_discont,continuity)
   # tstops,cb,d_discontinuities = ith_subject_cb(col,subject,Tu0,tspan[1],typeof(prob),saveat,save_discont,continuity)
-  Tt = promote_type(numtype(tstops), numtype(tspan))
-  tspan = Tt.(tspan)
-  if isnothing(callback)
-    cb = _cb
-  else
-    cb = CallbackSet(_cb, callback)
-  end
+
   # Remake problem of correct type
   new_f = make_function(prob,fd)
-  remake(m.prob; f=new_f, u0=Tu0, tspan=tspan, callback=cb, saveat=saveat,
+  remake(m.prob; f=new_f, u0=Tu0, tspan=_tspan, callback=cb, saveat=saveat,
                  tstops = tstops,# d_discontinuities=d_discontinuities,
                  save_first = !isnothing(saveat) && tspan[1] ∈ saveat)
 end
