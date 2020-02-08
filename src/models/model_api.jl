@@ -135,7 +135,7 @@ function _problem(m::PumasModel, subject, col, args...;
       ___pk = pksol(t)
       (col=col, ___pk=___pk)
     end
-    u0  = m.init(col, tspan[1])
+    u0  = m.init(col(tspan[1]), tspan[1])
     _prob = PresetAnalyticalPKProblem(remake(m.prob.prob2; p=_col, u0=u0, tspan=tspan, saveat=saveat),pksol)
   else
     u0  = m.init(col, tspan[1])

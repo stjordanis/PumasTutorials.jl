@@ -6,7 +6,7 @@ function _build_diffeq_problem(m::PumasModel, subject::Subject, args...;
   prob = typeof(m.prob) <: DiffEqBase.AbstractJumpProblem ? m.prob.prob : m.prob
   tspan = prob.tspan
   col = prob.p
-  col0 = col(0) # would be great to get the numtype without this
+  col0 = col(prob.tspan[1]) # would be great to get the numtype without this
   u0 = prob.u0
 
   T = promote_type(numtype(col0), numtype(u0), numtype(tspan))
@@ -24,7 +24,10 @@ function _build_diffeq_problem(m::PumasModel, subject::Subject, args...;
     _jac   = DiffEqBase.has_jac(prob.f) ? prob.f.jac : nothing
     _Wfact = DiffEqBase.has_Wfact(prob.f) ? prob.f.Wfact : nothing
     _Wfact_t = DiffEqBase.has_Wfact_t(prob.f) ? prob.f.Wfact_t : nothing
-    new_f = ODEFunction{DiffEqBase.isinplace(prob)}(fd,jac=_jac,Wfact=_Wfact,Wfact_t = _Wfact_t)
+    new_f = ODEFunction{DiffEqBase.isinplace(prob)}(fd,
+                          jac=ParamUnwrap{DiffEqBase.isinplace(prob)}(_jac),
+                          Wfact=ParamUnwrap{DiffEqBase.isinplace(prob)}(_Wfact),
+                          Wfact_t = ParamUnwrap{DiffEqBase.isinplace(prob)}(_Wfact_t))
   else
     new_f = make_function(prob,fd)
   end
@@ -457,3 +460,12 @@ function (f::DiffEqWrapper)(du,u,h::DiffEqBase.AbstractHistoryFunction,p,t)
   f.f(du,u,h,p(t),t)
   f.rates_on > 0 && (du .+= f.rates)
 end
+
+struct ParamUnwrap{iip,F}
+  f::F
+  ParamUnwrap{iip}(f) where {iip} = new{iip,typeof(f)}(f)
+end
+(f::ParamUnwrap{false})(u,p,t) = f.f(u,p(t),t)
+(f::ParamUnwrap{false})(u,p,gamma,t) = f.f(u,p(t),gamma,t)
+(f::ParamUnwrap{true})(du,u,p,t) = f.f(du,u,p(t),t)
+(f::ParamUnwrap{true})(du,u,p,gamma,t) = f.f(du,u,p(t),gamma,t)
