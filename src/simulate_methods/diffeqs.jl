@@ -21,13 +21,13 @@ function _build_diffeq_problem(m::PumasModel, subject::Subject, args...;
   # build a "modified" problem using DiffEqWrapper
   fd = DiffEqWrapper(prob.f.f, 0, zero(u0)./oneunit(eltype(tspan)))
   if typeof(prob) <: DiffEqBase.AbstractODEProblem
-    _jac   = DiffEqBase.has_jac(prob.f) ? prob.f.jac : nothing
-    _Wfact = DiffEqBase.has_Wfact(prob.f) ? prob.f.Wfact : nothing
-    _Wfact_t = DiffEqBase.has_Wfact_t(prob.f) ? prob.f.Wfact_t : nothing
+    _jac   = DiffEqBase.has_jac(prob.f) ? ParamUnwrap{DiffEqBase.isinplace(prob)}(prob.f.jac) : nothing
+    _Wfact = DiffEqBase.has_Wfact(prob.f) ? ParamUnwrap{DiffEqBase.isinplace(prob)}(prob.f.Wfact) : nothing
+    _Wfact_t = DiffEqBase.has_Wfact_t(prob.f) ? ParamUnwrap{DiffEqBase.isinplace(prob)}(prob.f.Wfact_t) : nothing
     new_f = ODEFunction{DiffEqBase.isinplace(prob)}(fd,
-                          jac=ParamUnwrap{DiffEqBase.isinplace(prob)}(_jac),
-                          Wfact=ParamUnwrap{DiffEqBase.isinplace(prob)}(_Wfact),
-                          Wfact_t = ParamUnwrap{DiffEqBase.isinplace(prob)}(_Wfact_t))
+                          jac=_jac,
+                          Wfact=_Wfact,
+                          Wfact_t = _Wfact_t)
   else
     new_f = make_function(prob,fd)
   end
