@@ -120,7 +120,7 @@ function get_magic_args(ev,pre,u0,t)
     lags = _cmt_value(ev, u0, _p.lags, DEFAULT_LAGS)
     p = pre(t+lags)
   else
-    lags = zero(eltype(t0))
+    lags = zero(eltype(ev.time))
     p = _p
   end
 
