@@ -29,7 +29,13 @@ function _build_diffeq_problem(m::PumasModel, subject::Subject, args...;
   tstops,_cb = ith_subject_cb(col,subject,Tu0,tspan[1],typeof(prob),saveat,save_discont,continuity)
   # tstops,cb,d_discontinuities = ith_subject_cb(col,subject,Tu0,tspan[1],typeof(prob),saveat,save_discont,continuity)
 
-  Tt = promote_type(numtype(tstops), numtype(tspan))
+  if isnothing(callback)
+    cb = _cb
+  else
+    cb = CallbackSet(_cb, callback)
+  end
+
+  Tt = promote_type(t_numtype(u0,cb), numtype(tstops), numtype(tspan))
   _tspan = Tt.(tspan)
 
   # Remake problem of correct type

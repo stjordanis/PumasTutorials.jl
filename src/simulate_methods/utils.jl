@@ -158,6 +158,15 @@ numtype(x::NamedTuple) = numtype(values(x))
 numtype(x::AbstractString) = Float32 # To allow string covariates
 numtype(x::Integer) = Float32
 
+t_numtype(u0,callback::Nothing) = Float32
+function t_numtype(u0,callback)
+  if callback.continuous_callbacks === ()
+    Float32
+  else
+    eltype(u0)
+  end
+end
+
 zero(x) = Base.zero(x)
 zero(x::Tuple) = map(zero,x)
 zero(x::NamedTuple) = map(zero,x)
