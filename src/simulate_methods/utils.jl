@@ -42,6 +42,8 @@ function _adjust_event(ev::Event,u0,lags,bioav,rate,duration)
     _duration *= _cmt_value(ev, u0, bioav, DEFAULT_BIOAV)
   end
 
+  _amt = ev.amt * _cmt_value(ev, u0, bioav, DEFAULT_BIOAV)
+
   if ev.rate_dir == -1
     time = ev.base_time + _duration
   else
@@ -49,12 +51,12 @@ function _adjust_event(ev::Event,u0,lags,bioav,rate,duration)
   end
 
   time += _cmt_value(ev, u0, lags, DEFAULT_LAGS)
-  Event(ev.amt, time, ev.evid, ev.cmt, _rate, _duration, ev.ss, ev.ii, ev.base_time, ev.rate_dir)
+  Event(_amt, time, ev.evid, ev.cmt, _rate, _duration, ev.ss, ev.ii, ev.base_time, ev.rate_dir)
 end
 
 """
-  adjust_event(event,lags,bioav,rate,duration) -> Event
-  adjust_event(events,lags,bioav,rate,duration) -> Event[]
+  adjust_event(event,pre,u0) -> Event
+  adjust_event(events,pre,u0) -> Event[]
 
 Adjust the event(s) with the "magic arguments" lags, bioav, rate
 and duration. Returns either the original event or an adjusted event

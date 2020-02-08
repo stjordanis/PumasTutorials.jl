@@ -32,11 +32,10 @@ function _build_analytical_problem(m::PumasModel, subject::Subject, tspan, col,
     Ttspan = map(float, tspan)
   end
 
-  lags,bioav,time_adjust_rate,duration = get_magic_args(col,Tu0,Ttspan[1])
-  events = adjust_event(subject.events,u0,lags,bioav,time_adjust_rate,duration)
+  events = adjust_event(subject.events,col,u0)
   times = sorted_approx_unique(events)
 
-  prob = PKPDAnalyticalProblem{false}(f, Tu0, Ttspan,  events, times, col, bioav)
+  prob = PKPDAnalyticalProblem{false}(f, Tu0, Ttspan,  events, times, col)
 end
 
 function DiffEqBase.solve(prob::PKPDAnalyticalProblem,
@@ -45,7 +44,6 @@ function DiffEqBase.solve(prob::PKPDAnalyticalProblem,
   Tu0 = prob.u0
   Ttspan = prob.tspan
   col = prob.p
-  bioav = prob.bioav
   events = prob.events
   times = prob.times
   u = Vector{typeof(Tu0)}(undef, length(times))
@@ -89,7 +87,7 @@ function DiffEqBase.solve(prob::PKPDAnalyticalProblem,
       cur_ev.evid >= 3 && (Tu0 = zero(Tu0))
       @assert cur_ev.time == t
       if cur_ev.ss == 0
-        dose,_rate = create_dose_rate_vector(cur_ev,Tu0,rate,bioav)
+        dose,_rate = create_dose_rate_vector(cur_ev,Tu0,rate)
 
         (t0 != t) && cur_ev.evid < 3 && (Tu0 = f(t,t0,Tu0,last_dose,col,rate))
         rate = _rate
@@ -100,10 +98,10 @@ function DiffEqBase.solve(prob::PKPDAnalyticalProblem,
       else # handle steady state
         ss_time = t0
         # No steady state solution given, use a fallback
-        dose,_rate = create_ss_dose_rate_vector(cur_ev,Tu0,rate,bioav)
+        dose,_rate = create_ss_dose_rate_vector(cur_ev,Tu0,rate)
         if cur_ev.rate > 0
           ss_rate = _rate
-          _duration = (bioav*cur_ev.amt)/cur_ev.rate
+          _duration = cur_ev.amt/cur_ev.rate
           ss_overlap_duration = mod(_duration,cur_ev.ii)
           ss_rate_multiplier = 1 + (_duration>cur_ev.ii)*(_duration ÷ cur_ev.ii)
           ss_cmt = cur_ev.cmt
@@ -192,25 +190,17 @@ function DiffEqBase.solve(prob::PKPDAnalyticalProblem,
                                        true,0,retcode,continuity)
 end
 
-function create_dose_rate_vector(cur_ev,u0,rate,bioav)
+function create_dose_rate_vector(cur_ev,u0,rate)
   if cur_ev.rate == 0
-    if typeof(bioav) <: Number
-      return increment_value(zero(u0),bioav*cur_ev.amt,cur_ev.cmt),rate
-    else
-      return increment_value(zero(u0),bioav[cur_ev.cmt]*cur_ev.amt,cur_ev.cmt),rate
-    end
+    increment_value(zero(u0),cur_ev.amt,cur_ev.cmt),rate
   else
     return zero(u0),increment_value(rate,cur_ev.rate_dir*cur_ev.rate,cur_ev.cmt)
   end
 end
 
-function create_ss_dose_rate_vector(cur_ev,u0,rate,bioav)
+function create_ss_dose_rate_vector(cur_ev,u0,rate)
   if cur_ev.rate == 0
-    if typeof(bioav) <: Number
-      return set_value(zero(u0),bioav*cur_ev.amt,cur_ev.cmt),rate
-    else
-      return set_value(zero(u0),bioav[cur_ev.cmt]*cur_ev.amt,cur_ev.cmt),rate
-    end
+    return set_value(zero(u0),cur_ev.amt,cur_ev.cmt),rate
   else
     return zero(u0),set_value(zero(u0),cur_ev.rate_dir*cur_ev.rate,cur_ev.cmt)
   end

@@ -107,7 +107,7 @@ function ith_subject_cb(pre,datai::Subject,u0,t0,ProbType,saveat,save_discont,co
     while counter <= length(events) && events[counter].time <= integrator.t
       cur_ev = events[counter]
       @inbounds if (cur_ev.evid == 1 || cur_ev.evid == -1) && cur_ev.ss == 0
-        dose!(integrator,integrator.u,cur_ev,bioav,last_restart)
+        dose!(integrator,integrator.u,cur_ev,last_restart)
         counter += 1
       elseif cur_ev.evid >= 3
         if typeof(integrator.u) <: Union{Number,FieldVector,SArray,SLArray}
@@ -125,7 +125,7 @@ function ith_subject_cb(pre,datai::Subject,u0,t0,ProbType,saveat,save_discont,co
           f.f.rates .= 0
         end
 
-        cur_ev.evid == 4 && dose!(integrator,integrator.u,cur_ev,bioav,last_restart)
+        cur_ev.evid == 4 && dose!(integrator,integrator.u,cur_ev,last_restart)
         counter += 1
       elseif cur_ev.ss > 0
         if !ss_mode[]
@@ -148,11 +148,7 @@ function ith_subject_cb(pre,datai::Subject,u0,t0,ProbType,saveat,save_discont,co
           ProbType <: DiffEqBase.SDEProblem && (integrator.W.save_everystep=false)
 
           ss_time[] = integrator.t
-          if typeof(bioav) <: Number
-            _duration = (bioav*cur_ev.amt)/cur_ev.rate
-          else
-            _duration = (bioav[cur_ev.cmt]*cur_ev.amt)/cur_ev.rate
-          end
+          _duration = cur_ev.amt/cur_ev.rate
           ss_duration[] = _duration
           ss_overlap_duration[] = mod(_duration,cur_ev.ii)
           ss_ii[] = cur_ev.ii
@@ -162,7 +158,7 @@ function ith_subject_cb(pre,datai::Subject,u0,t0,ProbType,saveat,save_discont,co
           ss_idx[] = length(integrator.sol)
           ss_cache .= integrator.u
           ss_reset_cache .= integrator.u
-          ss_dose!(integrator,integrator.u,cur_ev,bioav,ss_rate_multiplier,ss_rate_end)
+          ss_dose!(integrator,integrator.u,cur_ev,ss_rate_multiplier,ss_rate_end)
           add_tstop!(integrator,ss_end[])
           cur_ev.rate > 0 && add_tstop!(integrator,ss_rate_end[])
         elseif integrator.t == ss_end[]
@@ -194,7 +190,7 @@ function ith_subject_cb(pre,datai::Subject,u0,t0,ProbType,saveat,save_discont,co
               end
             end
 
-            ss_dose!(integrator,integrator.u,cur_ev,bioav,ss_rate_multiplier,ss_rate_end)
+            ss_dose!(integrator,integrator.u,cur_ev,ss_rate_multiplier,ss_rate_end)
 
             if integrator.t == integrator.sol.prob.tspan[2]
               # If there was a steady state that went over, it will have added
@@ -250,7 +246,7 @@ function ith_subject_cb(pre,datai::Subject,u0,t0,ProbType,saveat,save_discont,co
           else #Failure to converge, go again
             ss_cache .= integrator.u
             ss_counter[] += 1
-            ss_dose!(integrator,integrator.u,cur_ev,bioav,ss_rate_multiplier,ss_rate_end)
+            ss_dose!(integrator,integrator.u,cur_ev,ss_rate_multiplier,ss_rate_end)
             ss_rate_end[] < ss_end[] && add_tstop!(integrator,ss_rate_end[])
             #add_tstop!(integrator,ss_end[])
           end
@@ -308,7 +304,7 @@ function ith_subject_cb(pre,datai::Subject,u0,t0,ProbType,saveat,save_discont,co
   tstops,DiscreteCallback(condition,affect!,subject_cb_initialize!,save_positions)
 end
 
-function dose!(integrator,u,cur_ev,bioav,last_restart)
+function dose!(integrator,u,cur_ev,last_restart)
 
   if typeof(integrator.sol.prob) <: DDEProblem
     f = integrator.f
@@ -317,11 +313,7 @@ function dose!(integrator,u,cur_ev,bioav,last_restart)
   end
 
   if cur_ev.rate == 0
-    if typeof(bioav) <: Number
-      @views integrator.u[cur_ev.cmt] += bioav*cur_ev.amt
-    else
-      @views integrator.u[cur_ev.cmt] += bioav[cur_ev.cmt]*cur_ev.amt
-    end
+    @views integrator.u[cur_ev.cmt] += cur_ev.amt
   else
     if cur_ev.rate_dir > 0 || integrator.t - cur_ev.duration > last_restart[]
       f.f.rates_on += cur_ev.evid > 0
@@ -330,14 +322,10 @@ function dose!(integrator,u,cur_ev,bioav,last_restart)
   end
 end
 
-function dose!(integrator,u::Union{SArray,SLArray,FieldVector},cur_ev,bioav,last_restart)
+function dose!(integrator,u::Union{SArray,SLArray,FieldVector},cur_ev,last_restart)
   f = integrator.f
   if cur_ev.rate == 0
-    if typeof(bioav) <: Number
-      integrator.u = StaticArrays.setindex(integrator.u,integrator.u[cur_ev.cmt] + bioav*cur_ev.amt,cur_ev.cmt)
-    else
-      integrator.u = StaticArrays.setindex(integrator.u,integrator.u[cur_ev.cmt] + bioav[cur_ev.cmt]*cur_ev.amt,cur_ev.cmt)
-    end
+    integrator.u = StaticArrays.setindex(integrator.u,integrator.u[cur_ev.cmt] + cur_ev.amt,cur_ev.cmt)
   else
     if cur_ev.rate_dir > 0 || integrator.t - cur_ev.duration > last_restart[]
       f.f.rates_on += cur_ev.evid > 0
@@ -346,31 +334,23 @@ function dose!(integrator,u::Union{SArray,SLArray,FieldVector},cur_ev,bioav,last
   end
 end
 
-function ss_dose!(integrator,u,cur_ev,bioav,ss_rate_multiplier,ss_rate_end)
+function ss_dose!(integrator,u,cur_ev,ss_rate_multiplier,ss_rate_end)
   f = integrator.f
   if cur_ev.rate > 0
     f.f.rates_on = true
     f.f.rates[cur_ev.cmt] = ss_rate_multiplier[]*cur_ev.rate*cur_ev.rate_dir
   else
-    if typeof(bioav) <: Number
-      integrator.u[cur_ev.cmt] += bioav*cur_ev.amt
-    else
-      integrator.u[cur_ev.cmt] += bioav[cur_ev.cmt]*cur_ev.amt
-    end
+    integrator.u[cur_ev.cmt] += cur_ev.amt
   end
 end
 
-function ss_dose!(integrator,u::Union{SArray,SLArray,FieldVector},cur_ev,bioav,ss_rate_multiplier,ss_rate_end)
+function ss_dose!(integrator,u::Union{SArray,SLArray,FieldVector},cur_ev,ss_rate_multiplier,ss_rate_end)
   f = integrator.f
   if cur_ev.rate > 0
     f.f.rates_on = true
     f.f.rates = StaticArrays.setindex(f.f.rates,ss_rate_multiplier[]*cur_ev.rate*cur_ev.rate_dir,cur_ev.cmt)
   else
-    if typeof(bioav) <: Number
-      integrator.u = StaticArrays.setindex(integrator.u,integrator.u[cur_ev.cmt]+bioav*cur_ev.amt,cur_ev.cmt)
-    else
-      integrator.u = StaticArrays.setindex(integrator.u,integrator.u[cur_ev.cmt]+bioav[cur_ev.cmt]*cur_ev.amt,cur_ev.cmt)
-    end
+    integrator.u = StaticArrays.setindex(integrator.u,integrator.u[cur_ev.cmt]+cur_ev.amt,cur_ev.cmt)
   end
 end
 
