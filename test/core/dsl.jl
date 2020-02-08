@@ -116,8 +116,18 @@ subject = data[1]
 sol1 = solve(mdsl,subject,param,randeffs)
 sol2 = solve(mobj,subject,param,randeffs)
 
+
 @test sol1[10].Central ≈ sol2[10].Central
 @test sol1[2,:] ≈ sol2[2,:]
+
+sol1 = solve(mdsl,subject,param,randeffs,alg=Rosenbrock23())
+sol2 = solve(mobj,subject,param,randeffs,alg=Rosenbrock23())
+
+sol1 = solve(mdsl,subject,param,randeffs,alg=TRBDF2())
+sol2 = solve(mobj,subject,param,randeffs,alg=TRBDF2())
+
+sol1 = solve(mdsl,subject,param,randeffs,alg=ROCK2())
+sol2 = solve(mobj,subject,param,randeffs,alg=ROCK2())
 
 conditional_nll(mdsl,subject,param,randeffs)
 conditional_nll(mobj,subject,param,randeffs)
