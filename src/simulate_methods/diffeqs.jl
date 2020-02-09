@@ -6,7 +6,7 @@ function _build_diffeq_problem(m::PumasModel, subject::Subject, args...;
   prob = typeof(m.prob) <: DiffEqBase.AbstractJumpProblem ? m.prob.prob : m.prob
   tspan = prob.tspan
   col = prob.p
-  col0 = col(0) # would be great to get the numtype without this
+  col0 = col(prob.tspan[1]) # would be great to get the numtype without this
   u0 = prob.u0
 
   T = promote_type(numtype(col0), numtype(u0), numtype(tspan))
@@ -20,7 +20,17 @@ function _build_diffeq_problem(m::PumasModel, subject::Subject, args...;
 
   # build a "modified" problem using DiffEqWrapper
   fd = DiffEqWrapper(prob.f.f, 0, zero(u0)./oneunit(eltype(tspan)))
-  ft = DiffEqBase.parameterless_type(typeof(prob.f))
+  if typeof(prob) <: DiffEqBase.AbstractODEProblem
+    _jac   = DiffEqBase.has_jac(prob.f) ? ParamUnwrap{DiffEqBase.isinplace(prob)}(prob.f.jac) : nothing
+    _Wfact = DiffEqBase.has_Wfact(prob.f) ? ParamUnwrap{DiffEqBase.isinplace(prob)}(prob.f.Wfact) : nothing
+    _Wfact_t = DiffEqBase.has_Wfact_t(prob.f) ? ParamUnwrap{DiffEqBase.isinplace(prob)}(prob.f.Wfact_t) : nothing
+    new_f = ODEFunction{DiffEqBase.isinplace(prob)}(fd,
+                          jac=_jac,
+                          Wfact=_Wfact,
+                          Wfact_t = _Wfact_t)
+  else
+    new_f = make_function(prob,fd)
+  end
 
   # figure out callbacks and convert type for tspan if necessary
   # d_discontinuities are used to inform diffeq about the places where things change
@@ -35,7 +45,6 @@ function _build_diffeq_problem(m::PumasModel, subject::Subject, args...;
   _tspan = Tt.(tspan)
 
   # Remake problem of correct type
-  new_f = make_function(prob,fd)
   remake(m.prob; f=new_f, u0=Tu0, tspan=_tspan, callback=cb, saveat=saveat,
                  tstops = tstops,# d_discontinuities=d_discontinuities,
                  save_first = !isnothing(saveat) && tspan[1] ∈ saveat)
@@ -429,3 +438,12 @@ function (f::DiffEqWrapper)(du,u,h::DiffEqBase.AbstractHistoryFunction,p,t)
   f.f(du,u,h,p(t),t)
   f.rates_on > 0 && (du .+= f.rates)
 end
+
+struct ParamUnwrap{iip,F}
+  f::F
+  ParamUnwrap{iip}(f) where {iip} = new{iip,typeof(f)}(f)
+end
+(f::ParamUnwrap{false})(u,p,t) = f.f(u,p(t),t)
+(f::ParamUnwrap{false})(u,p,gamma,t) = f.f(u,p(t),gamma,t)
+(f::ParamUnwrap{true})(du,u,p,t) = f.f(du,u,p(t),t)
+(f::ParamUnwrap{true})(du,u,p,gamma,t) = f.f(du,u,p(t),gamma,t)

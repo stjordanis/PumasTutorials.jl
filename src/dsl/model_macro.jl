@@ -315,6 +315,7 @@ function dynamics_obj(odeexpr::Expr, pre, odevars, callvars, bvars, eqs, isstati
   fname = gensym(:PumasDiffEqFunction)
   jname = gensym(:PumasJacobianFunction)
   Wname = gensym(:PumasWFactFunction)
+  W_tname = gensym(:PumasW_tFactFunction)
   funcname = gensym(:PumasODEFunction)
   diffeq = :(ODEProblem{false}($funcname,nothing,nothing,nothing))
 
@@ -342,12 +343,16 @@ function dynamics_obj(odeexpr::Expr, pre, odevars, callvars, bvars, eqs, isstati
     rhseq = eq.args[3]
     push!(mteqs,lhsvar ~ convert_rhs_to_Expression(rhseq,bvars,dvars,params,t))
   end
+
   f_ex = ModelingToolkit.generate_function(ODESystem(mteqs),dvars,params)[1]
   J_ex = ModelingToolkit.generate_jacobian(ODESystem(mteqs),dvars,params)[1]
   if length(eqs.args) < 16
-    W_ex = ModelingToolkit.generate_factorized_W(ODESystem(mteqs),dvars,params)[1]
+    W_exs = ModelingToolkit.generate_factorized_W(ODESystem(mteqs),dvars,params)
+    W_ex = W_exs[1][1]
+    W_t_ex = W_exs[2][1]
   else
     W_ex = :nothing
+    W_t_ex = :nothing
   end
 
   quote
@@ -355,7 +360,8 @@ function dynamics_obj(odeexpr::Expr, pre, odevars, callvars, bvars, eqs, isstati
       $fname = $f_ex
       $jname = $J_ex
       $Wname = $W_ex
-      $funcname = ODEFunction($fname,jac=$jname,Wfact=$Wname)
+      $W_tname = $W_t_ex
+      $funcname = ODEFunction($fname,jac=$jname,Wfact=$Wname,Wfact_t=$W_tname)
       $diffeq
     end
   end
