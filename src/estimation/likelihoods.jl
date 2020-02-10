@@ -342,67 +342,6 @@ function marginal_nll(m::PumasModel,
 end
 
 function marginal_nll(m::PumasModel,
-                      # restrict to Vector to avoid distributed arrays taking
-                      # this path
-                      population::Vector{<:Subject},
-                      args...;
-                      parallel_type::ParallelType=Threading,
-                      kwargs...)
-
-  nll1 = marginal_nll(m, population[1], args...; kwargs...)
-  # Compute first subject separately to determine return type and to return
-  # early in case the parameter values cause the likelihood to be Inf. This
-  # can e.g. happen if the ODE solver can't solve the ODE for the chosen
-  # parameter values.
-  if isinf(nll1)
-    return nll1
-  end
-
-  # The different parallel computations are separated out into functions
-  # to make it easier to infer the return types
-  if parallel_type === Serial
-    return sum(subject -> marginal_nll(m, subject, args...; kwargs...), population)
-  elseif parallel_type === Threading
-    return _marginal_nll_threads(nll1, m, population, args...; kwargs...)
-  elseif parallel_type === Distributed # Distributed
-    return _marginal_nll_pmap(nll1, m, population, args...; kwargs...)
-  else
-    throw(ArgumentError("parallel type $parallel_type not implemented"))
-  end
-end
-
-function _marginal_nll_threads(nll1::T,
-                               m::PumasModel,
-                               population::Vector{<:Subject},
-                               args...;
-                               kwargs...)::T where T
-
-  # Allocate array to store likelihood values for each subject in the threaded
-  # for loop
-  nlls = fill(T(Inf), length(population) - 1)
-
-  # Run threaded for loop for the remaining subjects
-  Threads.@threads for i in 2:length(population)
-    nlls[i - 1] = marginal_nll(m, population[i], args...; kwargs...)
-  end
-
-  return nll1 + sum(nlls)
-end
-
-function _marginal_nll_pmap(nll1::T,
-                            m::PumasModel,
-                            population::Vector{<:Subject},
-                            args...;
-                            kwargs...)::T where T
-
-  nlls = convert(Vector{T},
-                 pmap(subject -> marginal_nll(m, subject, args...; kwargs...),
-                 population[2:length(population)]))
-
-    return nll1 + sum(nlls)
-end
-
-function marginal_nll(m::PumasModel,
                       subject::Subject,
                       param::NamedTuple,
                       vrandeffsorth::AbstractVector,
@@ -491,6 +430,81 @@ function marginal_nll(m::PumasModel,
   sol = solve(intprob,approx.quadalg,reltol=ireltol,
               abstol=iabstol,maxiters = imaxiters)
   -log(sol.u)
+end
+
+# marginall_nll for whole populations
+function marginal_nll(m::PumasModel,
+                      # restrict to Vector to avoid distributed arrays taking
+                      # this path
+                      population::Vector{<:Subject},
+                      args...;
+                      parallel_type::ParallelType=Threading,
+                      kwargs...)
+
+  nll1 = marginal_nll(m, population[1], args...; kwargs...)
+  # Compute first subject separately to determine return type and to return
+  # early in case the parameter values cause the likelihood to be Inf. This
+  # can e.g. happen if the ODE solver can't solve the ODE for the chosen
+  # parameter values.
+  if isinf(nll1)
+    return nll1
+  end
+
+  # The different parallel computations are separated out into functions
+  # to make it easier to infer the return types
+  if parallel_type === Serial
+    return sum(subject -> marginal_nll(m, subject, args...; kwargs...), population)
+  elseif parallel_type === Threading
+    return _marginal_nll_threads(nll1, m, population, args...; kwargs...)
+  elseif parallel_type === Distributed # Distributed
+    return _marginal_nll_pmap(nll1, m, population, args...; kwargs...)
+  else
+    throw(ArgumentError("parallel type $parallel_type not implemented"))
+  end
+end
+
+function _marginal_nll_threads(nll1::T,
+                               m::PumasModel,
+                               population::Vector{<:Subject},
+                               args...;
+                               kwargs...)::T where T
+
+  # Allocate array to store likelihood values for each subject in the threaded
+  # for loop
+  nlls = fill(T(Inf), length(population) - 1)
+
+  # Run threaded for loop for the remaining subjects
+  Threads.@threads for i in 2:length(population)
+    nlls[i - 1] = marginal_nll(m, population[i], args...; kwargs...)
+  end
+
+  return nll1 + sum(nlls)
+end
+
+function _marginal_nll_pmap(nll1::T,
+                            m::PumasModel,
+                            population::Vector{<:Subject},
+                            args...;
+                            kwargs...)::T where T
+
+  nlls = convert(Vector{T},
+                 pmap(subject -> marginal_nll(m, subject, args...; kwargs...),
+                 population[2:length(population)]))
+
+    return nll1 + sum(nlls)
+end
+
+function marginal_nll(m::PumasModel,
+                      # restrict to Vector to avoid distributed arrays taking
+                      # this path
+                      population::Vector{<:Subject},
+                      param::NamedTuple,
+                      vvrandeffsorth::Vector,
+                      args...; kwargs...)
+
+  return sum(zip(population, vvrandeffsorth)) do (subject, vrandeffsorth)
+    marginal_nll(m, subject, param, vrandeffsorth, args...; kwargs...)
+  end
 end
 
 # deviance is NONMEM-equivalent marginal negative loglikelihood
@@ -1147,8 +1161,20 @@ function Base.getproperty(f::FittedPumasModel{<:Any,<:Any,<:Optim.MultivariateOp
   end
 end
 
-marginal_nll(      f::FittedPumasModel) = marginal_nll(f.model, f.data, coef(f), f.approx)
-StatsBase.deviance(f::FittedPumasModel) = deviance(    f.model, f.data, coef(f), f.approx)
+marginal_nll(fpm::FittedPumasModel) = marginal_nll(
+  fpm.model,
+  fpm.data,
+  coef(fpm),
+  fpm.vvrandeffsorth,
+  fpm.approx,
+  fpm.args...; fpm.kwargs...)
+StatsBase.deviance(fpm::FittedPumasModel) = deviance(
+  fpm.model,
+  fpm.data,
+  coef(fpm),
+  fpm.vvrandeffsorth,
+  fpm.approx,
+  fpm.args...; fpm.kwargs...)
 
 function _observed_information(f::FittedPumasModel,
                                 ::Val{Score},
@@ -1345,9 +1371,9 @@ function StatsBase.informationmatrix(f::FittedPumasModel; expected::Bool=true)
   param         = coef(f)
   vrandeffsorth = f.vvrandeffsorth
   if expected
-    return sum(_expected_information(model, data[i], param, vrandeffsorth[i], f.approx) for i in 1:length(data))
+    return sum(_expected_information(model, data[i], param, vrandeffsorth[i], f.approx, f.args...; f.kwargs...) for i in 1:length(data))
   else
-    return first(_observed_information(f, Val(false)))
+    return first(_observed_information(f, Val(false), args...; kwargs...))
   end
 end
 
@@ -1356,10 +1382,10 @@ end
 
 Compute the covariance matrix of the population parameters
 """
-function StatsBase.vcov(f::FittedPumasModel, args...; kwargs...)
+function StatsBase.vcov(f::FittedPumasModel)
 
   # Compute the observed information based on the Hessian (H) and the product of the outer scores (S)
-  H, S = _observed_information(f, Val(true), args...; kwargs...)
+  H, S = _observed_information(f, Val(true), f.args...; f.kwargs...)
 
   # Use generialized eigenvalue decomposition to compute inv(H)*S*inv(H)
   F = eigen(Symmetric(H), Symmetric(S))
@@ -1474,9 +1500,9 @@ end
 Compute the `vcov` matrix and return a struct used for inference
 based on the fitted model `fpm`.
 """
-function infer(fpm::FittedPumasModel, args...; level = 0.95, kwargs...)
+function infer(fpm::FittedPumasModel; level = 0.95)
   print("Calculating: variance-covariance matrix")
-  _vcov = vcov(fpm, args...; kwargs...)
+  _vcov = vcov(fpm, fpm.args...; fpm.kwargs...)
   println(". Done.")
   FittedPumasModelInference(fpm, _vcov, level)
 end
@@ -1489,6 +1515,6 @@ end
 # empirical_bayes_dist for FittedPumasModel
 function empirical_bayes_dist(fpm::FittedPumasModel)
   map(zip(fpm.data, fpm.vvrandeffsorth)) do (subject, vrandeffsorth)
-      empirical_bayes_dist(fpm.model, subject, coef(fpm), vrandeffsorth, fpm.approx)
+      empirical_bayes_dist(fpm.model, subject, coef(fpm), vrandeffsorth, fpm.approx, fpm.args...; fpm.kwargs...)
   end
 end

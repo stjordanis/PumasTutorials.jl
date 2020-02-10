@@ -489,8 +489,8 @@ end
     @test ebe_cov[i].η.Σ.mat[:] ≈ foce_ebes_cov[i,:] atol=1e-3
   end
 
-  @test length(Pumas.epred(theopmodel_foce, theopp[1], param, 1000).dv) == 11
-  @test Pumas.cpred(  theopmodel_foce, theopp[1], param).dv ≈ [
+  @test length(Pumas.epredict(theopmodel_foce, theopp[1], param, 1000).dv) == 11
+  @test Pumas._predict(  theopmodel_foce, theopp[1], param, Pumas.FOCE()).dv ≈ [
     0.0
     4.9049755499300955
     7.779812894972983
@@ -502,7 +502,7 @@ end
     3.4538453107724867
     2.717339295201133
     1.0438615786511665] rtol=1e-6
-  @test Pumas.cpredi( theopmodel_foce, theopp[1], param).dv ≈ [
+  @test Pumas._predict( theopmodel_foce, theopp[1], param, Pumas.FOCEI()).dv ≈ [
     0.0
     4.9049755499300955
     7.779812894972983
@@ -514,7 +514,7 @@ end
     3.4538453107724867
     2.717339295201133
     1.0438615786511665] rtol=1e-6
-  @test Pumas.pred(   theopmodel_foce, theopp[1], param).dv ≈ [
+  @test Pumas._predict(   theopmodel_foce, theopp[1], param, Pumas.FO()).dv ≈ [
     0.0
     4.275044896193946
     6.67731216398507
@@ -526,7 +526,7 @@ end
     4.389649021685277
     3.4538248683011945
     1.3267830785309427] rtol=1e-6
-  @test wresiduals(   theopmodel_foce, theopp[1], param, nothing, Pumas.FO()).dv ≈ [
+  @test wresiduals(   theopmodel_foce, theopp[1], param, Pumas.FO()).dv ≈ [
      1.1879984032756807
     -0.5121540697427261
      1.177641761770986
@@ -538,7 +538,7 @@ end
      1.38286211294743
      1.8217361795780522
      2.2749279342557145] rtol=1e-6
-  @test wresiduals(  theopmodel_foce, theopp[1], param, nothing, Pumas.FOCE()).dv ≈ [
+  @test wresiduals(  theopmodel_foce, theopp[1], param, Pumas.FOCE()).dv ≈ [
      1.1879984032756807
     -0.40449239905538514
      1.4078834621663032
@@ -550,7 +550,7 @@ end
      1.229426426138302
      1.6689875690147757
      2.207038336508923] rtol=1e-6
-  @test wresiduals( theopmodel_foce, theopp[1], param, nothing, Pumas.FOCEI()).dv ≈ [ 1.1879984032756807
+  @test wresiduals( theopmodel_foce, theopp[1], param, Pumas.FOCEI()).dv ≈ [ 1.1879984032756807
    -0.40449239905538514
     1.4078834621663032
     1.7442967882790288
@@ -561,7 +561,7 @@ end
     1.229426426138302
     1.6689875690147757
     2.207038336508923] rtol=1e-6
-  @test Pumas.iwres(  theopmodel_foce, theopp[1], param).dv ≈ [
+  @test Pumas.iwresiduals(  theopmodel_foce, theopp[1], param, Pumas.FO()).dv ≈ [
      1.1879984032756807
     -2.303825736901788
     -0.1722792965761087
@@ -573,7 +573,7 @@ end
      4.014071580900914
      3.9913136307052524
      3.1357007891301087] rtol=1e-6
-  @test Pumas.icwres( theopmodel_foce, theopp[1], param).dv ≈ [
+  @test Pumas.iwresiduals( theopmodel_foce, theopp[1], param, Pumas.FOCE()).dv ≈ [
      1.1879984032756807
     -1.3784646740678743
     -0.24469855308692548
@@ -585,7 +585,7 @@ end
      0.9017172486653547
      1.5424519077826466
      2.194973069154764] rtol=1e-6
-  @test Pumas.icwresi(theopmodel_foce, theopp[1], param).dv ≈ [
+  @test Pumas.iwresiduals(theopmodel_foce, theopp[1], param, Pumas.FOCEI()).dv ≈ [
      1.1879984032756807
     -1.3784646740678743
     -0.24469855308692548
@@ -598,7 +598,7 @@ end
      1.5424519077826466
      2.194973069154764] rtol=1e-6
   @test Pumas.eiwres( theopmodel_foce, theopp[1], param, 1000) isa NamedTuple
-  @test wresiduals(  theopmodel_foce, theopp[1], param, nothing, Pumas.FOCE()).dv ≈ [
+  @test wresiduals(  theopmodel_foce, theopp[1], param, Pumas.FOCE()).dv ≈ [
      1.1879984032756807
     -0.40449239905538514
      1.4078834621663032
@@ -741,9 +741,9 @@ end
     @test ebe_cov[i].η.Σ.mat[:] ≈ focei_ebes_cov[i,:] atol=1e-3
   end
 
-  @test length(Pumas.epred(theopmodel_focei, theopp[1], param, 1000).dv) == 11
-  @test_throws ArgumentError Pumas.cpred(  theopmodel_focei, theopp[1], param).dv
-  @test Pumas.cpredi( theopmodel_focei, theopp[1], param).dv ≈ [
+  @test length(Pumas.epredict(theopmodel_focei, theopp[1], param, 1000).dv) == 11
+  @test_throws ArgumentError Pumas._predict(  theopmodel_focei, theopp[1], param, Pumas.FOCE()).dv
+  @test Pumas._predict( theopmodel_focei, theopp[1], param, Pumas.FOCEI()).dv ≈ [
     0.0
     5.068341459357763
     8.443563123891462
@@ -755,7 +755,7 @@ end
     3.9247518752173303
     3.0865429675088953
     1.185669082816525] rtol=1e-6
-  @test Pumas.pred(   theopmodel_focei, theopp[1], param).dv ≈ [
+  @test Pumas._predict(   theopmodel_focei, theopp[1], param, Pumas.FO()).dv ≈ [
     0.0
     4.275044896193946
     6.67731216398507
@@ -767,7 +767,7 @@ end
     4.389649021685277
     3.4538248683011945
     1.3267830785309427]
-  @test wresiduals(   theopmodel_focei, theopp[1], param, nothing, Pumas.FO()).dv ≈ [
+  @test wresiduals(   theopmodel_focei, theopp[1], param, Pumas.FO()).dv ≈ [
      1.1879984032756807
     -0.39299505013030017
      0.16842737988346182
@@ -779,8 +779,8 @@ end
      0.6842313630989655
      0.866326879877313
      1.667259055010247]
-  @test_throws ArgumentError wresiduals(  theopmodel_focei, theopp[1], param, nothing, Pumas.FOCE())
-  @test wresiduals( theopmodel_focei, theopp[1], param, nothing, Pumas.FOCEI()).dv ≈ [
+  @test_throws ArgumentError wresiduals(  theopmodel_focei, theopp[1], param, Pumas.FOCE())
+  @test wresiduals( theopmodel_focei, theopp[1], param, Pumas.FOCEI()).dv ≈ [
    1.1879984032756807
   -0.4660532896569592
    0.30402244275648965
@@ -792,7 +792,7 @@ end
    0.5204742127712235
    0.6506387271130077
    1.3748928119024197] rtol=1e-6
-  @test Pumas.iwres(  theopmodel_focei, theopp[1], param).dv ≈ [ 1.1879984032756807
+  @test Pumas.iwresiduals(  theopmodel_focei, theopp[1], param, Pumas.FO()).dv ≈ [ 1.1879984032756807
    -0.5922659254289279
    -0.028925269913169835
     0.6395285872285701
@@ -803,8 +803,8 @@ end
     1.006709008521727
     1.2482988777536315
     2.0406927145826876]
-  @test_throws ArgumentError Pumas.icwres( theopmodel_focei, theopp[1], param)
-  @test Pumas.icwresi(theopmodel_focei, theopp[1], param).dv ≈ [1.1879984032756807
+  @test_throws ArgumentError Pumas.iwresiduals( theopmodel_focei, theopp[1], param, Pumas.FOCE())
+  @test Pumas.iwresiduals(theopmodel_focei, theopp[1], param, Pumas.FOCEI()).dv ≈ [1.1879984032756807
     0.06960158205526236
     0.5083448884321163
     0.7692001749717815
@@ -816,7 +816,7 @@ end
     0.680189149628738
     1.4895796376772368] rtol=1e-6
   @test Pumas.eiwres( theopmodel_focei, theopp[1], param, 1000) isa NamedTuple
-  @test_throws ArgumentError wresiduals(  theopmodel_focei, theopp[1], param, nothing, Pumas.FOCE())
+  @test_throws ArgumentError wresiduals(  theopmodel_focei, theopp[1], param, Pumas.FOCE())
 end
 
 @testset "run4_foce.mod FOCE, diagonal omega and additive + proportional error" begin

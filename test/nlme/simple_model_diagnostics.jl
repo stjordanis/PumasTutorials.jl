@@ -81,11 +81,11 @@ for (_pnpde, _ref) in zip(pnpde, pnpde_ref)
   @test _pnpde.dv == _ref
 end
 
-[Pumas.epred(mdsl_proportional, data[i], param, 10000) for i in 1:10]
+[Pumas.epredict(mdsl_proportional, data[i], param, 10000) for i in 1:10]
 @test_broken [Pumas.cpred(mdsl_proportional, data[i], param) for i in 1:10] isa Vector
-[Pumas.cpredi(mdsl_proportional, data[i], param) for i in 1:10]
+[Pumas._predict(mdsl_proportional, data[i], param, Pumas.FOCEI()) for i in 1:10]
 
-@testset "pred" for
+@testset "_predict(::FO) (PRED)" for
     (sub_pred, dt) in zip([[10.0000000, 6.06530660],
                            [10.0000000, 6.06530660],
                            [10.0000000, 6.06530660],
@@ -97,7 +97,7 @@ end
                            [10.0000000, 6.06530660],
                            [10.0000000, 6.06530660]], data)
 
-    @test Pumas.pred(mdsl_proportional, dt, param).dv ≈ sub_pred rtol=1e-6
+    @test Pumas._predict(mdsl_proportional, dt, param, Pumas.FO()).dv ≈ sub_pred rtol=1e-6
 end
 
 @testset "wresiduals(::FO) (WRES)" for
@@ -112,7 +112,7 @@ end
                            [-1.38172560 , 0.984121759],
                            [ 0.905043866, 0.302785305]], data)
 
-    @test wresiduals(mdsl_proportional, dt, param, nothing, Pumas.FO()).dv ≈ sub_wres
+    @test wresiduals(mdsl_proportional, dt, param, Pumas.FO()).dv ≈ sub_wres
 end
 
 @testset "wresiduals(::FOCE), (CWRES)" begin
@@ -127,9 +127,9 @@ end
                                 [-13.817256008339715 , 3.249017333791544  ],
                                 [  9.050438663401902 , 0.9200622059620783]], data)
 
-      @test wresiduals(mdsl_additive, dt, param, nothing, Pumas.FOCE()).dv ≈ sub_cwres
+      @test wresiduals(mdsl_additive, dt, param, Pumas.FOCE()).dv ≈ sub_cwres
     end
-    @test_throws ArgumentError wresiduals(mdsl_proportional, data[1], param, nothing, Pumas.FOCE())
+    @test_throws ArgumentError wresiduals(mdsl_proportional, data[1], param, Pumas.FOCE())
 end
 
 @testset "wresiduals(::FOCEI), (CWRESI)" for
@@ -144,10 +144,10 @@ end
                              [-1.3817256  , 0.962485383],
                              [ 0.905043866, 0.302554671]], data)
 
-   @test wresiduals(mdsl_proportional, dt, param, nothing, Pumas.FOCEI()).dv ≈ sub_cwresi rtol=1e-6
+   @test wresiduals(mdsl_proportional, dt, param, Pumas.FOCEI()).dv ≈ sub_cwresi rtol=1e-6
 end
 
-@testset "iwres" for
+@testset "iwresiduals(::FO) (IWRES)" for
     (sub_iwres, dt) in zip([[ 0.180566054, 1.83329497 ],
                             [-1.35845124 ,-0.287852614],
                             [ 0.310535666, 0.641074888],
@@ -159,10 +159,10 @@ end
                             [-1.38172560 , 1.03215561 ],
                             [ 0.905043866, 0.317563907]], data)
 
-    @test Pumas.iwres(mdsl_proportional, dt, param).dv ≈ sub_iwres
+    @test Pumas.iwresiduals(mdsl_proportional, dt, param, Pumas.FO()).dv ≈ sub_iwres
 end
 
-@testset "icwres" begin
+@testset "iwresiduals(::FOCE) (ICWRES)" begin
     for (sub_icwres, dt) in zip([
       [  1.8056605439561437,  4.4147744872867865],
       [-13.584512372551323 , -0.3448880160816745],
@@ -174,13 +174,13 @@ end
       [ -1.690869864892035 , 1.0193403639202951 ],
       [-13.817256008339715 , 1.8980127284645392 ],
       [  9.050438663401902 , 0.4545489978903738 ]], data)
-      @test Pumas.icwres(mdsl_additive, dt, param).dv ≈ sub_icwres rtol=1e-6
+      @test Pumas.iwresiduals(mdsl_additive, dt, param, Pumas.FOCE()).dv ≈ sub_icwres rtol=1e-6
     end
 
-    @test_throws ArgumentError Pumas.icwres(mdsl_proportional, data[1], param).dv
+    @test_throws ArgumentError Pumas.iwresiduals(mdsl_proportional, data[1], param, Pumas.FOCE()).dv
 end
 
-@testset "icwresi" for
+@testset "iwresiduals(::FOCEI) (ICWRESI)" for
     (sub_icwresi, dt) in zip([[ 0.180566054, 1.56991766 ],
                               [-1.35845124 ,-0.236161082],
                               [ 0.310535666, 0.595884676],
@@ -192,7 +192,7 @@ end
                               [-1.38172560 , 0.925641802],
                               [ 0.905043866, 0.314343255]], data)
 
-    @test Pumas.icwresi(mdsl_proportional, dt, param).dv ≈ sub_icwresi rtol=1e-5
+    @test Pumas.iwresiduals(mdsl_proportional, dt, param, Pumas.FOCEI()).dv ≈ sub_icwresi rtol=1e-5
 end
 
 [Pumas.eiwres(mdsl_proportional, data[i], param, 10000).dv for i in 1:10]
