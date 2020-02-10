@@ -42,6 +42,8 @@ function _adjust_event(ev::Event,u0,lags,bioav,rate,duration)
     _duration *= _cmt_value(ev, u0, bioav, DEFAULT_BIOAV)
   end
 
+  _amt = ev.amt * _cmt_value(ev, u0, bioav, DEFAULT_BIOAV)
+
   if ev.rate_dir == -1
     time = ev.base_time + _duration
   else
@@ -49,12 +51,12 @@ function _adjust_event(ev::Event,u0,lags,bioav,rate,duration)
   end
 
   time += _cmt_value(ev, u0, lags, DEFAULT_LAGS)
-  Event(ev.amt, time, ev.evid, ev.cmt, _rate, _duration, ev.ss, ev.ii, ev.base_time, ev.rate_dir)
+  Event(_amt, time, ev.evid, ev.cmt, _rate, _duration, ev.ss, ev.ii, ev.base_time, ev.rate_dir)
 end
 
 """
-  adjust_event(event,lags,bioav,rate,duration) -> Event
-  adjust_event(events,lags,bioav,rate,duration) -> Event[]
+  adjust_event(event,pre,u0) -> Event
+  adjust_event(events,pre,u0) -> Event[]
 
 Adjust the event(s) with the "magic arguments" lags, bioav, rate
 and duration. Returns either the original event or an adjusted event
@@ -65,7 +67,8 @@ function adjust_event(events::AbstractVector{<:Event},args...)
   out = collect(adjust_event(ev, args...) for ev in events)
   sort!(out)
 end
-function adjust_event(ev::Event,u0,lags,bioav,rate_input,duration_input)
+function adjust_event(ev::Event,pre,u0)
+  lags,bioav,rate_input,duration_input = get_magic_args(ev,pre,u0,ev.time)
   rate = _cmt_value(ev, u0, rate_input, DEFAULT_RATE)
   duration = _cmt_value(ev, u0, duration_input, DEFAULT_DURATION)
   @assert rate == DEFAULT_RATE || duration == DEFAULT_DURATION
@@ -111,12 +114,14 @@ function increment_value(A::Number,x,k)
   A+x
 end
 
-function get_magic_args(pre,u0,t0)
-  p = pre(t0)
-  if haskey(p,:lags)
-    lags = p.lags
+function get_magic_args(ev,pre,u0,t)
+  _p = pre(t)
+  if haskey(_p,:lags)
+    lags = _cmt_value(ev, u0, _p.lags, DEFAULT_LAGS)
+    p = pre(t+lags)
   else
-    lags = zero(eltype(t0))
+    lags = zero(eltype(ev.time))
+    p = _p
   end
 
   if haskey(p,:bioav)
@@ -140,8 +145,6 @@ function get_magic_args(pre,u0,t0)
   lags,bioav,rate,duration
 end
 
-
-
 # promote to correct numerical type (e.g. to handle Duals correctly)
 # TODO Unitful.jl support?
 numtype(::Type{T}) where {T<:Number} = T
@@ -154,6 +157,15 @@ numtype(x::Tuple)         = promote_type(map(numtype, x)...)
 numtype(x::NamedTuple) = numtype(values(x))
 numtype(x::AbstractString) = Float32 # To allow string covariates
 numtype(x::Integer) = Float32
+
+t_numtype(u0,callback::Nothing) = Float32
+function t_numtype(u0,callback)
+  if callback.continuous_callbacks === ()
+    Float32
+  else
+    eltype(u0)
+  end
+end
 
 zero(x) = Base.zero(x)
 zero(x::Tuple) = map(zero,x)

@@ -114,3 +114,48 @@ p_error = (θ = [1.5,  #Ka
 @test_throws ArgumentError simobs(m_error, evm216, p_error, ensemblealg = EnsembleSerial())
 
 end # testset
+
+@testset "Test DCP with defaults on missing portions" begin
+
+model = @model begin
+    @param begin
+        tvcl ∈ RealDomain(lower=0, init = 1.0)
+        tvv ∈ RealDomain(lower=0, init = 100)
+        tvka ∈ RealDomain(lower = 0, init= 0.5)
+        tvlag ∈ RealDomain(lower = 0, init = 0.5)
+        tvbio ∈ RealDomain(lower = -12, upper = 12)
+        Ω ∈ PDiagDomain(init=[0.04, 0.04])
+        σ ∈ RealDomain(lower=0,init=0.01)
+    end
+    @random begin
+        η ~ MvNormal(Ω)
+    end
+    @pre begin
+      CL = tvcl *  exp(η[1])
+      V  = tvv
+      Ka = tvka
+      lags  = (Depot = tvlag,)
+      flgt = tvbio + η[2]
+      f1 = exp(flgt)/(1 + exp(flgt))
+      bioav = (Depot = f1,)
+    end
+    @dynamics Depots1Central1
+
+       @derived begin
+           cp = Central/V
+           dv ~ @. Normal(cp, abs(cp)*σ)
+         end
+end
+biolag_params = (tvcl = 1.0,
+                tvv = 100.0,
+                tvka = 0.5,
+                tvlag = 0.5,
+                tvbio = 0.5,
+                Ω = Diagonal([0.05, 0.05]),
+                σ = 0.02)
+s1 = Subject(id=1, evs=DosageRegimen(100, cmt=1, time=0))
+s2 = Subject(id=2, evs=DosageRegimen(100, cmt=2, time=0))
+pop = Population([s1,s2])
+sims = simobs(model, pop, biolag_params,obstimes = [0,2.5,5,10,15,30], ensemblealg = EnsembleSerial())
+
+end

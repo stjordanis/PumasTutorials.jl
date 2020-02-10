@@ -1,7 +1,10 @@
-using Pumas, StaticArrays, DataInterpolations, Test
+using Pumas, StaticArrays, Test
 
-data = read_pumas(example_data("data1"),
-                      cvs = [:sex,:wt,:etn])
+cvs = [:ka, :cl, :v]
+dvs = [:dv]
+data = read_pumas(example_data("oral1_1cpt_KAVCL_MD_data"),
+                      cvs = cvs, dvs = dvs)
+
 
 for subject in data
     if subject.time[1] == 0
@@ -24,9 +27,9 @@ end
 function col_f(param,randeffs,subject)
   function __pre(t)
     cov = subject.tvcov(t)
-    Ka = t*param.θ[1]  # pre
-    CL = param.θ[2] * ((cov.wt/70)^0.75) * (param.θ[4]^cov.sex) * exp(randeffs.η[1])
-    V  = param.θ[3] * exp(randeffs.η[2])
+    Ka = t*cov.ka  # pre
+    CL = cov.cl
+    V  = cov.v
 
     return (CL=CL, V=V, Ka=Ka)
   end
@@ -77,12 +80,12 @@ m_diffeq = @model begin
       η ~ MvNormal(Ω)
   end
 
-  @covariates sex wt etn
+  @covariates ka cl v
 
   @pre begin
-      Ka = θ[1] * t
-      CL = θ[2] * ((wt/70)^0.75) * (θ[4]^sex) * exp(η[1])
-      V  = θ[3] * exp(η[2])
+      Ka = ka * t
+      CL = cl
+      V  = v
   end
 
   @vars begin
@@ -104,6 +107,48 @@ sol_dsl = solve(m_diffeq,subject1,param,randeffs)
 obs_dsl = simobs(m_diffeq,subject1,param,randeffs)
 
 @test obs_dsl.observed.conc ≈ obs_mobj.observed.conc
+
+## Time-varying DCP
+
+m_diffeq2 = @model begin
+  @param begin
+      θ ∈ VectorDomain(4, lower=zeros(4), init=ones(4))
+      Ω ∈ PSDDomain(2)
+      σ ∈ RealDomain(lower=0.0, init=1.0)
+  end
+
+  @random begin
+      η ~ MvNormal(Ω)
+  end
+
+  @covariates ka cl v
+
+  @pre begin
+      Ka = ka * t
+      CL = cl
+      V  = v
+      bioav = 1+t
+  end
+
+  @vars begin
+      cp = Central/V
+  end
+
+  @dynamics begin
+      Depot'   = -Ka*Depot
+      Central' =  Ka*Depot - CL*cp
+  end
+
+  @derived begin
+      conc = @. Central / V
+      dv ~ @. Normal(conc, conc*σ)
+  end
+end
+
+sol_dsl2 = solve(m_diffeq2,subject1,param,randeffs)
+obs_dsl2 = simobs(m_diffeq2,subject1,param,randeffs)
+
+@test !(obs_dsl.observed.conc ≈ obs_dsl2.observed.conc)
 
 ############################
 ## Time-varying covariates from data
