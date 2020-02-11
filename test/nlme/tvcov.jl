@@ -124,7 +124,7 @@ df = identity.(df)
   )
 
   Random.seed!(123)
-  obs = simobs(tvcov_model_normal, pd, param_normal, ensemblealg = EnsembleSerial())
+  obs = simobs(tvcov_model_normal, pd, param_normal, abstol=1e-12, reltol=1e-12, ensemblealg = EnsembleSerial())
   sim_df = DataFrame(obs)
   est_df = sim_df |>
     @mutate(cmt = ifelse(ismissing(_.cmt), 2, _.cmt)) |> DataFrame
@@ -142,10 +142,10 @@ df = identity.(df)
           g_tol=1e-1,
         ),
       )
-    
+
     # FIXME! Test how based below requires using the default convergence tolerance so enable/adjust once
     # time-vraying covarites have been made faster. Meanwhile we just test deviance with a rough tolerance
-    @test deviance(ft_normal) ≈ 8784.236097321953 rtol=1e-5
+    @test deviance(ft_normal) ≈ 8784.102132877919 rtol=1e-5
     # @test sprint((io, t) -> show(io, MIME"text/plain"(), t), ft_normal) == """
     # FittedPumasModel
 

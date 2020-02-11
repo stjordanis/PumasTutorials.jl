@@ -36,7 +36,8 @@ function _build_diffeq_problem(m::PumasModel, subject::Subject, args...;
   # d_discontinuities are used to inform diffeq about the places where things change
   # suddenly in the model and introduce discontinuities in the derivates (such as
   # time varying covariates etc)
-  tstops,_cb = ith_subject_cb(col,subject,Tu0,tspan[1],typeof(prob),saveat,save_discont,continuity)
+
+  tstops,_cb,d_discontinuities = ith_subject_cb(col,subject,Tu0,tspan[1],typeof(prob),saveat,save_discont,continuity)
   # tstops,cb,d_discontinuities = ith_subject_cb(col,subject,Tu0,tspan[1],typeof(prob),saveat,save_discont,continuity)
 
   cb = CallbackSet(_cb, callback)
@@ -46,7 +47,7 @@ function _build_diffeq_problem(m::PumasModel, subject::Subject, args...;
 
   # Remake problem of correct type
   remake(m.prob; f=new_f, u0=Tu0, tspan=_tspan, callback=cb, saveat=saveat,
-                 tstops = tstops,# d_discontinuities=d_discontinuities,
+                 tstops = tstops, d_discontinuities=d_discontinuities,
                  save_first = !isnothing(saveat) && tspan[1] ∈ saveat)
 end
 
@@ -309,7 +310,7 @@ function ith_subject_cb(pre,datai::Subject,u0,t0,ProbType,saveat,save_discont,co
     end
   end
   save_positions = save_discont ? (true, true) : (false, false)
-  tstops,DiscreteCallback(condition,affect!,subject_cb_initialize!,save_positions)
+  tstops,DiscreteCallback(condition,affect!,subject_cb_initialize!,save_positions),d_discontinuities
 end
 
 function dose!(integrator,u,cur_ev,last_restart)
