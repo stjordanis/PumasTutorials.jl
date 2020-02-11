@@ -132,11 +132,14 @@ function ___read_nca(df; id=:id, time=:time, conc=:conc, occasion=:occasion,
         end
       end
       route′ = map(dose_idx) do i
-        routei = lowercase(df[!,route][i])
+        routei = df[!,route][i]
+        routei isa AbstractFloat && isinf(routei) && (routei = "inf")
+        routei isa AbstractString || routethrow()
+        routei = lowercase(routei)
         routei == "iv" ? IVBolus :
           routei == "inf" ? IVInfusion :
           routei == "ev" ? EV :
-          throw(ArgumentError("route can only be `iv`, `ev`, or `inf`"))
+          routethrow()
       end
       ii = map(i -> iis === nothing ? false : iis[i], dose_idx)
       ss = map(dose_idx) do i
@@ -174,3 +177,5 @@ function ___read_nca(df; id=:id, time=:time, conc=:conc, occasion=:occasion,
   checkncapop(pop)
   return pop
 end
+
+@noinline routethrow() = throw(ArgumentError("route can only be `iv`, `ev`, or `inf`"))
