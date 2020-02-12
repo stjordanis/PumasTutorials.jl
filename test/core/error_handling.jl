@@ -62,8 +62,8 @@ model = @model begin
 
     @derived begin
         cmax = maximum(cp)
-        dv ~ @. Normal(cp, cp*Σ_dv)
-        pddv ~ @. Normal(resp, Σ_pddv)
+        dv ~ @. Normal(cp, cp*Σ_dv+eps())
+        pddv ~ @. Normal(resp, Σ_pddv+eps())
 
     end
 end

@@ -31,6 +31,6 @@ mdsl1 = @model begin
 end
 
 param = init_param(mdsl1)
-@testset "parallel_type = $p" for p in (Pumas.Serial, Pumas.Threading, Pumas.Distributed)
-    @test deviance(mdsl1, data, param, Pumas.FO(), parallel_type=p) ≈ 56.474912258255571 rtol=1e-6
+@testset "ensemblealg = $p" for p in (EnsembleSerial(), EnsembleThreads(), EnsembleDistributed())
+    @test deviance(mdsl1, data, param, Pumas.FO(), ensemblealg=p) ≈ 56.474912258255571 rtol=1e-6
 end

@@ -3,9 +3,6 @@ const DEFAULT_ESTIMATION_ABSTOL=1e-12
 const DEFAULT_SIMULATION_RELTOL=1e-3
 const DEFAULT_SIMULATION_ABSTOL=1e-6
 
-# Deprecate soon
-@enum ParallelType Serial=1 Threading=2 Distributed=3 SplitThreads=4
-
 """
     PumasModel
 

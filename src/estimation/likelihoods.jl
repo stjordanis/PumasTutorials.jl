@@ -438,7 +438,7 @@ function marginal_nll(m::PumasModel,
                       # this path
                       population::Vector{<:Subject},
                       args...;
-                      parallel_type::ParallelType=Threading,
+                      ensemblealg::DiffEqBase.EnsembleAlgorithm=EnsembleThreads(),
                       kwargs...)
 
   nll1 = marginal_nll(m, population[1], args...; kwargs...)
@@ -452,14 +452,14 @@ function marginal_nll(m::PumasModel,
 
   # The different parallel computations are separated out into functions
   # to make it easier to infer the return types
-  if parallel_type === Serial
+  if ensemblealg isa EnsembleSerial
     return sum(subject -> marginal_nll(m, subject, args...; kwargs...), population)
-  elseif parallel_type === Threading
+  elseif ensemblealg isa EnsembleThreads
     return _marginal_nll_threads(nll1, m, population, args...; kwargs...)
-  elseif parallel_type === Distributed # Distributed
+  elseif ensemblealg isa EnsembleDistributed
     return _marginal_nll_pmap(nll1, m, population, args...; kwargs...)
   else
-    throw(ArgumentError("parallel type $parallel_type not implemented"))
+    throw(ArgumentError("Parallelism of type $ensemblealg is not currently implemented for estimation."))
   end
 end
 
