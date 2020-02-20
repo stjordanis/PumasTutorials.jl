@@ -77,8 +77,8 @@ mymodel = @model begin
   @dynamics Depots1Central1Periph1
 
   @derived begin
-      cp := @. 1000*(Central / Vc) # We use := because we don't want simobs to store with variable
-      dv ~ @. Normal(cp, sqrt(cp^2*σ_prop))
+      cp := @. 1000*(Central / Vc) # We use := because we don't want simobs to store the variable
+      dv ~ @. Normal(cp, abs(cp)*σ_prop)
     end
 end
 ```
@@ -106,7 +106,7 @@ plot(obs)
 
 ## Fitting the model
 To fit the model, we use the `fit` function. It requires a model, a population,
-a parameter vector and a likelihood approximation method.
+a named tuple of parameters and a likelihood approximation method.
 
 ```julia
 result = fit(mymodel, Subject.(obs), param, Pumas.FOCEI())
@@ -190,7 +190,7 @@ mymodel_misspec = @model begin
 
   @derived begin
       cp = @. 1000*(Central / V)
-      dv ~ @. Normal(cp, sqrt(cp^2*σ_prop))
+      dv ~ @. Normal(cp, abs(cp)*σ_prop)
     end
 end
 ```
