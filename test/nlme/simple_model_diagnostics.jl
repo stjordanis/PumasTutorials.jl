@@ -64,26 +64,30 @@ end
 
 param = init_param(mdsl_proportional)
 
-pnpde = [Pumas.npde(mdsl_proportional, data[i], param, 10000) for i in 1:10]
+@testset "NPDE" begin
+  Random.seed!(123)
+  pnpde = [Pumas.npde(mdsl_proportional, data[i], param, 10000) for i in 1:10]
 
-pnpde_ref = [[0.18962882237487352, 1.7201784995140674],
- [-1.3773631497105263, -0.252570666427693],
- [0.2976111022334799, 0.6489046638504296],
- [0.39153746690120006, 1.383211580197489],
- [0.617962588415399, -1.6901461375274704],
- [0.8405501419786955, -0.7461116042451951],
- [0.23939410585994175, 1.696453654440568],
- [-0.17662876259615526, 0.6610192009497576],
- [-1.3943895566974136, 0.9928152433591684],
- [0.9047459346629684, 0.3496518412286771]]
+  pnpde_ref = [[ 0.1616264843867025 ,  1.676705932336667  ],
+               [-1.3793073867704224 , -0.21803736327085665],
+               [ 0.3175846754550262 ,  0.6170526482377064 ],
+               [ 0.4201169785504085 ,  1.4111513215099372 ],
+               [ 0.5828415072712162 , -1.723489734391151  ],
+               [ 0.8614322869395719 , -0.7510874966794819 ],
+               [ 0.2489492994727619 ,  1.7312903035353358 ],
+               [-0.18325237599243827,  0.6332046646100014 ],
+               [-1.3891077087785695 ,  1.0135448182415487 ],
+               [ 0.9066347103972062 ,  0.32206955765069145]]
 
-for (_pnpde, _ref) in zip(pnpde, pnpde_ref)
-  @test _pnpde.dv == _ref
+  for (dt, _ref) in zip(data, pnpde_ref)
+    @test Pumas.npde(mdsl_proportional, dt, param, 10000).dv ≈ _ref
+  end
 end
 
-[Pumas.epredict(mdsl_proportional, data[i], param, 10000) for i in 1:10]
-@test_broken [Pumas.cpred(mdsl_proportional, data[i], param) for i in 1:10] isa Vector
-[Pumas._predict(mdsl_proportional, data[i], param, Pumas.FOCEI()) for i in 1:10]
+@testset "Expected population predictions" for dt in data
+  Random.seed!(123)
+  @test Pumas.epredict(mdsl_proportional, dt, param, 10000).dv ≈ [10.012101953804612, 6.048942906285506] rtol=1e-6
+end
 
 @testset "_predict(::FO) (PRED)" for
     (sub_pred, dt) in zip([[10.0000000, 6.06530660],
@@ -195,11 +199,33 @@ end
     @test Pumas.iwresiduals(mdsl_proportional, dt, param, Pumas.FOCEI()).dv ≈ sub_icwresi rtol=1e-5
 end
 
-[Pumas.eiwres(mdsl_proportional, data[i], param, 10000).dv for i in 1:10]
+@testset "Expected individual residuals" begin
+  Random.seed!(123)
+  ref = [[0.18056605439557627 ,  1.918953453441187  ],
+         [-1.3584512372549291 , -0.24373095514789203],
+         [0.31053566622857914 ,  0.7052404787625878 ],
+         [0.39465225198907283 ,  1.5566598382264618 ],
+         [0.6074735385182652  , -1.7446353470602294 ],
+         [0.8588746125016998  , -0.768425798009981  ],
+         [0.24570897419512916 ,  1.903174873729099  ],
+         [-0.16908698648921602,  0.6927430111312871 ],
+         [-1.3817256008337437 ,  1.0987718424896216 ],
+         [0.9050438663400313  ,  0.372522797258317  ]]
+
+  for (dt, _ref) in zip(data, ref)
+    @test Pumas.eiwres(mdsl_proportional, dt, param, 10000).dv ≈ _ref rtol=1e-6
+  end
+end
 
 param = (θ = [0.340689], Ω = Diagonal([0.000004]), σ = sqrt(0.0752507))
-@test ηshrinkage(mdsl_proportional, data, param, Pumas.FOCEI()).η ≈ [0.997574] rtol=1e-6
-ϵshrinkage(mdsl_proportional, data, param, Pumas.FOCEI())
-@test aic(mdsl_proportional, data, param, Pumas.FOCEI()) ≈ 94.30968177483996 rtol=1e-6 #regression test
-@test bic(mdsl_proportional, data, param, Pumas.FOCEI()) ≈ 96.30114632194794 rtol=1e-6 #regression test
+
+@testset "Shrinkage" begin
+  @test ηshrinkage(mdsl_proportional, data, param, Pumas.FOCEI()).η ≈ [0.997574] rtol=1e-6
+  ϵshrinkage(mdsl_proportional, data, param, Pumas.FOCEI())
+end
+
+@testset "Information crieria" begin
+  @test aic(mdsl_proportional, data, param, Pumas.FOCEI()) ≈ 94.30968177483996 rtol=1e-6 #regression test
+  @test bic(mdsl_proportional, data, param, Pumas.FOCEI()) ≈ 96.30114632194794 rtol=1e-6 #regression test
+end
 end

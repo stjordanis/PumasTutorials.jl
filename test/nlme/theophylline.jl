@@ -1,5 +1,6 @@
 using Test
 using Pumas
+using Random
 
 # FIXME! Find a nicer way to handle this
 _extract(A::Pumas.PDMats.PDMat) = A.mat
@@ -597,8 +598,7 @@ end
      0.9017172486653547
      1.5424519077826466
      2.194973069154764] rtol=1e-6
-  @test Pumas.eiwres( theopmodel_foce, theopp[1], param, 1000) isa NamedTuple
-  @test wresiduals(  theopmodel_foce, theopp[1], param, Pumas.FOCE()).dv ≈ [
+  @test wresiduals(theopmodel_foce, theopp[1], param, Pumas.FOCE()).dv ≈ [
      1.1879984032756807
     -0.40449239905538514
      1.4078834621663032
@@ -610,6 +610,25 @@ end
      1.229426426138302
      1.6689875690147757
      2.207038336508923] rtol=1e-6
+  @testset "Expected individual residuals" begin
+    # The way the random effects enter the model allows for unstable
+    # solutions. The first order approximated residuals will not hit
+    # the unstable areas but when the random effect is fully integrated
+    # out, the unstable solutions will greatly affect the residuals
+    Random.seed!(123)
+    @test Pumas.eiwres(theopmodel_foce, theopp[1], param, 10000).dv ≈
+      [1.1879984032754523
+      -1.323115211913782
+       3.6933475238777507
+      24.023503148347146
+    1008.3634654704074
+       2.1733344199526347e7
+       3.843290423027412e10
+       3.524337763526852e15
+       5.97837210704398e20
+       5.649407093090004e28
+       4.352720287029761e60] rtol = 1e-6
+  end
 end
 
 @testset "run4.mod FOCEI, diagonal omega and additive + proportional error" begin
@@ -815,8 +834,22 @@ end
     0.47263581944050936
     0.680189149628738
     1.4895796376772368] rtol=1e-6
-  @test Pumas.eiwres( theopmodel_focei, theopp[1], param, 1000) isa NamedTuple
   @test_throws ArgumentError wresiduals(  theopmodel_focei, theopp[1], param, Pumas.FOCE())
+  @testset "Expected individual residuals" begin
+    Random.seed!(123)
+    @test Pumas.eiwres( theopmodel_focei, theopp[1], param, 10000).dv ≈
+      [1.1879984032754523,
+       0.19790477137989876,
+       0.9852034524282582,
+       1.5985195166192314,
+       1.119122290403704,
+       0.9088239792374705,
+       1.0000563672670204,
+       1.0185370204348032,
+       1.1548159881352817,
+       1.326267705476969,
+       1.9179530514665144]
+  end
 end
 
 @testset "run4_foce.mod FOCE, diagonal omega and additive + proportional error" begin

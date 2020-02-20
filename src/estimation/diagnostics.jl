@@ -341,6 +341,7 @@ function eiwres(m::PumasModel,
     sims_sum = (obsdv .- mean.(dv))./std.(dv)
     for i in 2:nsim
       dist = _derived(m, subject, param, sample_randeffs(m, param), args...; kwargs...)
+      dv = dist[name]
       sims_sum .+= (obsdv .- mean.(dv))./std.(dv)
     end
     return sims_sum ./ nsim
