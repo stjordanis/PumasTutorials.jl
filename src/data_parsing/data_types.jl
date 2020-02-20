@@ -191,6 +191,25 @@ function DataFrames.DataFrame(evs::DosageRegimen, expand::Bool = false)
   end
 end
 
+# show methods for DosageRegimen. We just want to inherit the show
+# methods of DataFrame but, unfortunately, we can't just have a single
+# definition with an abstract MIME argument since that makes IJulia's display
+# functionality fail. Hence, we have to query all the specific show
+# method that has been defined for DataFrames. It's not pretty but
+# it works.
+for m in methods(show, Tuple{IO, MIME, DataFrame})
+  MT = m.sig.parameters[3]
+  @assert MT <: MIME
+  if MT <: MIME"text/plain"
+    @eval function Base.show(io::IO, mime::$MT, dr::DosageRegimen)
+      print(io, summary(dr))
+      show(io, mime, dr.data, summary=false)
+    end
+  else
+    @eval Base.show(io::IO, mime::$MT, dr::DosageRegimen) = show(io, mime, dr.data)
+  end
+end
+
 """
     Subject
 

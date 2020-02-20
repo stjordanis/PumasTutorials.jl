@@ -106,3 +106,17 @@ end
   @test e1.data == e2.data
   @test_throws AssertionError DosageRegimen(100, duration = 4, rate = 20)
 end
+
+@testset "Test show methods for DosageRegimen" begin
+  dr = DosageRegimen(2, ii = 24, addl=2)
+
+  @test sprint((io, t) -> show(io, MIME"text/plain"(), t), dr) == """
+DosageRegimen
+│ Row │ time    │ cmt   │ amt     │ evid │ ii      │ addl  │ rate    │ duration │ ss   │
+│     │ Float64 │ Int64 │ Float64 │ Int8 │ Float64 │ Int64 │ Float64 │ Float64  │ Int8 │
+├─────┼─────────┼───────┼─────────┼──────┼─────────┼───────┼─────────┼──────────┼──────┤
+│ 1   │ 0.0     │ 1     │ 2.0     │ 1    │ 24.0    │ 2     │ 0.0     │ 0.0      │ 0    │"""
+
+  @test sprint((io, t) -> show(io, MIME"text/html"(), t), dr) == """
+<table class="data-frame"><thead><tr><th></th><th>time</th><th>cmt</th><th>amt</th><th>evid</th><th>ii</th><th>addl</th><th>rate</th><th>duration</th><th>ss</th></tr><tr><th></th><th>Float64</th><th>Int64</th><th>Float64</th><th>Int8</th><th>Float64</th><th>Int64</th><th>Float64</th><th>Float64</th><th>Int8</th></tr></thead><tbody><p>1 rows × 9 columns</p><tr><th>1</th><td>0.0</td><td>1</td><td>2.0</td><td>1</td><td>24.0</td><td>2</td><td>0.0</td><td>0.0</td><td>0</td></tr></tbody></table>"""
+end
