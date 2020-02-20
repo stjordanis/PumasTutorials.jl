@@ -466,7 +466,8 @@ end
   # Elapsed estimation time in seconds:     0.27
   # Elapsed covariance time in seconds:     0.19
 
-  o = fit(theopmodel_foce, theopp, param, Pumas.FOCE())
+  o = fit(theopmodel_foce, theopp, param, Pumas.FOCE(), ensemblealg=EnsembleThreads())
+  @test_throws ArgumentError fit(theopmodel_foce, theopp, param, Pumas.FOCE(), ensemblealg=EnsembleDistributed())
 
   o_estimates = coef(o)
   o_stderror  = stderror(o)

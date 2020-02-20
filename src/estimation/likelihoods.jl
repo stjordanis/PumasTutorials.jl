@@ -256,6 +256,7 @@ function _orth_empirical_bayes!(
         extended_trace=true,
         g_tol=1e-5
       )))
+
   return vrandeffsorth
 end
 
@@ -438,7 +439,7 @@ function marginal_nll(m::PumasModel,
                       # this path
                       population::Vector{<:Subject},
                       args...;
-                      ensemblealg::DiffEqBase.EnsembleAlgorithm=EnsembleThreads(),
+                      ensemblealg::DiffEqBase.EnsembleAlgorithm=EnsembleSerial(),
                       kwargs...)
 
   nll1 = marginal_nll(m, population[1], args...; kwargs...)
@@ -656,6 +657,45 @@ function marginal_nll_gradient!(g::AbstractVector,
   return g
 end
 
+# Threaded evaluation of the gradient of the marginal likelihood. This method
+# is restricted to Vector{<:Subject} since it relies on scalar indexing into
+# the vector of subjects
+function marginal_nll_gradient_threads!(g::AbstractVector,
+                                        model::PumasModel,
+                                        population::Vector{<:Subject},
+                                        vparam::AbstractVector,
+                                        vvrandeffsorth::AbstractVector,
+                                        approx::LikelihoodApproximation,
+                                        trf::TransformVariables.TransformTuple,
+                                        args...; kwargs...
+                                        )
+
+  Gs = similar(g, (length(g), length(population)))
+
+  Threads.@threads for i in eachindex(population)
+    subject       = population[i]
+    vrandeffsorth = vvrandeffsorth[i]
+    _g            = view(Gs, :, i)
+    marginal_nll_gradient!(
+      _g,
+      model,
+      subject,
+      copy(vparam), # DiffEqDiffTools is not threadsafe. It mutates the input parameter vector to avoid allocation
+      vrandeffsorth,
+      approx,
+      trf,
+      args...;
+      kwargs...
+    )
+  end
+
+  g .= vec(sum(Gs, dims=2))
+
+  return g
+end
+
+# Fallback method which doesn't explicitly rely on scalar indexing into the
+# vector of subjects.
 function marginal_nll_gradient!(g::AbstractVector,
                                 model::PumasModel,
                                 population::Population,
@@ -680,7 +720,8 @@ function marginal_nll_gradient!(g::AbstractVector,
       vparam,
       vrandeffsorth,
       approx,
-      trf, args...; kwargs...)
+      trf,
+      args...; kwargs...)
     g .+= _g
   end
 
@@ -1030,6 +1071,132 @@ function _fixed_to_constanttransform(trf, param, fixed)
   new_param = NamedTuple{_keys}(_paramval)
   return new_param, TransformVariables.TransformTuple(NamedTuple{_keys}(_vals))
 end
+
+function _update_ebes_and_evaluate_marginal_nll!(
+  m::PumasModel,
+  subject::Subject,
+  param::NamedTuple,
+  vrandeffsorth::Vector,
+  vrandeffsorth_tmp::Vector,
+  approx::LikelihoodApproximation,
+  args...;
+  kwargs...
+)
+
+  # If not FO or NaivePooled then compute EBE based on the estimates from last
+  # iteration stored in vvrandeffs and store the retult in vvrandeffs_tmp
+  if !(approx isa FO || approx isa NaivePooled)
+    copyto!(vrandeffsorth_tmp, vrandeffsorth)
+    _orth_empirical_bayes!(
+      vrandeffsorth_tmp,
+      m,
+      subject,
+      param,
+      approx,
+      args...;
+      kwargs...
+    )
+  end
+
+  return marginal_nll(
+    m,
+    subject,
+    param,
+    vrandeffsorth_tmp,
+    approx,
+    args...;
+    kwargs...
+  )
+end
+
+# Threaded update of the EBEs and evaluation of the marginal likelihood.
+# We only do this when then Subjects are stored in a Vector since the
+# implemention relies on scalar indexing into the vector of subjects
+function _update_ebes_and_evaluate_marginal_nll_threads!(
+  m::PumasModel,
+  population::Vector{<:Subject},
+  param::NamedTuple,
+  vvrandeffs::Vector,
+  vvrandeffs_tmp::Vector,
+  approx::LikelihoodApproximation,
+  args...;
+  kwargs...)
+
+  # Evaluate the first subject to determine the elementtype of the likelihood values
+  # and detect if likelihood value is infinite
+  nll1 = _update_ebes_and_evaluate_marginal_nll!(
+    m,
+    population[1],
+    param,
+    vvrandeffs[1],
+    vvrandeffs_tmp[1],
+    approx,
+    args...;
+    kwargs...
+  )
+
+  # Short circuit if evaluated at extreme parameter values
+  if !isfinite(nll1)
+    return nll1
+  end
+
+  # Allocate array to store all likelihood values
+  nlls = fill(oftype(nll1, Inf), length(population))
+  nlls[1] = nll1
+
+  # Threaded evaluation of the marginal likelihood (as well as updates of the EBEs)
+  Threads.@threads for i in 2:length(population)
+    subject       = population[i]
+    vrandeffs_tmp = vvrandeffs_tmp[i]
+    vrandeffs     = vvrandeffs[i]
+
+    nllsi = _update_ebes_and_evaluate_marginal_nll!(
+      m,
+      subject,
+      param,
+      vrandeffs,
+      vrandeffs_tmp,
+      approx,
+      args...;
+      kwargs...
+    )
+
+    if isfinite(nllsi)
+      nlls[i] = nllsi
+    else
+      break
+    end
+  end
+
+  return sum(nlls)
+end
+
+# Fallback method that doesn't explictly use scalar indexing of the vector of Subjects so,
+# in theory, this should work with e.g. DArrays.
+function _update_ebes_and_evaluate_marginal_nll!(
+  m::PumasModel,
+  population::Population,
+  param::NamedTuple,
+  vvrandeffs::Vector,
+  vvrandeffs_tmp::Vector,
+  approx::LikelihoodApproximation,
+  args...;
+  kwargs...)
+
+  return sum(zip(population, vvrandeffs, vvrandeffs_tmp)) do (subject, vrandeffs, vrandeffs_tmp)
+    _update_ebes_and_evaluate_marginal_nll!(
+      m,
+      subject,
+      param,
+      vrandeffs,
+      vrandeffs_tmp,
+      approx,
+      args...;
+      kwargs...
+    )
+  end
+end
+
 function Distributions.fit(m::PumasModel, p::Population, param::NamedTuple; kwargs...)
   throw(ArgumentError("No valid estimation method was provided."))
 end
@@ -1049,6 +1216,7 @@ function Distributions.fit(m::PumasModel,
                            # that returns the optimized parameters.
                            optimize_fn = DefaultOptimizeFN(),
                            constantcoef = NamedTuple(),
+                           ensemblealg::DiffEqBase.EnsembleAlgorithm = EnsembleSerial(),
                            kwargs...)
 
   # Compute transform object defining the transformations from NamedTuple to Vector while applying any parameter restrictions and apply the transformations
@@ -1086,19 +1254,56 @@ function Distributions.fit(m::PumasModel,
       _param = TransformVariables.transform(fixedtrf, _vparam)
 
       # Sum up loglikelihood contributions
-      nll = sum(zip(population, vvrandeffsorth, vvrandeffsorth_tmp)) do (subject, vrandefforths, vrandefforths_tmp)
-        # If not FO then compute EBE based on the estimates from last iteration stored in vvrandeffsorth
-        # and store the retult in vvrandeffsorth_tmp
-        if !(approx isa FO || approx isa NaivePooled)
-          copyto!(vrandefforths_tmp, vrandefforths)
-          _orth_empirical_bayes!(vrandefforths_tmp, m, subject, _param, approx, args...; kwargs...)
-        end
-        marginal_nll(m, subject, _param, vrandefforths_tmp, approx, args...; kwargs...)
-      end
+      if ensemblealg isa EnsembleSerial
+        nll = _update_ebes_and_evaluate_marginal_nll!(
+          m,
+          population,
+          _param,
+          vvrandeffsorth,
+          vvrandeffsorth_tmp,
+          approx,
+          args...;
+          kwargs...)
 
-      # Update score
-      if g !== nothing
-        marginal_nll_gradient!(g, m, population, _vparam, vvrandeffsorth_tmp, approx, fixedtrf, args...; kwargs...)
+        # Update score
+        if g !== nothing
+          marginal_nll_gradient!(
+            g,
+            m,
+            population,
+            _vparam,
+            vvrandeffsorth_tmp,
+            approx,
+            fixedtrf,
+            args...; kwargs...)
+        end
+
+      elseif ensemblealg isa EnsembleThreads
+        nll = _update_ebes_and_evaluate_marginal_nll_threads!(
+          m,
+          population,
+          _param,
+          vvrandeffsorth,
+          vvrandeffsorth_tmp,
+          approx,
+          args...;
+          kwargs...)
+
+        # Update score
+        if g !== nothing
+          marginal_nll_gradient_threads!(
+            g,
+            m,
+            population,
+            _vparam,
+            vvrandeffsorth_tmp,
+            approx,
+            fixedtrf,
+            args...; kwargs...)
+        end
+
+      else
+        throw(ArgumentError("$ensemblealg not implemented for this method"))
       end
 
       return nll
