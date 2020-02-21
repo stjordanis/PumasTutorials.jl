@@ -197,8 +197,7 @@ end
 # functionality fail. Hence, we have to query all the specific show
 # method that has been defined for DataFrames. It's not pretty but
 # it works.
-for m in methods(show, Tuple{IO, MIME, DataFrame})
-  MT = m.sig.parameters[3]
+for MT in unique(map(m -> m.sig.parameters[3], methods(show, Tuple{IO, MIME, DataFrame})))
   @assert MT <: MIME
   if MT <: MIME"text/plain"
     @eval function Base.show(io::IO, mime::$MT, dr::DosageRegimen)
