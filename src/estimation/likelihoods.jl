@@ -17,6 +17,17 @@ LLQuad() = LLQuad(HCubatureJL())
 
 @deprecate Laplace() LaplaceI()
 
+# Some Distributions piracy. In version 0.22, they (accidentally?) removed
+# the MvNormal(::AbstractPDMat) constructor which we heavily rely on in Pumas.
+# Hence, we need the following definition for the time being
+if !hasmethod(MvNormal, Tuple{PDMats.PDMat})
+  Distributions.MvNormal(A::AbstractPDMat) = MvNormal(Distributions.Zeros{eltype(A)}(size(A, 1)), A)
+end
+# This one was necessary in versions of Distributions prior to 0.22
+if !hasmethod(MvNormal, Tuple{Diagonal})
+  Distributions.MvNormal(D::Diagonal) = MvNormal(PDiagMat(D.diag))
+end
+
 zval(d) = 0.0
 zval(d::Distributions.Normal{T}) where {T} = zero(T)
 
@@ -1689,9 +1700,6 @@ function _E_and_V(m::PumasModel,
 
   return mean.(dist.dv) .- F*vrandeffsorth, V
 end
-
-# Some type piracy for the time being
-Distributions.MvNormal(D::Diagonal) = MvNormal(PDiagMat(D.diag))
 
 struct FittedPumasModelInference{T1, T2, T3}
   fpm::T1
