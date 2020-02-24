@@ -541,6 +541,7 @@ end
 function observed_obj(observedexpr, observedvars, pre, odevars, derivedvars)
   quote
     function (_pre,_sol,_obstimes,_samples,_subject)
+      $(esc(:events)) = _subject.events
       $(esc(:t)) = _obstimes
       if _sol != nothing
         if typeof(_sol) <: PKPDAnalyticalSolution

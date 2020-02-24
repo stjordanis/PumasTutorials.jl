@@ -110,12 +110,14 @@ parmet = @model begin
     @derived begin
         cp = @. CENT/V
         cm = @. METAB/VM
+    end
 
+    @observed begin
         ncas := @nca cp cm
 
-        auccp, auccm = @. NCA.auc(ncas)
+        auccp, auccm     = @. NCA.auc(ncas)
         thalfcp, thalfcm = @. NCA.thalf(ncas)
-        cmaxcp, cmaxcm = @. NCA.cmax(ncas)
+        cmaxcp, cmaxcm   = @. NCA.cmax(ncas)
     end
 end
 
